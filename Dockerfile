@@ -13,7 +13,7 @@
 #
 # For more information, visit <https://www.gnu.org/licenses/>.
 # ---------------------------------------------------------------------------------------
-# Dockerfile – Omnixys notification Service
+# Dockerfile – Omnixys Event Service
 # Multi-stage build optimized for security, reproducibility, and minimal runtime size.
 # ---------------------------------------------------------------------------------------
 # syntax=docker/dockerfile:1.14.0
@@ -42,6 +42,13 @@ USER node
 # - Result: ./dist folder containing compiled JS files.
 # ---------------------------------------------------------------------------------------
 FROM base AS dist
+
+ARG DATABASE_URL
+ARG SHADOW_DATABASE_URL
+
+ENV DATABASE_URL=${DATABASE_URL}
+ENV SHADOW_DATABASE_URL=${SHADOW_DATABASE_URL}
+
 COPY --chown=node:node package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile --ignore-scripts
 COPY --chown=node:node . .
@@ -59,6 +66,13 @@ RUN pnpm prisma generate
 # - No dev packages or build tools are included.
 # ---------------------------------------------------------------------------------------
 FROM base AS dependencies
+
+ARG DATABASE_URL
+ARG SHADOW_DATABASE_URL
+
+ENV DATABASE_URL=${DATABASE_URL}
+ENV SHADOW_DATABASE_URL=${SHADOW_DATABASE_URL}
+
 COPY --chown=node:node package.json pnpm-lock.yaml ./
 RUN pnpm install --prod --frozen-lockfile --ignore-scripts
 
@@ -70,7 +84,7 @@ RUN pnpm prisma generate
 # ---------------------------------------------------------------------------------------
 # Stage 3: Final runtime image
 # - Copies only compiled code and production node_modules.
-# - Runs the app as a non-root notification for security.
+# - Runs the app as a non-root event for security.
 # ---------------------------------------------------------------------------------------
 FROM node:${NODE_VERSION}-bookworm-slim AS final
 
@@ -114,7 +128,7 @@ RUN apt-get update && \
 # ----- Enable pnpm (runtime) -----
 RUN corepack enable pnpm
 
-# ----- Switch to non-root notification -----
+# ----- Switch to non-root event -----
 USER node
 
 # ----- Copy built artifacts and dependencies -----
