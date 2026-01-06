@@ -1,9 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 // src/notification/template/template.mask.ts
 
-import { TemplateVariableMap } from './template.types.js';
+import type { TemplateVariableMap } from './template.types.js';
 
 export function maskSensitiveVariables(
   definitions: TemplateVariableMap,

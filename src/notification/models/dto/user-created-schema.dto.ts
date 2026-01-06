@@ -10,11 +10,11 @@
 // });
 // export type UserCreatedEvent = z.infer<typeof UserCreatedSchema>;
 
-export type UserCredentialDTO = {
+export interface UserCredentialDTO {
   username: string;
   password: string;
   userId: string;
   firstName: string;
   phone?: string;
   email?: string;
-};
+}

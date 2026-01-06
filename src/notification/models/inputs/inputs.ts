@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { Field, ID, InputType, Int } from '@nestjs/graphql';
 
 @InputType()

@@ -76,6 +76,9 @@ env:
   POSTGRES_TEST_DB: ${{ secrets.POSTGRES_TEST_DB }}
   POSTGRES_TEST_URL: postgres://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@localhost:5433/${{ secrets.POSTGRES_DB }}
 
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  SHADOW_DATABASE_URL: ${{ secrets.SHADOW_DATABASE_URL }}
+
 jobs:
   ci:
     name: Run Lint, Build, Test, and Typecheck
@@ -103,13 +106,13 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
-        
+
       valkey:
         image: valkey/valkey:latest
         ports:
           - 6380:6379
         env:
-          VALKEY_PASSWORD:  ${{ env.VALKEY_PASSWORD }}
+          VALKEY_PASSWORD: ${{ env.VALKEY_PASSWORD }}
           options: >-
             --requirepass $VALKEY_PASSWORD
             --appendonly yes
@@ -117,7 +120,6 @@ jobs:
             --health-interval=5s
             --health-timeout=3s
             --health-retries=10
-
 
       zookeeper:
         image: wurstmeister/zookeeper
@@ -216,7 +218,6 @@ jobs:
           echo "❌ Keycloak did not become ready in time. Dumping logs..."
           docker logs keycloak
           exit 1
-
 
       - name: 🔍 Lint check
         run: pnpm lint

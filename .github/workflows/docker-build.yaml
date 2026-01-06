@@ -74,6 +74,8 @@ env:
   LOG_DIRECTORY: ${{ secrets.LOG_DIRECTORY }}
   LOG_FILE_DEFAULT_NAME: ${{ secrets.LOG_FILE_DEFAULT_NAME }}
 
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  SHADOW_DATABASE_URL: ${{ secrets.SHADOW_DATABASE_URL }}
 
 jobs:
   push-docker:
@@ -128,6 +130,8 @@ jobs:
             APP_VERSION=${{ env.CURRENT_VERSION }}
             APP_NAME=${{ secrets.SERVICE }}
             NODE_VERSION=${{ matrix.node-version }}
+            DATABASE_URL=${{ env.DATABASE_URL }}
+            SHADOW_DATABASE_URL=${{ env.SHADOW_DATABASE_URL }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
@@ -192,6 +196,8 @@ jobs:
             APP_VERSION=${{ env.CURRENT_VERSION }}
             APP_NAME=${{ secrets.SERVICE }}
             NODE_VERSION=${{ matrix.node-version }}
+            DATABASE_URL=${{ env.DATABASE_URL }}
+            SHADOW_DATABASE_URL=${{ env.SHADOW_DATABASE_URL }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 

@@ -1,8 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
+
 import { env } from '../../../config/env.js';
 import { NotificationCreatedDTO } from '../../models/dto/notification-created.dto.js';
 import { Channel } from '../../models/enums/channel.enum.js';

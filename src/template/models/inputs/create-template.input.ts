@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { Channel } from '../../../notification/models/enums/channel.enum.js';
 import { Field, InputType } from '@nestjs/graphql';
 

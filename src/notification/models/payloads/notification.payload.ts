@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 // src/notification/graphql/payloads/notification.payload.ts
 
 import { Channel } from '../enums/channel.enum.js';

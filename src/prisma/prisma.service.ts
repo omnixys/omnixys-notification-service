@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * @license GPL-3.0-or-later
  * © 2025 Caleb Gyamfi – Omnixys Technologies

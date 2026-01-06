@@ -1,8 +1,8 @@
-export type VariableDefinition = {
+export interface VariableDefinition {
   required?: boolean;
   type?: 'string' | 'number' | 'boolean' | 'url' | 'email';
   sensitive?: boolean;
-};
+}
 
 export type TemplateVariableMap = Record<string, VariableDefinition>;
 

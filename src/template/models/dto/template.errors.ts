@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 // src/notification/template/template.errors.ts
 
 export class TemplateValidationError extends Error {

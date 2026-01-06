@@ -1,4 +1,4 @@
-import { Channel } from "../enums/channel.enum.js";
+import type { Channel } from '../enums/channel.enum.js';
 
 export interface NotificationCreatedDTO {
   notificationId: string;

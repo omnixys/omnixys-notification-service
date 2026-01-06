@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-
 import { Args, Mutation, Resolver } from '@nestjs/graphql';
 
 import { LoggerPlus } from '../../logger/logger-plus.js';
