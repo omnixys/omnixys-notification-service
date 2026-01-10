@@ -30,6 +30,7 @@ export class NotificationQueryResolver {
   }
 
   @Query(() => NotificationPayload, { nullable: true })
+  @UseGuards(CookieAuthGuard)
   async notification(
     @Args('id', { type: () => ID }) id: string,
     @CurrentUser() user: CurrentUserData,
