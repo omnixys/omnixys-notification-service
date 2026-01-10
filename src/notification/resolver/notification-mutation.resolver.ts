@@ -36,6 +36,7 @@ export class NotificationMutationResolver {
   }
 
   @Mutation(() => Boolean)
+  @UseGuards(CookieAuthGuard)
   async markNotificationAsRead(
     @Args('notificationId', { type: () => ID }) notificationId: string,
     @CurrentUser() user: CurrentUserData,
@@ -52,6 +53,7 @@ export class NotificationMutationResolver {
   }
 
   @Mutation(() => Boolean)
+  @UseGuards(CookieAuthGuard)
   async archiveNotification(
     @Args('notificationId', { type: () => ID }) notificationId: string,
     @CurrentUser() user: CurrentUserData,
@@ -72,6 +74,7 @@ export class NotificationMutationResolver {
   /* ------------------------------------------------------------------ */
 
   @Mutation(() => Boolean)
+  @UseGuards(CookieAuthGuard)
   async markNotificationsAsReadBulk(
     @Args({ name: 'notificationIds', type: () => [ID] })
     notificationIds: string[],
@@ -90,6 +93,7 @@ export class NotificationMutationResolver {
   }
 
   @Mutation(() => Boolean)
+  @UseGuards(CookieAuthGuard)
   async archiveNotificationsBulk(
     @Args({ name: 'notificationIds', type: () => [ID] })
     notificationIds: string[],
@@ -108,6 +112,7 @@ export class NotificationMutationResolver {
   }
 
   @Mutation(() => Boolean)
+  @UseGuards(CookieAuthGuard)
   async deleteNotificationsBulk(
     @Args({ name: 'notificationIds', type: () => [ID] })
     notificationIds: string[],
@@ -138,6 +143,7 @@ export class NotificationMutationResolver {
   }
 
   @Mutation(() => Boolean)
+  @UseGuards(CookieAuthGuard)
   async markNotificationAsUnread(
     @Args('notificationId', { type: () => ID }) notificationId: string,
     @CurrentUser() user: CurrentUserData,
@@ -154,6 +160,7 @@ export class NotificationMutationResolver {
   }
 
   @Mutation(() => Boolean)
+  @UseGuards(CookieAuthGuard)
   async markNotificationsAsUnreadBulk(
     @Args({ name: 'notificationIds', type: () => [ID] })
     notificationIds: string[],
@@ -171,6 +178,7 @@ export class NotificationMutationResolver {
   }
 
   @Mutation(() => Boolean)
+  @UseGuards(CookieAuthGuard)
   async unarchiveNotification(
     @Args('notificationId', { type: () => ID }) notificationId: string,
     @CurrentUser() user: CurrentUserData,
@@ -187,6 +195,7 @@ export class NotificationMutationResolver {
   }
 
   @Mutation(() => Boolean)
+  @UseGuards(CookieAuthGuard)
   async unarchiveNotificationsBulk(
     @Args({ name: 'notificationIds', type: () => [ID] })
     notificationIds: string[],
