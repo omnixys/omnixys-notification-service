@@ -25,7 +25,7 @@ import { NotificationRenderer, VariableSchema } from '../utils/notification.rend
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { trace, Tracer } from '@opentelemetry/api';
 
-// cmjym19h80000kaijsimukmg8
+const adminID = process.env.ADMIN_ID ?? 'dde8114c-2637-462a-90b9-413924fa3f55';
 
 interface CreateOptions {
   dedupeKey?: string | null;
@@ -55,7 +55,9 @@ export class NotificationWriteService {
       await this.create(
         {
           recipientUsername: dto.username,
-          recipientId: dto.userId,
+          // recipientId: dto.userId,
+          // TODO fix this!
+          recipientId: adminID,
           recipientTenant: undefined,
 
           templateKey: 'account.credentials.created',
@@ -120,7 +122,9 @@ export class NotificationWriteService {
       return await this.prisma.notification.create({
         data: {
           recipientUsername: input.recipientUsername,
-          recipientId: input.recipientId ?? null,
+          // recipientId: input.recipientId ?? null,
+          // TODO fix this!
+          recipientId: adminID,
           recipientTenant: input.recipientTenant ?? null,
 
           templateId: template.id,
@@ -322,7 +326,9 @@ export class NotificationWriteService {
       await this.create(
         {
           recipientUsername: dto.recipientUsername, // email
-          recipientId: undefined,
+          // recipientId: undefined,
+          // TODO fix this!
+          recipientId: adminID,
           recipientTenant: undefined,
 
           templateKey: 'account.password.reset.requested',
@@ -358,7 +364,9 @@ export class NotificationWriteService {
         await this.create(
           {
             recipientUsername: 'omnixys-security',
-            recipientId: undefined,
+            // recipientId: undefined,
+            // TODO fix this!
+            recipientId: adminID,
             recipientTenant: undefined,
 
             templateKey: 'security.password.reset.requested',
