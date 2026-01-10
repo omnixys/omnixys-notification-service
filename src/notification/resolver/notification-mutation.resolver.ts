@@ -69,6 +69,23 @@ export class NotificationMutationResolver {
     return true;
   }
 
+  @Mutation(() => Boolean)
+  @UseGuards(CookieAuthGuard)
+  async deleteNotification(
+    @Args('notificationId', { type: () => ID }) notificationId: string,
+    @CurrentUser() user: CurrentUserData,
+  ): Promise<boolean> {
+    const notification =
+      await this.notificationReadService.findById(notificationId);
+
+    if (notification.recipientId !== user.id) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    await this.notificationWriteService.delete(notificationId);
+    return true;
+  }
+
   /* ------------------------------------------------------------------ */
   /* BULK OPERATIONS                                                     */
   /* ------------------------------------------------------------------ */

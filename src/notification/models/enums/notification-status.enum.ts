@@ -7,5 +7,6 @@ export enum NotificationStatus {
   READ = 'READ',
   FAILED = 'FAILED',
   EXPIRED = 'EXPIRED',
+  ARCHIVED = 'ARCHIVED',
 }
 registerEnumType(NotificationStatus, { name: 'NotificationStatus' });

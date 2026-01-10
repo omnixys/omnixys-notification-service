@@ -41,6 +41,7 @@ enum NotificationStatus {
   SENT
   FAILED
   EXPIRED
+  ARCHIVED
 
   @@map("notification_status")
   @@schema("notification")

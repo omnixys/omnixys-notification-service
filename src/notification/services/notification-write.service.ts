@@ -181,6 +181,7 @@ export class NotificationWriteService {
       data: {
         read: true,
         readAt: new Date(),
+        status: NotificationStatus.SENT,
       },
     });
   }
@@ -196,27 +197,27 @@ export class NotificationWriteService {
     await this.prisma.notification.update({
       where: { id },
       data: {
-        status: NotificationStatus.EXPIRED,
+        status: NotificationStatus.ARCHIVED,
         archivedAt: new Date(),
       },
     });
   }
 
-  async cleanupExpired(maxBatch = 500): Promise<number> {
-    const expired = await this.prisma.notification.findMany({
-      where: {
-        expiresAt: { lte: new Date() },
-        status: { not: NotificationStatus.EXPIRED },
-      },
-      take: maxBatch,
-    });
+  // async cleanupExpired(maxBatch = 500): Promise<number> {
+  //   const expired = await this.prisma.notification.findMany({
+  //     where: {
+  //       expiresAt: { lte: new Date() },
+  //       status: { not: NotificationStatus.EXPIRED },
+  //     },
+  //     take: maxBatch,
+  //   });
 
-    for (const n of expired) {
-      await this.archive(n.id);
-    }
+  //   for (const n of expired) {
+  //     await this.archive(n.id);
+  //   }
 
-    return expired.length;
-  }
+  //   return expired.length;
+  // }
 
   async bulkSendInvitation(input: BulkSendInvitationsInput, userId: string) {
     return withSpan(this.tracer, this.logger, 'notification.sendFromTemplate', async (span) => {
@@ -405,6 +406,7 @@ export class NotificationWriteService {
       data: {
         read: true,
         readAt: new Date(),
+        status: NotificationStatus.SENT,
       },
     });
   }
@@ -419,7 +421,7 @@ export class NotificationWriteService {
         id: { in: ids },
       },
       data: {
-        status: NotificationStatus.EXPIRED,
+        status: NotificationStatus.ARCHIVED,
         archivedAt: new Date(),
       },
     });
@@ -434,6 +436,20 @@ export class NotificationWriteService {
       where: {
         id: { in: ids },
       },
+    });
+  }
+
+  async delete(id: string): Promise<void> {
+    const existing = await this.prisma.notification.findUnique({
+      where: { id },
+    });
+
+    if (!existing) {
+      throw new NotFoundException('Notification not found');
+    }
+
+    await this.prisma.notification.delete({
+      where: { id },
     });
   }
 
@@ -483,7 +499,7 @@ export class NotificationWriteService {
     await this.prisma.notification.update({
       where: { id },
       data: {
-        status: NotificationStatus.PENDING,
+        status: NotificationStatus.SENT,
         archivedAt: null,
       },
     });
@@ -499,7 +515,7 @@ export class NotificationWriteService {
         id: { in: ids },
       },
       data: {
-        status: NotificationStatus.PENDING,
+        status: NotificationStatus.SENT,
         archivedAt: null,
       },
     });
