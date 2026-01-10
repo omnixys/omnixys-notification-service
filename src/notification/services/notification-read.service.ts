@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { LoggerPlus } from '../../logger/logger-plus.js';
@@ -6,12 +7,13 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 
 import { ListAllNotificationsInput, ListNotificationsInput } from '../models/inputs/inputs.js';
 
-import { Prisma } from '../../prisma/generated/client.js';
+import { Notification, Prisma } from '../../prisma/generated/client.js';
 import { NotificationMapper } from '../models/mappers/notification.mapper.js';
 import {
   NotificationPagePayload,
   NotificationPayload,
 } from '../models/payloads/notification.payload.js';
+import { NotificationWriteService } from './notification-write.service.js';
 
 @Injectable()
 export class NotificationReadService {
@@ -20,6 +22,8 @@ export class NotificationReadService {
   constructor(
     private readonly prisma: PrismaService,
     loggerService: LoggerPlusService,
+    private readonly notificationWriteService: NotificationWriteService,
+    // private readonly notificationReadService: NotificationReadService,
   ) {
     this.logger = loggerService.getLogger(NotificationReadService.name);
   }
@@ -27,12 +31,28 @@ export class NotificationReadService {
   async findById(id: string): Promise<NotificationPayload> {
     this.logger.debug('findById: id=%s', id);
 
-    const notification = await this.prisma.notification.findUnique({
+    let notification: Notification | null = await this.prisma.notification.findUnique({
       where: { id },
     });
 
     if (!notification) {
       throw new NotFoundException('Notification not found');
+    }
+
+    // 🔹 AUTO-MARK-AS-READ (idempotent)
+    if (!notification.read) {
+      await this.notificationWriteService.markAsRead(id);
+
+      // 🔄 Optional: re-read to return updated payload
+      notification = await this.prisma.notification.findUnique({
+        where: { id },
+      });
+
+      if (!notification) {
+        throw new NotFoundException('Notification not found');
+      }
+
+      return NotificationMapper.toPayload(notification);
     }
 
     return NotificationMapper.toPayload(notification);
@@ -100,5 +120,25 @@ export class NotificationReadService {
       items: NotificationMapper.toPayloadList(notifications),
       nextCursor,
     };
+  }
+
+  async findByIds(ids: string[]): Promise<NotificationPayload[]> {
+    this.logger.debug('findByIds: count=%d', ids.length);
+
+    if (ids.length === 0) {
+      return [];
+    }
+
+    const notifications = await this.prisma.notification.findMany({
+      where: {
+        id: { in: ids },
+      },
+    });
+
+    if (notifications.length !== ids.length) {
+      throw new NotFoundException('One or more notifications not found');
+    }
+
+    return NotificationMapper.toPayloadList(notifications);
   }
 }

@@ -391,4 +391,117 @@ export class NotificationWriteService {
       },
     );
   }
+
+  async markAsReadBulk(ids: string[]): Promise<void> {
+    if (ids.length === 0) {
+      return;
+    }
+
+    await this.prisma.notification.updateMany({
+      where: {
+        id: { in: ids },
+        status: { not: NotificationStatus.EXPIRED },
+      },
+      data: {
+        read: true,
+        readAt: new Date(),
+      },
+    });
+  }
+
+  async archiveBulk(ids: string[]): Promise<void> {
+    if (ids.length === 0) {
+      return;
+    }
+
+    await this.prisma.notification.updateMany({
+      where: {
+        id: { in: ids },
+      },
+      data: {
+        status: NotificationStatus.EXPIRED,
+        archivedAt: new Date(),
+      },
+    });
+  }
+
+  async deleteBulk(ids: string[]): Promise<void> {
+    if (ids.length === 0) {
+      return;
+    }
+
+    await this.prisma.notification.deleteMany({
+      where: {
+        id: { in: ids },
+      },
+    });
+  }
+
+  async markAsUnread(id: string): Promise<void> {
+    const existing = await this.prisma.notification.findUnique({
+      where: { id },
+    });
+
+    if (!existing) {
+      throw new NotFoundException('Notification not found');
+    }
+
+    await this.prisma.notification.update({
+      where: { id },
+      data: {
+        read: false,
+        readAt: null,
+      },
+    });
+  }
+
+  async markAsUnreadBulk(ids: string[]): Promise<void> {
+    if (ids.length === 0) {
+      return;
+    }
+
+    await this.prisma.notification.updateMany({
+      where: {
+        id: { in: ids },
+      },
+      data: {
+        read: false,
+        readAt: null,
+      },
+    });
+  }
+
+  async unarchive(id: string): Promise<void> {
+    const existing = await this.prisma.notification.findUnique({
+      where: { id },
+    });
+
+    if (!existing) {
+      throw new NotFoundException('Notification not found');
+    }
+
+    await this.prisma.notification.update({
+      where: { id },
+      data: {
+        status: NotificationStatus.PENDING,
+        archivedAt: null,
+      },
+    });
+  }
+
+  async unarchiveBulk(ids: string[]): Promise<void> {
+    if (ids.length === 0) {
+      return;
+    }
+
+    await this.prisma.notification.updateMany({
+      where: {
+        id: { in: ids },
+      },
+      data: {
+        status: NotificationStatus.PENDING,
+        archivedAt: null,
+      },
+    });
+  }
 }

@@ -67,6 +67,64 @@ export class NotificationMutationResolver {
     return true;
   }
 
+  /* ------------------------------------------------------------------ */
+  /* BULK OPERATIONS                                                     */
+  /* ------------------------------------------------------------------ */
+
+  @Mutation(() => Boolean)
+  async markNotificationsAsReadBulk(
+    @Args({ name: 'notificationIds', type: () => [ID] })
+    notificationIds: string[],
+    @CurrentUser() user: CurrentUserData,
+  ): Promise<boolean> {
+    const notifications =
+      await this.notificationReadService.findByIds(notificationIds);
+
+    if (notifications.some((n) => n.recipientId !== user.id)) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    await this.notificationWriteService.markAsReadBulk(notificationIds);
+
+    return true;
+  }
+
+  @Mutation(() => Boolean)
+  async archiveNotificationsBulk(
+    @Args({ name: 'notificationIds', type: () => [ID] })
+    notificationIds: string[],
+    @CurrentUser() user: CurrentUserData,
+  ): Promise<boolean> {
+    const notifications =
+      await this.notificationReadService.findByIds(notificationIds);
+
+    if (notifications.some((n) => n.recipientId !== user.id)) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    await this.notificationWriteService.archiveBulk(notificationIds);
+
+    return true;
+  }
+
+  @Mutation(() => Boolean)
+  async deleteNotificationsBulk(
+    @Args({ name: 'notificationIds', type: () => [ID] })
+    notificationIds: string[],
+    @CurrentUser() user: CurrentUserData,
+  ): Promise<boolean> {
+    const notifications =
+      await this.notificationReadService.findByIds(notificationIds);
+
+    if (notifications.some((n) => n.recipientId !== user.id)) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    await this.notificationWriteService.deleteBulk(notificationIds);
+
+    return true;
+  }
+
   /**
    * INTERNAL – used by Invitation / Event services
    */
@@ -77,5 +135,71 @@ export class NotificationMutationResolver {
     @CurrentUser() user: CurrentUserData,
   ): Promise<BulkSendInvitationsPayload> {
     return this.notificationWriteService.bulkSendInvitation(input, user.id);
+  }
+
+  @Mutation(() => Boolean)
+  async markNotificationAsUnread(
+    @Args('notificationId', { type: () => ID }) notificationId: string,
+    @CurrentUser() user: CurrentUserData,
+  ): Promise<boolean> {
+    const notification =
+      await this.notificationReadService.findById(notificationId);
+
+    if (notification.recipientId !== user.id) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    await this.notificationWriteService.markAsUnread(notificationId);
+    return true;
+  }
+
+  @Mutation(() => Boolean)
+  async markNotificationsAsUnreadBulk(
+    @Args({ name: 'notificationIds', type: () => [ID] })
+    notificationIds: string[],
+    @CurrentUser() user: CurrentUserData,
+  ): Promise<boolean> {
+    const notifications =
+      await this.notificationReadService.findByIds(notificationIds);
+
+    if (notifications.some((n) => n.recipientId !== user.id)) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    await this.notificationWriteService.markAsUnreadBulk(notificationIds);
+    return true;
+  }
+
+  @Mutation(() => Boolean)
+  async unarchiveNotification(
+    @Args('notificationId', { type: () => ID }) notificationId: string,
+    @CurrentUser() user: CurrentUserData,
+  ): Promise<boolean> {
+    const notification =
+      await this.notificationReadService.findById(notificationId);
+
+    if (notification.recipientId !== user.id) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    await this.notificationWriteService.unarchive(notificationId);
+    return true;
+  }
+
+  @Mutation(() => Boolean)
+  async unarchiveNotificationsBulk(
+    @Args({ name: 'notificationIds', type: () => [ID] })
+    notificationIds: string[],
+    @CurrentUser() user: CurrentUserData,
+  ): Promise<boolean> {
+    const notifications =
+      await this.notificationReadService.findByIds(notificationIds);
+
+    if (notifications.some((n) => n.recipientId !== user.id)) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    await this.notificationWriteService.unarchiveBulk(notificationIds);
+    return true;
   }
 }
