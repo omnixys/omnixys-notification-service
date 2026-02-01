@@ -198,6 +198,7 @@ jobs:
             NODE_VERSION=${{ matrix.node-version }}
             DATABASE_URL=${{ env.DATABASE_URL }}
             SHADOW_DATABASE_URL=${{ env.SHADOW_DATABASE_URL }}
+            ADMIN_ID=${{ env.ADMIN_ID }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
