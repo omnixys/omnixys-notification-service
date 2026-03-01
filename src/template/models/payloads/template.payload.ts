@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/template/models/payloads/template.payload.ts
 
 import { JsonScalar } from '../../../core/scalars/json.scalar.js';
 import { Channel } from '../../../notification/models/enums/channel.enum.js';
-import { VariableSchema } from '../../../notification/utils/notification.renderer.js';
+import { ContentFormat } from '../../../notification/models/enums/content-format.enum.js';
 import { Field, ID, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
@@ -20,30 +21,22 @@ export class TemplatePayload {
   locale!: string;
 
   @Field({ nullable: true })
-  title?: string;
+  subject?: string;
 
   @Field()
   body!: string;
 
-  /**
-   * JSON schema describing allowed variables.
-   * Example:
-   * {
-   *   "username": { "required": true, "type": "string" },
-   *   "password": { "required": true, "type": "string", "sensitive": true }
-   * }
-   */
+  @Field(() => ContentFormat)
+  format!: ContentFormat;
+
   @Field(() => JsonScalar)
-  variables!: VariableSchema;
-
-  @Field({ nullable: true })
-  category?: string;
-
-  @Field()
-  isActive!: boolean;
+  variables!: Record<string, any>;
 
   @Field()
   version!: number;
+
+  @Field()
+  isActive!: boolean;
 
   @Field(() => [String])
   tags!: string[];

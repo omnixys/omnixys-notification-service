@@ -1,523 +1,353 @@
-/* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable no-useless-catch */
+
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-
+import { LoggerPlus } from '../../logger/logger-plus.js';
 import { LoggerPlusService } from '../../logger/logger-plus.service.js';
-import { KafkaProducerService } from '../../messaging/kafka-producer.service.js';
+import { MailService } from '../../messages/services/mail.service.js';
+import { Channel, NotificationStatus, Priority, Prisma } from '../../prisma/generated/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
-import { TemplateReadService } from '../../template/services/template-read.service.js';
-import { withSpan } from '../../trace/utils/span.utils.js';
-import { safeJson } from '../../utils/safe-json.js';
-import {
-  PasswordResetRequestDTO,
-  SecurityPasswordResetAlertDTO,
-} from '../models/dto/password-reset.dto.js';
-import { UserCredentialDTO } from '../models/dto/user-created-schema.dto.js';
-import { Channel, toPrismaModelChannel } from '../models/enums/channel.enum.js';
-import { NotificationStatus } from '../models/enums/notification-status.enum.js';
-import { BulkSendInvitationsInput } from '../models/inputs/bulk-send-invitations.input.js';
-import { NotificationInput } from '../models/inputs/notify.input.js';
-import { NotificationRenderer, VariableSchema } from '../utils/notification.renderer.js';
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { trace, Tracer } from '@opentelemetry/api';
+import { NotificationCacheService } from './notification-cache.service.js';
+import { TemplateRenderService } from './template-renderer.service.js';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 
-const adminID = process.env.ADMIN_ID ?? 'dde8114c-2637-462a-90b9-413924fa3f55';
+// notification/models/dto/create-notification.dto.ts
+export interface CreateNotificationDTO {
+  tenantId?: string;
+  recipientUsername: string;
+  recipientId?: string;
+  recipientAddress?: string;
 
-interface CreateOptions {
-  dedupeKey?: string | null;
-  publish?: boolean;
+  channel: Channel;
+  priority?: Priority;
+
+  templateId?: string;
+
+  variables?: Prisma.InputJsonValue;
+  metadata?: Prisma.InputJsonValue;
+
+  sensitive?: boolean;
+  expiresAt?: Date;
+
+  createdBy?: string;
 }
 
 @Injectable()
 export class NotificationWriteService {
-  private readonly logger;
-  private readonly tracer: Tracer;
+  private readonly logger: LoggerPlus;
 
   constructor(
     private readonly prisma: PrismaService,
+    private readonly notificationCacheService: NotificationCacheService,
+    private readonly mailService: MailService,
+    private readonly templateRenderService: TemplateRenderService,
     loggerService: LoggerPlusService,
-    private readonly templateReadService: TemplateReadService,
-    private readonly kafkaProducerService: KafkaProducerService,
-    private readonly renderer: NotificationRenderer,
   ) {
     this.logger = loggerService.getLogger(NotificationWriteService.name);
-    this.tracer = trace.getTracer(NotificationWriteService.name);
   }
 
-  async sendCredentials(dto: UserCredentialDTO): Promise<void> {
-    return withSpan(this.tracer, this.logger, 'notification.sendCredentials', async (span) => {
-      // const channel = dto.phone ? Channel.WHATSAPP : Channel.EMAIL;
-
-      await this.create(
-        {
-          recipientUsername: dto.username,
-          // recipientId: dto.userId,
-          // TODO fix this!
-          recipientId: adminID,
-          recipientTenant: undefined,
-
-          templateKey: 'account.credentials.created',
-          channel: Channel.IN_APP,
-          locale: 'de-DE',
-
-          variables: {
-            username: dto.username,
-            password: dto.password,
-            firstName: dto.firstName,
-          },
-
-          sensitive: true,
-          category: 'SECURITY',
-        },
-        {
-          dedupeKey: `credentials:${dto.userId}`,
-        },
-      );
-
-      const sc = span.spanContext();
-
-      void this.kafkaProducerService.sendSubscription(dto, 'notification.write-service', {
-        traceId: sc.traceId,
-        spanId: sc.spanId,
-      });
-    });
-  }
-
-  async create(input: NotificationInput, opts: CreateOptions = {}) {
+  // ─────────────────────────────────────────────
+  // CREATE (Idempotent optional)
+  // ─────────────────────────────────────────────
+  async create(input: CreateNotificationDTO) {
     this.logger.debug('create notification: %o', {
       ...input,
-      variables: '[omitted]',
+      variables: '[masked]',
     });
 
-    // 1️⃣ Resolve template by business key
-    const template = await this.templateReadService.findActiveByKey(
-      input.templateKey,
-      input.channel,
-      input.locale ?? 'de-DE',
-    );
-
-    // 2️⃣ Validate & render
-    const variables = input.variables ?? {};
-    this.renderer.validate((template.variables as unknown as VariableSchema) ?? {}, variables);
-
-    const rendered = this.renderer.render(
-      { title: template.title, body: template.body },
-      variables,
-    );
-
-    this.logger.debug(
-      'rendered notification vars=%o',
-      this.renderer.maskSensitive(template.variables as any, variables),
-    );
-
-    // 3️⃣ TTL
-    const expiresAt = input.ttlSeconds ? new Date(Date.now() + input.ttlSeconds * 1000) : null;
-
-    // 4️⃣ Persist (idempotent)
     try {
       return await this.prisma.notification.create({
         data: {
+          tenantId: input.tenantId ?? null,
           recipientUsername: input.recipientUsername,
-          // recipientId: input.recipientId ?? null,
-          // TODO fix this!
-          recipientId: adminID,
-          recipientTenant: input.recipientTenant ?? null,
+          recipientId: input.recipientId ?? null,
+          recipientAddress: input.recipientAddress ?? null,
 
-          templateId: template.id,
-          variables: safeJson(variables),
-          renderedTitle: rendered.title,
-          renderedBody: rendered.body,
+          templateId: input.templateId ?? null,
 
-          data: {},
-          linkUrl: input.linkUrl ?? null,
-
-          channel: toPrismaModelChannel(input.channel),
+          channel: input.channel,
           priority: input.priority ?? 'NORMAL',
-          category: input.category ?? template.category,
+
+          variables: input.variables ?? {},
+          metadata: input.metadata ?? {},
+
+          sensitive: input.sensitive ?? false,
+          expiresAt: input.expiresAt ?? null,
 
           status: NotificationStatus.PENDING,
-          read: false,
-
-          expiresAt,
-          sensitive: input.sensitive ?? false,
-
-          createdBy: 'notification-service',
-          dedupeKey: opts.dedupeKey ?? null,
+          createdBy: input.createdBy ?? null,
         },
       });
     } catch (e: any) {
-      // Idempotency hit
-      if (e?.code === 'P2002' && opts.dedupeKey) {
-        const existing = await this.prisma.notification.findUnique({
-          where: { dedupeKey: opts.dedupeKey },
-        });
-
-        if (existing) {
-          return existing;
-        }
-      }
-
       throw e;
     }
   }
 
-  async markAsRead(id: string): Promise<void> {
-    const existing = await this.prisma.notification.findUnique({
-      where: { id },
-    });
-    if (!existing) {
-      throw new NotFoundException('Notification not found');
-    }
-    if (existing.status === NotificationStatus.EXPIRED) {
-      throw new BadRequestException('Expired notification cannot be read');
+  // ─────────────────────────────────────────────
+  // MARK AS READ
+  // ─────────────────────────────────────────────
+  async markAsRead(id: string) {
+    const existing = await this.findOrThrow(id);
+
+    if (existing.readAt) {
+      return existing;
     }
 
-    await this.prisma.notification.update({
+    return this.prisma.notification.update({
       where: { id },
       data: {
-        read: true,
         readAt: new Date(),
+      },
+    });
+  }
+
+  // ─────────────────────────────────────────────
+  // MARK AS UNREAD
+  // ─────────────────────────────────────────────
+  async markAsUnread(id: string) {
+    await this.findOrThrow(id);
+
+    return this.prisma.notification.update({
+      where: { id },
+      data: {
+        readAt: null,
+      },
+    });
+  }
+
+  // ─────────────────────────────────────────────
+  // ARCHIVE
+  // ─────────────────────────────────────────────
+  async archive(id: string) {
+    const existing = await this.findOrThrow(id);
+
+    if (existing.archivedAt) {
+      return existing;
+    }
+
+    return this.prisma.notification.update({
+      where: { id },
+      data: {
+        archivedAt: new Date(),
+        status: NotificationStatus.ARCHIVED,
+      },
+    });
+  }
+
+  async unarchive(id: string) {
+    const existing = await this.findOrThrow(id);
+
+    if (!existing.archivedAt) {
+      return existing;
+    }
+
+    return this.prisma.notification.update({
+      where: { id },
+      data: {
+        archivedAt: null,
         status: NotificationStatus.SENT,
       },
     });
   }
 
-  async archive(id: string): Promise<void> {
-    const existing = await this.prisma.notification.findUnique({
-      where: { id },
-    });
-    if (!existing) {
-      throw new NotFoundException('Notification not found');
+  // ─────────────────────────────────────────────
+  // CANCEL (only before sent/delivered)
+  // ─────────────────────────────────────────────
+  async cancel(id: string) {
+    const existing = await this.findOrThrow(id);
+
+    if (
+      existing.status === NotificationStatus.SENT ||
+      existing.status === NotificationStatus.DELIVERED
+    ) {
+      throw new BadRequestException('Cannot cancel already sent/delivered notification');
     }
 
-    await this.prisma.notification.update({
+    return this.prisma.notification.update({
       where: { id },
       data: {
-        status: NotificationStatus.ARCHIVED,
-        archivedAt: new Date(),
+        status: NotificationStatus.CANCELLED,
       },
     });
   }
 
-  // async cleanupExpired(maxBatch = 500): Promise<number> {
-  //   const expired = await this.prisma.notification.findMany({
-  //     where: {
-  //       expiresAt: { lte: new Date() },
-  //       status: { not: NotificationStatus.EXPIRED },
-  //     },
-  //     take: maxBatch,
-  //   });
+  // ─────────────────────────────────────────────
+  // DELETE
+  // ─────────────────────────────────────────────
+  async delete(id: string) {
+    await this.findOrThrow(id);
 
-  //   for (const n of expired) {
-  //     await this.archive(n.id);
-  //   }
+    return this.prisma.notification.delete({
+      where: { id },
+    });
+  }
 
-  //   return expired.length;
-  // }
+  // ─────────────────────────────────────────────
+  // BULK OPERATIONS
+  // ─────────────────────────────────────────────
+  async markAsReadBulk(ids: string[]) {
+    if (!ids.length) {
+      return;
+    }
 
-  async bulkSendInvitation(input: BulkSendInvitationsInput, userId: string) {
-    return withSpan(this.tracer, this.logger, 'notification.sendFromTemplate', async (span) => {
-      const template = await this.prisma.template.findUnique({
-        where: { id: input.templateId },
+    return this.prisma.notification.updateMany({
+      where: {
+        id: { in: ids },
+        readAt: null,
+      },
+      data: {
+        readAt: new Date(),
+      },
+    });
+  }
+
+  async archiveBulk(ids: string[]) {
+    if (!ids.length) {
+      return;
+    }
+
+    return this.prisma.notification.updateMany({
+      where: {
+        id: { in: ids },
+      },
+      data: {
+        archivedAt: new Date(),
+        status: NotificationStatus.ARCHIVED,
+      },
+    });
+  }
+
+  async deleteBulk(ids: string[]) {
+    if (!ids.length) {
+      return;
+    }
+
+    return this.prisma.notification.deleteMany({
+      where: {
+        id: { in: ids },
+      },
+    });
+  }
+
+  // ─────────────────────────────────────────────
+  // INTERNAL HELPER
+  // ─────────────────────────────────────────────
+
+  private async findOrThrow(id: string) {
+    const entity = await this.prisma.notification.findUnique({
+      where: { id },
+    });
+
+    if (!entity) {
+      throw new NotFoundException('Notification not found');
+    }
+
+    return entity;
+  }
+
+  // ─────────────────────────────────────────────
+  // MARK AS SENT
+  // ─────────────────────────────────────────────
+  async markAsSent(
+    id: string,
+    options?: {
+      provider?: string;
+      providerRef?: string;
+    },
+  ) {
+    const existing = await this.findOrThrow(id);
+
+    // State validation
+    if (
+      existing.status !== NotificationStatus.PENDING &&
+      existing.status !== NotificationStatus.PROCESSING
+    ) {
+      throw new BadRequestException(
+        `Cannot mark notification as SENT from status ${existing.status}`,
+      );
+    }
+
+    return this.prisma.notification.update({
+      where: { id },
+      data: {
+        status: NotificationStatus.SENT,
+        deliveredAt: new Date(),
+        provider: options?.provider ?? existing.provider ?? null,
+        providerRef: options?.providerRef ?? existing.providerRef ?? null,
+      },
+    });
+  }
+
+  async createSignupVerification(createUserInput: any) {
+    this.logger.debug('creating signUp verification');
+
+    // 1️⃣ Store payload in Valkey
+    const { verificationId } = await this.notificationCacheService.storeSignupVerificationPayload(
+      createUserInput,
+      {},
+      60 * 15,
+    );
+
+    const verifyUrl = `https://omnixys.com/verify?token=${verificationId}`;
+
+    // 2️⃣ Render Template
+    const { templateId, renderedTitle, renderedBody } =
+      await this.templateRenderService.renderFromKey({
+        templateKey: 'sign-up-verification',
+        channel: Channel.EMAIL,
+        locale: 'de-DE',
+        variables: {
+          firstName: createUserInput.personalInfo.firstName,
+          lastName: createUserInput.personalInfo.lastName,
+          username: createUserInput.username,
+          verifyUrl,
+          expiresInMinutes: 15,
+        },
       });
 
-      if (!template?.isActive) {
-        throw new Error('Template not found or inactive');
-      }
-
-      let created = 0;
-      let skipped = 0;
-
-      for (const recipient of input.recipients) {
-        const channel = template.channel;
-
-        if (channel === 'EMAIL' && !recipient.email) {
-          skipped++;
-          continue;
-        }
-
-        if (channel === 'WHATSAPP' && !recipient.phoneNumber) {
-          skipped++;
-          continue;
-        }
-
-        const notification = await this.createFromTemplate({
-          templateId: template.id,
-          channel,
-          recipientUsername: channel === 'EMAIL' ? recipient.email! : recipient.phoneNumber!,
-          variables: {
-            firstName: recipient.firstName,
-            lastName: recipient.lastName,
-            rsvpUrl: recipient.rsvpUrl,
-          },
-          category: template.category ?? 'INVITATION',
-          createdBy: userId,
-        });
-
-        created++;
-
-        const sc = span.spanContext();
-
-        void this.kafkaProducerService.sendNotification(
-          {
-            notificationId: notification.id,
-            channel: channel as Channel,
-            recipient: recipient.firstName,
-            renderedTitle: notification.renderedTitle,
-            renderedBody: notification.renderedBody,
-            linkUrl: recipient.rsvpUrl ?? null,
-          },
-          'notification.write-service',
-          {
-            traceId: sc.traceId,
-            spanId: sc.spanId,
-          },
-        );
-      }
-
-      return {
-        total: input.recipients.length,
-        created,
-        skipped,
-      };
-    });
-  }
-
-  async createFromTemplate(input: {
-    templateId: string;
-    channel: string;
-    recipientUsername: string;
-    variables: Record<string, any>;
-    category?: string;
-    createdBy?: string;
-  }) {
-    const template = await this.prisma.template.findUniqueOrThrow({
-      where: { id: input.templateId },
+    // 3️⃣ Persist Notification FIRST
+    const notification = await this.create({
+      tenantId: 'omnixys',
+      recipientUsername: createUserInput.username,
+      recipientAddress: createUserInput.personalInfo.email,
+      channel: Channel.EMAIL,
+      priority: Priority.NORMAL,
+      templateId,
+      variables: {
+        firstName: createUserInput.personalInfo.firstName,
+        lastName: createUserInput.personalInfo.lastName,
+        username: createUserInput.username,
+        verifyUrl,
+        expiresInMinutes: 15,
+      },
+      metadata: {
+        flow: 'signup-verification',
+      },
+      sensitive: false,
+      expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+      createdBy: 'auth-service',
     });
 
-    // 2️⃣ Validate & render
-    const variables = input.variables ?? {};
-    this.renderer.validate((template.variables as unknown as VariableSchema) ?? {}, variables);
-
-    const rendered = this.renderer.render(
-      { title: template.title, body: template.body },
-      variables,
-    );
-
-    return this.prisma.notification.create({
-      data: {
-        recipientUsername: input.recipientUsername,
-        templateId: template.id,
-        variables: input.variables,
-        renderedTitle: rendered.title,
-        renderedBody: rendered.body,
-        channel: template.channel,
-        category: input.category,
-        createdBy: input.createdBy,
+    // 4️⃣ Send Mail
+    await this.mailService.send({
+      to: createUserInput.personalInfo.email,
+      subject: renderedTitle ?? '',
+      html: renderedBody,
+      format: 'HTML',
+      from: 'onboarding@resend.dev',
+      metadata: {
+        notificationId: notification.id,
+        flow: 'signup-verification',
       },
     });
-  }
 
-  async sendPasswordResetRequest(dto: PasswordResetRequestDTO): Promise<void> {
-    return withSpan(this.tracer, this.logger, 'notification.sendPasswordResetRequest', async () => {
-      await this.create(
-        {
-          recipientUsername: dto.recipientUsername, // email
-          // recipientId: undefined,
-          // TODO fix this!
-          recipientId: adminID,
-          recipientTenant: undefined,
-
-          templateKey: 'account.password.reset.requested',
-          channel: Channel.EMAIL,
-          locale: 'de-DE',
-
-          variables: {
-            username: dto.recipientUsername,
-            firstName: dto.firstName,
-            lastName: dto.lastName,
-            resetUrl: dto.resetUrl,
-            requestedAt: dto.requestedAt,
-            ipAddress: dto.ipAddress,
-          },
-
-          sensitive: true,
-          category: 'SECURITY',
-          ttlSeconds: 15 * 60, // 15 minutes
-        },
-        {
-          dedupeKey: `password-reset:${dto.recipientUsername}:${dto.requestedAt}`,
-        },
-      );
-    });
-  }
-
-  async sendSecurityPasswordResetAlert(dto: SecurityPasswordResetAlertDTO): Promise<void> {
-    return withSpan(
-      this.tracer,
-      this.logger,
-      'notification.sendSecurityPasswordResetAlert',
-      async () => {
-        await this.create(
-          {
-            recipientUsername: 'omnixys-security',
-            // recipientId: undefined,
-            // TODO fix this!
-            recipientId: adminID,
-            recipientTenant: undefined,
-
-            templateKey: 'security.password.reset.requested',
-            channel: Channel.IN_APP,
-            locale: 'de-DE',
-
-            variables: {
-              username: dto.username,
-              email: dto.email,
-              requestedAt: dto.requestedAt,
-              ipAddress: dto.ipAddress,
-              alert: dto.alert,
-            },
-
-            sensitive: true,
-            category: 'SECURITY',
-          },
-          {
-            dedupeKey: `security-alert:password-reset:${dto.username}:${dto.requestedAt}`,
-          },
-        );
-      },
-    );
-  }
-
-  async markAsReadBulk(ids: string[]): Promise<void> {
-    if (ids.length === 0) {
-      return;
-    }
-
-    await this.prisma.notification.updateMany({
-      where: {
-        id: { in: ids },
-        status: { not: NotificationStatus.EXPIRED },
-      },
-      data: {
-        read: true,
-        readAt: new Date(),
-        status: NotificationStatus.SENT,
-      },
-    });
-  }
-
-  async archiveBulk(ids: string[]): Promise<void> {
-    if (ids.length === 0) {
-      return;
-    }
-
-    await this.prisma.notification.updateMany({
-      where: {
-        id: { in: ids },
-      },
-      data: {
-        status: NotificationStatus.ARCHIVED,
-        archivedAt: new Date(),
-      },
-    });
-  }
-
-  async deleteBulk(ids: string[]): Promise<void> {
-    if (ids.length === 0) {
-      return;
-    }
-
-    await this.prisma.notification.deleteMany({
-      where: {
-        id: { in: ids },
-      },
-    });
-  }
-
-  async delete(id: string): Promise<void> {
-    const existing = await this.prisma.notification.findUnique({
-      where: { id },
-    });
-
-    if (!existing) {
-      throw new NotFoundException('Notification not found');
-    }
-
-    await this.prisma.notification.delete({
-      where: { id },
-    });
-  }
-
-  async markAsUnread(id: string): Promise<void> {
-    const existing = await this.prisma.notification.findUnique({
-      where: { id },
-    });
-
-    if (!existing) {
-      throw new NotFoundException('Notification not found');
-    }
-
-    await this.prisma.notification.update({
-      where: { id },
-      data: {
-        read: false,
-        readAt: null,
-      },
-    });
-  }
-
-  async markAsUnreadBulk(ids: string[]): Promise<void> {
-    if (ids.length === 0) {
-      return;
-    }
-
-    await this.prisma.notification.updateMany({
-      where: {
-        id: { in: ids },
-      },
-      data: {
-        read: false,
-        readAt: null,
-      },
-    });
-  }
-
-  async unarchive(id: string): Promise<void> {
-    const existing = await this.prisma.notification.findUnique({
-      where: { id },
-    });
-
-    if (!existing) {
-      throw new NotFoundException('Notification not found');
-    }
-
-    await this.prisma.notification.update({
-      where: { id },
-      data: {
-        status: NotificationStatus.SENT,
-        archivedAt: null,
-      },
-    });
-  }
-
-  async unarchiveBulk(ids: string[]): Promise<void> {
-    if (ids.length === 0) {
-      return;
-    }
-
-    await this.prisma.notification.updateMany({
-      where: {
-        id: { in: ids },
-      },
-      data: {
-        status: NotificationStatus.SENT,
-        archivedAt: null,
-      },
+    // 5️⃣ Mark as sent
+    await this.markAsSent(notification.id, {
+      provider: 'resend',
     });
   }
 }

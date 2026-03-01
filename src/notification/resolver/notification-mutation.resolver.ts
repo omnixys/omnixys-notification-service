@@ -1,231 +1,118 @@
-import { ForbiddenException, UseGuards } from '@nestjs/common';
-import { Args, ID, Mutation, Resolver } from '@nestjs/graphql';
-
-import {
-  CurrentUser,
-  CurrentUserData,
-} from '../../auth/decorators/current-user.decorator.js';
-
-import { CookieAuthGuard } from '../../auth/guards/cookie-auth.guard.js';
-import { BulkSendInvitationsInput } from '../models/inputs/bulk-send-invitations.input.js';
-import { NotificationInput } from '../models/inputs/notify.input.js';
+import { LoggerPlus } from '../../logger/logger-plus.js';
+import { LoggerPlusService } from '../../logger/logger-plus.service.js';
+import { CreateNotificationInput } from '../models/inputs/create-notification.input.js';
+import { CreateUserInput } from '../models/inputs/create-user.input.js';
 import { NotificationMapper } from '../models/mappers/notification.mapper.js';
-import { BulkSendInvitationsPayload } from '../models/payloads/bulk-send-invitations.payload.js';
 import { NotificationPayload } from '../models/payloads/notification.payload.js';
-import { NotificationReadService } from '../services/notification-read.service.js';
 import { NotificationWriteService } from '../services/notification-write.service.js';
+import { Args, Mutation, Resolver } from '@nestjs/graphql';
 
 @Resolver()
 export class NotificationMutationResolver {
+  private readonly logger: LoggerPlus;
+
   constructor(
+    loggerService: LoggerPlusService,
     private readonly notificationWriteService: NotificationWriteService,
-    private readonly notificationReadService: NotificationReadService,
-  ) {}
+  ) {
+    this.logger = loggerService.getLogger(NotificationMutationResolver.name);
+  }
 
-  /**
-   * INTERNAL mutation.
-   * Must be protected by role/guard (e.g. SERVICE, ADMIN).
-   */
+  // ─────────────────────────────────────────────
+  // CREATE
+  // ─────────────────────────────────────────────
+
   @Mutation(() => NotificationPayload)
-  async notifyFromTemplate(
-    @Args('input') input: NotificationInput,
+  async createNotification(
+    @Args('input') input: CreateNotificationInput,
   ): Promise<NotificationPayload> {
-    const notification = await this.notificationWriteService.create(input);
+    this.logger.info(
+      'createNotification: recipient=%s',
+      input.recipientUsername,
+    );
 
-    return NotificationMapper.toPayload(notification);
+    const entity = await this.notificationWriteService.create({
+      ...input,
+    });
+
+    return NotificationMapper.toPayload(entity);
   }
 
-  @Mutation(() => Boolean)
-  @UseGuards(CookieAuthGuard)
+  // ─────────────────────────────────────────────
+  // MARK AS READ
+  // ─────────────────────────────────────────────
+
+  @Mutation(() => NotificationPayload)
   async markNotificationAsRead(
-    @Args('notificationId', { type: () => ID }) notificationId: string,
-    @CurrentUser() user: CurrentUserData,
-  ): Promise<boolean> {
-    const notification =
-      await this.notificationReadService.findById(notificationId);
-
-    if (notification.recipientId !== user.id) {
-      throw new ForbiddenException('Access denied');
-    }
-
-    await this.notificationWriteService.markAsRead(notificationId);
-    return true;
+    @Args('id') id: string,
+  ): Promise<NotificationPayload> {
+    const entity = await this.notificationWriteService.markAsRead(id);
+    return NotificationMapper.toPayload(entity);
   }
 
-  @Mutation(() => Boolean)
-  @UseGuards(CookieAuthGuard)
-  async archiveNotification(
-    @Args('notificationId', { type: () => ID }) notificationId: string,
-    @CurrentUser() user: CurrentUserData,
-  ): Promise<boolean> {
-    const notification =
-      await this.notificationReadService.findById(notificationId);
-
-    if (notification.recipientId !== user.id) {
-      throw new ForbiddenException('Access denied');
-    }
-
-    await this.notificationWriteService.archive(notificationId);
-    return true;
-  }
-
-  @Mutation(() => Boolean)
-  @UseGuards(CookieAuthGuard)
-  async deleteNotification(
-    @Args('notificationId', { type: () => ID }) notificationId: string,
-    @CurrentUser() user: CurrentUserData,
-  ): Promise<boolean> {
-    const notification =
-      await this.notificationReadService.findById(notificationId);
-
-    if (notification.recipientId !== user.id) {
-      throw new ForbiddenException('Access denied');
-    }
-
-    await this.notificationWriteService.delete(notificationId);
-    return true;
-  }
-
-  /* ------------------------------------------------------------------ */
-  /* BULK OPERATIONS                                                     */
-  /* ------------------------------------------------------------------ */
-
-  @Mutation(() => Boolean)
-  @UseGuards(CookieAuthGuard)
-  async markNotificationsAsReadBulk(
-    @Args({ name: 'notificationIds', type: () => [ID] })
-    notificationIds: string[],
-    @CurrentUser() user: CurrentUserData,
-  ): Promise<boolean> {
-    const notifications =
-      await this.notificationReadService.findByIds(notificationIds);
-
-    if (notifications.some((n) => n.recipientId !== user.id)) {
-      throw new ForbiddenException('Access denied');
-    }
-
-    await this.notificationWriteService.markAsReadBulk(notificationIds);
-
-    return true;
-  }
-
-  @Mutation(() => Boolean)
-  @UseGuards(CookieAuthGuard)
-  async archiveNotificationsBulk(
-    @Args({ name: 'notificationIds', type: () => [ID] })
-    notificationIds: string[],
-    @CurrentUser() user: CurrentUserData,
-  ): Promise<boolean> {
-    const notifications =
-      await this.notificationReadService.findByIds(notificationIds);
-
-    if (notifications.some((n) => n.recipientId !== user.id)) {
-      throw new ForbiddenException('Access denied');
-    }
-
-    await this.notificationWriteService.archiveBulk(notificationIds);
-
-    return true;
-  }
-
-  @Mutation(() => Boolean)
-  @UseGuards(CookieAuthGuard)
-  async deleteNotificationsBulk(
-    @Args({ name: 'notificationIds', type: () => [ID] })
-    notificationIds: string[],
-    @CurrentUser() user: CurrentUserData,
-  ): Promise<boolean> {
-    const notifications =
-      await this.notificationReadService.findByIds(notificationIds);
-
-    if (notifications.some((n) => n.recipientId !== user.id)) {
-      throw new ForbiddenException('Access denied');
-    }
-
-    await this.notificationWriteService.deleteBulk(notificationIds);
-
-    return true;
-  }
-
-  /**
-   * INTERNAL – used by Invitation / Event services
-   */
-  @Mutation(() => BulkSendInvitationsPayload)
-  @UseGuards(CookieAuthGuard)
-  async bulkSendInvitations(
-    @Args('input') input: BulkSendInvitationsInput,
-    @CurrentUser() user: CurrentUserData,
-  ): Promise<BulkSendInvitationsPayload> {
-    return this.notificationWriteService.bulkSendInvitation(input, user.id);
-  }
-
-  @Mutation(() => Boolean)
-  @UseGuards(CookieAuthGuard)
+  @Mutation(() => NotificationPayload)
   async markNotificationAsUnread(
-    @Args('notificationId', { type: () => ID }) notificationId: string,
-    @CurrentUser() user: CurrentUserData,
-  ): Promise<boolean> {
-    const notification =
-      await this.notificationReadService.findById(notificationId);
-
-    if (notification.recipientId !== user.id) {
-      throw new ForbiddenException('Access denied');
-    }
-
-    await this.notificationWriteService.markAsUnread(notificationId);
-    return true;
+    @Args('id') id: string,
+  ): Promise<NotificationPayload> {
+    const entity = await this.notificationWriteService.markAsUnread(id);
+    return NotificationMapper.toPayload(entity);
   }
 
-  @Mutation(() => Boolean)
-  @UseGuards(CookieAuthGuard)
-  async markNotificationsAsUnreadBulk(
-    @Args({ name: 'notificationIds', type: () => [ID] })
-    notificationIds: string[],
-    @CurrentUser() user: CurrentUserData,
-  ): Promise<boolean> {
-    const notifications =
-      await this.notificationReadService.findByIds(notificationIds);
+  // ─────────────────────────────────────────────
+  // ARCHIVE
+  // ─────────────────────────────────────────────
 
-    if (notifications.some((n) => n.recipientId !== user.id)) {
-      throw new ForbiddenException('Access denied');
-    }
-
-    await this.notificationWriteService.markAsUnreadBulk(notificationIds);
-    return true;
+  @Mutation(() => NotificationPayload)
+  async archiveNotification(
+    @Args('id') id: string,
+  ): Promise<NotificationPayload> {
+    const entity = await this.notificationWriteService.archive(id);
+    return NotificationMapper.toPayload(entity);
   }
 
-  @Mutation(() => Boolean)
-  @UseGuards(CookieAuthGuard)
+  @Mutation(() => NotificationPayload)
   async unarchiveNotification(
-    @Args('notificationId', { type: () => ID }) notificationId: string,
-    @CurrentUser() user: CurrentUserData,
-  ): Promise<boolean> {
-    const notification =
-      await this.notificationReadService.findById(notificationId);
+    @Args('id') id: string,
+  ): Promise<NotificationPayload> {
+    const entity = await this.notificationWriteService.unarchive(id);
+    return NotificationMapper.toPayload(entity);
+  }
 
-    if (notification.recipientId !== user.id) {
-      throw new ForbiddenException('Access denied');
-    }
+  // ─────────────────────────────────────────────
+  // CANCEL
+  // ─────────────────────────────────────────────
 
-    await this.notificationWriteService.unarchive(notificationId);
+  @Mutation(() => NotificationPayload)
+  async cancelNotification(
+    @Args('id') id: string,
+  ): Promise<NotificationPayload> {
+    const entity = await this.notificationWriteService.cancel(id);
+    return NotificationMapper.toPayload(entity);
+  }
+
+  // ─────────────────────────────────────────────
+  // DELETE
+  // ─────────────────────────────────────────────
+
+  @Mutation(() => Boolean)
+  async deleteNotification(@Args('id') id: string): Promise<boolean> {
+    await this.notificationWriteService.delete(id);
     return true;
   }
 
   @Mutation(() => Boolean)
-  @UseGuards(CookieAuthGuard)
-  async unarchiveNotificationsBulk(
-    @Args({ name: 'notificationIds', type: () => [ID] })
-    notificationIds: string[],
-    @CurrentUser() user: CurrentUserData,
+  async createSignupVerification(
+    @Args('createUserInput') createUserInput: CreateUserInput, // replace with real type
   ): Promise<boolean> {
-    const notifications =
-      await this.notificationReadService.findByIds(notificationIds);
+    this.logger.info(
+      'createSignupVerification: username=%s',
+      createUserInput.username,
+    );
 
-    if (notifications.some((n) => n.recipientId !== user.id)) {
-      throw new ForbiddenException('Access denied');
-    }
+    await this.notificationWriteService.createSignupVerification(
+      createUserInput,
+    );
 
-    await this.notificationWriteService.unarchiveBulk(notificationIds);
     return true;
   }
 }

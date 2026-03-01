@@ -11,7 +11,7 @@ export enum Channel {
 registerEnumType(Channel, { name: 'Channel' });
 
 export function toPrismaModelChannel(
-  channel: Channel | undefined,
+  channel: Channel | PrismaChannel | undefined,
 ): PrismaChannel {
   return channel as PrismaChannel;
 }

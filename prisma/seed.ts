@@ -1,285 +1,340 @@
-import { PrismaClient } from '../src/prisma/generated/client.js';
+import { Channel, ContentFormat, PrismaClient } from '../src/prisma/generated/client.js';
 import { PrismaPg } from '@prisma/adapter-pg';
+
 import 'dotenv/config';
 
-const adapter = new PrismaPg({
-  connectionString: process.env.DATABASE_URL!,
-});
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
 
-async function main(): Promise<void> {
-  console.log('🚀 Starte Notification-Seed...');
+async function ensureTemplate(tenantId: string, key: string, channel: Channel) {
+  return prisma.template.upsert({
+    where: {
+      tenantId_key_channel: {
+        tenantId,
+        key,
+        channel,
+      },
+    },
+    update: {},
+    create: {
+      tenantId,
+      key,
+      channel,
+      tags: [],
+    },
+  });
+}
 
+async function ensureVersion(
+  templateId: string,
+  locale: string,
+  version: number,
+  subject: string | null,
+  body: string,
+  format: ContentFormat,
+  variables: any,
+) {
+  return prisma.templateVersion.upsert({
+    where: {
+      templateId_locale_version: {
+        templateId,
+        locale,
+        version,
+      },
+    },
+    update: {
+      isActive: true,
+    },
+    create: {
+      templateId,
+      locale,
+      version,
+      subject,
+      body,
+      format,
+      variables,
+      isActive: true,
+    },
+  });
+}
+
+async function main(): Promise<void> {
+  console.log('🚀 Starte Notification-Seed (neues Schema)...');
+
+  // ─────────────────────────────────────────────
+  // Tenant
+  // ─────────────────────────────────────────────
+  const tenant = await prisma.tenant.upsert({
+    where: { id: 'omnixys' },
+    update: {},
+    create: {
+      id: 'omnixys',
+      name: 'Omnixys Tenant',
+    },
+  });
+
+  // =========================================================
+  // ACCOUNT CREDENTIALS CREATED (IN_APP)
+  // =========================================================
+  const accountTemplate = await ensureTemplate(
+    tenant.id,
+    'account.credentials.created',
+    Channel.IN_APP,
+  );
+
+  await ensureVersion(
+    accountTemplate.id,
+    'de-DE',
+    1,
+    null,
+    `
+Willkommen, {{firstName}}
+
+Dein Benutzername: {{username}}
+Dein Passwort: {{password}}
+
+Bitte ändere dein Passwort nach dem Login.
+    `,
+    ContentFormat.TEXT,
+    {
+      firstName: 'string',
+      username: 'string',
+      password: { type: 'string', sensitive: true },
+    },
+  );
+
+  // =========================================================
+  // INVITATION – EMAIL
+  // =========================================================
+  const inviteEmailTemplate = await ensureTemplate(
+    tenant.id,
+    'invitation.event.invite',
+    Channel.EMAIL,
+  );
+
+  await ensureVersion(
+    inviteEmailTemplate.id,
+    'de-DE',
+    1,
+    'Einladung: {{eventName}}',
+    `
+Hallo {{firstName}},
+
+du bist herzlich eingeladen zu:
+
+📅 {{eventName}}
+🕒 {{eventDate}}
+📍 {{eventLocation}}
+
+Bitte bestätige deine Teilnahme hier:
+{{rsvpUrl}}
+
+Wir freuen uns auf dich!
+— {{hostName}}
+    `,
+    ContentFormat.TEXT,
+    {
+      firstName: 'string',
+      eventName: 'string',
+      eventDate: 'string',
+      eventLocation: 'string',
+      rsvpUrl: 'string',
+      hostName: 'string',
+    },
+  );
+
+  // =========================================================
+  // INVITATION – WHATSAPP
+  // =========================================================
+  const inviteWhatsappTemplate = await ensureTemplate(
+    tenant.id,
+    'invitation.event.invite',
+    Channel.WHATSAPP,
+  );
+
+  await ensureVersion(
+    inviteWhatsappTemplate.id,
+    'de-DE',
+    1,
+    null,
+    `
+Hallo {{firstName}} 👋
+Du bist eingeladen zu *{{eventName}}* 🎉
+
+📅 {{eventDate}}
+📍 {{eventLocation}}
+
+👉 Teilnahme bestätigen:
+{{rsvpUrl}}
+    `,
+    ContentFormat.TEXT,
+    {
+      firstName: 'string',
+      eventName: 'string',
+      eventDate: 'string',
+      eventLocation: 'string',
+      rsvpUrl: 'string',
+    },
+  );
+
+  // =========================================================
+  // PASSWORD RESET – EMAIL
+  // =========================================================
+  const passwordResetTemplate = await ensureTemplate(
+    tenant.id,
+    'account.password.reset.requested',
+    Channel.EMAIL,
+  );
+
+  await ensureVersion(
+    passwordResetTemplate.id,
+    'de-DE',
+    1,
+    'Passwort zurücksetzen bestätigen',
+    `
+Hallo {{firstName}},
+
+du hast eine Anfrage zum Zurücksetzen deines Passworts gestellt.
+
+🕒 Zeitpunkt: {{requestedAt}}
+
+👉 Hier Passwort zurücksetzen:
+{{resetUrl}}
+
+Falls du diese Anfrage nicht gestellt hast, ignoriere diese E-Mail.
+    `,
+    ContentFormat.TEXT,
+    {
+      firstName: 'string',
+      requestedAt: 'string',
+      resetUrl: { type: 'string', sensitive: true },
+    },
+  );
+
+  console.log('🌱 Seeding sign-up-verification template...');
+
+  // ─────────────────────────────────────────────
+  // Create template (EMAIL)
+  // ─────────────────────────────────────────────
   const template = await prisma.template.upsert({
     where: {
-      key_channel_locale_version: {
-        key: 'account.credentials.created',
-        channel: 'IN_APP',
-        locale: 'de-DE',
-        version: 1,
+      tenantId_key_channel: {
+        tenantId: tenant.id,
+        key: 'sign-up-verification',
+        channel: Channel.EMAIL,
       },
     },
     update: {},
     create: {
-      key: 'account.credentials.created',
-      title: 'Willkommen, {{firstName}}',
-      body:
-        'Dein Benutzername: {{username}}\n' +
-        'Dein Passwort: {{password}}\n' +
-        'Bitte ändere dein Passwort nach dem Login.',
-
-      // ✅ CORRECT: VariableSchema, Prisma-safe JSON
-      variables: {
-        firstName: { required: true, type: 'string' },
-        username: { required: true, type: 'string' },
-        password: { required: true, type: 'string', sensitive: true },
-      },
-
-      channel: 'IN_APP',
-      category: 'ACCOUNT',
-      isActive: true,
-      version: 1,
-      tags: ['credentials', 'onboarding'],
+      tenantId: tenant.id,
+      key: 'sign-up-verification',
+      channel: Channel.EMAIL,
+      tags: ['signup', 'verification', 'auth'],
     },
   });
 
-  console.log('✅ Notification-Seed abgeschlossen. ID=%s', template.id);
-
-  /* ---------------------------------------------------------
-   * INVITATION – EMAIL (Standard)
-   * ------------------------------------------------------- */
-  await prisma.template.upsert({
+  // ─────────────────────────────────────────────
+  // German Version
+  // ─────────────────────────────────────────────
+  await prisma.templateVersion.upsert({
     where: {
-      key_channel_locale_version: {
-        key: 'invitation.event.invite',
-        channel: 'EMAIL',
+      templateId_locale_version: {
+        templateId: template.id,
         locale: 'de-DE',
         version: 1,
       },
     },
-    update: {},
-    create: {
-      key: 'invitation.event.invite',
-      title: 'Einladung: {{eventName}}',
-      body:
-        'Hallo {{firstName}},\n\n' +
-        'du bist herzlich eingeladen zu:\n\n' +
-        '📅 {{eventName}}\n' +
-        '🕒 {{eventDate}}\n' +
-        '📍 {{eventLocation}}\n\n' +
-        'Bitte bestätige deine Teilnahme hier:\n' +
-        '{{rsvpUrl}}\n\n' +
-        'Wir freuen uns auf dich!\n\n' +
-        '— {{hostName}}',
-
-      variables: {
-        firstName: { required: true, type: 'string' },
-        eventName: { required: true, type: 'string' },
-        eventDate: { required: true, type: 'string' },
-        eventLocation: { required: true, type: 'string' },
-        rsvpUrl: { required: true, type: 'url' },
-        hostName: { required: true, type: 'string' },
-      },
-
-      channel: 'EMAIL',
-      category: 'INVITATION',
+    update: {
       isActive: true,
+    },
+    create: {
+      templateId: template.id,
+      locale: 'de-DE',
       version: 1,
-      tags: ['invitation', 'email', 'rsvp'],
+      subject: 'Bitte bestätige dein Omnixys Konto',
+      body: `
+<p>Hallo {{firstName}} {{lastName}},</p>
+
+<p>vielen Dank für deine Registrierung bei <strong>Omnixys</strong>.</p>
+
+<p>Bitte bestätige dein Konto, indem du auf folgenden Link klickst:</p>
+
+<p>
+  <a href="{{verifyUrl}}" target="_blank">
+    Konto jetzt bestätigen
+  </a>
+</p>
+
+<p>Dieser Link ist {{expiresInMinutes}} Minuten gültig.</p>
+
+<p>Falls du dich nicht registriert hast, kannst du diese E-Mail ignorieren.</p>
+
+<p>Viele Grüße<br/>Dein Omnixys Team</p>
+      `,
+      format: ContentFormat.HTML,
+      variables: {
+        firstName: 'string',
+        lastName: 'string',
+        username: 'string',
+        verifyUrl: 'string',
+        expiresInMinutes: 'number',
+      },
+      isActive: true,
     },
   });
 
-  /* ---------------------------------------------------------
-   * INVITATION – WHATSAPP (Kurzform)
-   * ------------------------------------------------------- */
-  await prisma.template.upsert({
+  // ─────────────────────────────────────────────
+  // English Version
+  // ─────────────────────────────────────────────
+  await prisma.templateVersion.upsert({
     where: {
-      key_channel_locale_version: {
-        key: 'invitation.event.invite',
-        channel: 'WHATSAPP',
-        locale: 'de-DE',
+      templateId_locale_version: {
+        templateId: template.id,
+        locale: 'en-US',
         version: 1,
       },
     },
-    update: {},
-    create: {
-      key: 'invitation.event.invite',
-      body:
-        'Hallo {{firstName}} 👋\n' +
-        'Du bist eingeladen zu *{{eventName}}* 🎉\n\n' +
-        '📅 {{eventDate}}\n' +
-        '📍 {{eventLocation}}\n\n' +
-        '👉 Teilnahme bestätigen:\n{{rsvpUrl}}',
-
-      variables: {
-        firstName: { required: true, type: 'string' },
-        eventName: { required: true, type: 'string' },
-        eventDate: { required: true, type: 'string' },
-        eventLocation: { required: true, type: 'string' },
-        rsvpUrl: { required: true, type: 'url' },
-      },
-
-      channel: 'WHATSAPP',
-      category: 'INVITATION',
+    update: {
       isActive: true,
+    },
+    create: {
+      templateId: template.id,
+      locale: 'en-US',
       version: 1,
-      tags: ['invitation', 'whatsapp', 'rsvp'],
+      subject: 'Please verify your Omnixys account',
+      body: `
+<p>Hello {{firstName}} {{lastName}},</p>
+
+<p>Thank you for registering at <strong>Omnixys</strong>.</p>
+
+<p>Please verify your account by clicking the link below:</p>
+
+<p>
+  <a href="{{verifyUrl}}" target="_blank">
+    Verify account now
+  </a>
+</p>
+
+<p>This link expires in {{expiresInMinutes}} minutes.</p>
+
+<p>If you did not create this account, you may safely ignore this email.</p>
+
+<p>Best regards,<br/>The Omnixys Team</p>
+      `,
+      format: ContentFormat.HTML,
+      variables: {
+        firstName: 'string',
+        lastName: 'string',
+        username: 'string',
+        verifyUrl: 'string',
+        expiresInMinutes: 'number',
+      },
+      isActive: true,
     },
   });
 
-  /* ---------------------------------------------------------
-   * RSVP CONFIRMATION – EMAIL
-   * ------------------------------------------------------- */
-  await prisma.template.upsert({
-    where: {
-      key_channel_locale_version: {
-        key: 'invitation.rsvp.confirmed',
-        channel: 'EMAIL',
-        locale: 'de-DE',
-        version: 1,
-      },
-    },
-    update: {},
-    create: {
-      key: 'invitation.rsvp.confirmed',
-      title: 'Teilnahme bestätigt – {{eventName}}',
-      body:
-        'Hallo {{firstName}},\n\n' +
-        'vielen Dank für deine Rückmeldung.\n' +
-        'Deine Teilnahme an *{{eventName}}* ist bestätigt.\n\n' +
-        '🎟 Dein Ticket:\n{{ticketUrl}}\n\n' +
-        'Bis bald!\n— {{hostName}}',
-
-      variables: {
-        firstName: { required: true, type: 'string' },
-        eventName: { required: true, type: 'string' },
-        ticketUrl: { required: true, type: 'url', sensitive: true },
-        hostName: { required: true, type: 'string' },
-      },
-
-      channel: 'EMAIL',
-      category: 'INVITATION',
-      isActive: true,
-      version: 1,
-      tags: ['rsvp', 'confirmation', 'ticket'],
-    },
-  });
-
-  /* ---------------------------------------------------------
-   * EVENT REMINDER – WHATSAPP
-   * ------------------------------------------------------- */
-  await prisma.template.upsert({
-    where: {
-      key_channel_locale_version: {
-        key: 'invitation.event.reminder',
-        channel: 'WHATSAPP',
-        locale: 'de-DE',
-        version: 1,
-      },
-    },
-    update: {},
-    create: {
-      key: 'invitation.event.reminder',
-      body:
-        '⏰ Erinnerung\n\n' +
-        '*{{eventName}}* startet bald!\n' +
-        '📅 {{eventDate}}\n' +
-        '📍 {{eventLocation}}\n\n' +
-        '🎟 Dein Ticket:\n{{ticketUrl}}',
-
-      variables: {
-        eventName: { required: true, type: 'string' },
-        eventDate: { required: true, type: 'string' },
-        eventLocation: { required: true, type: 'string' },
-        ticketUrl: { required: true, type: 'url', sensitive: true },
-      },
-
-      channel: 'WHATSAPP',
-      category: 'REMINDER',
-      isActive: true,
-      version: 1,
-      tags: ['reminder', 'whatsapp', 'event'],
-    },
-  });
-
-  console.log('✅ Notification Templates erfolgreich geseedet');
-
-  /* ---------------------------------------------------------
-   * PASSWORD RESET – EMAIL (User Confirmation)
-   * ------------------------------------------------------- */
-  await prisma.template.upsert({
-    where: {
-      key_channel_locale_version: {
-        key: 'account.password.reset.requested',
-        channel: 'EMAIL',
-        locale: 'de-DE',
-        version: 1,
-      },
-    },
-    update: {},
-    create: {
-      key: 'account.password.reset.requested',
-      title: 'Passwort zurücksetzen bestätigen',
-      body:
-        'Hallo {{firstName}},\n\n' +
-        'du hast eine Anfrage zum Zurücksetzen deines Passworts gestellt.\n\n' +
-        '🕒 Zeitpunkt: {{requestedAt}}\n' +
-        '👉 Wenn du dein Passwort jetzt ändern möchtest, klicke bitte auf den folgenden Link:\n' +
-        '{{resetUrl}}\n\n' +
-        'Wenn du diese Anfrage nicht selbst gestellt hast, ignoriere diese E-Mail bitte.\n' +
-        'Dein Passwort bleibt dann unverändert.\n\n' +
-        '— Omnixys Security Team',
-
-      variables: {
-        firstName: { required: true, type: 'string' },
-        requestedAt: { required: true, type: 'string' },
-        resetUrl: { required: true, type: 'url', sensitive: true },
-      },
-
-      channel: 'EMAIL',
-      category: 'SECURITY',
-      isActive: true,
-      version: 1,
-      tags: ['password-reset', 'security', 'email'],
-    },
-  });
-
-  /* ---------------------------------------------------------
-   * PASSWORD RESET – SECURITY ALERT (Omnixys Team)
-   * ------------------------------------------------------- */
-  await prisma.template.upsert({
-    where: {
-      key_channel_locale_version: {
-        key: 'security.password.reset.requested',
-        channel: 'IN_APP',
-        locale: 'de-DE',
-        version: 1,
-      },
-    },
-    update: {},
-    create: {
-      key: 'security.password.reset.requested',
-      title: 'Security Alert: Passwort-Reset angefordert',
-      body:
-        'Ein Passwort-Reset wurde angefordert.\n\n' +
-        '👤 Benutzer: {{username}}\n' +
-        '📧 E-Mail: {{email}}\n' +
-        '🕒 Zeitpunkt: {{requestedAt}}\n' +
-        'Bitte prüfen, falls ungewöhnliche Aktivität vorliegt.',
-
-      variables: {
-        username: { required: true, type: 'string' },
-        email: { required: true, type: 'string', sensitive: true },
-        requestedAt: { required: true, type: 'string' },
-      },
-
-      channel: 'IN_APP',
-      category: 'SECURITY',
-      isActive: true,
-      version: 1,
-      tags: ['security', 'alert', 'password-reset'],
-    },
-  });
+  console.log('✅ sign-up-verification template seeded successfully');
+  console.log('✅ Templates erfolgreich im neuen Schema geseedet');
 }
 
 main()

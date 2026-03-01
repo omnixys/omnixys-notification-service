@@ -1,30 +1,44 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 // src/template/models/mappers/template.mapper.ts
 
-import type { Channel } from '../../../notification/models/enums/channel.enum.js';
-import type { VariableSchema } from '../../../notification/utils/notification.renderer.js';
-import type { Template } from '../../../prisma/generated/client.js';
+import type {
+  Template,
+  TemplateVersion,
+} from '../../../prisma/generated/client.js';
 import type { TemplatePayload } from '../payloads/template.payload.js';
 
 export class TemplateMapper {
-  static toPayload(entity: Template): TemplatePayload {
+  static toPayload(input: {
+    template: Template;
+    version: TemplateVersion;
+  }): TemplatePayload {
+    const { template, version } = input;
+
     return {
-      id: entity.id,
-      key: entity.key,
-      channel: entity.channel as Channel,
-      locale: entity.locale,
-      title: entity.title ?? undefined,
-      body: entity.body,
-      variables: entity.variables as VariableSchema,
-      category: entity.category ?? undefined,
-      isActive: entity.isActive,
-      version: entity.version,
-      tags: entity.tags ?? [],
-      createdAt: entity.createdAt,
-      updatedAt: entity.updatedAt,
+      id: template.id,
+      key: template.key,
+      channel: template.channel as any,
+
+      locale: version.locale,
+      subject: version.subject ?? undefined,
+      body: version.body,
+      format: version.format as any,
+      variables: version.variables as Record<string, any>,
+
+      version: version.version,
+      isActive: version.isActive,
+
+      tags: template.tags ?? [],
+      createdAt: template.createdAt,
+      updatedAt: template.updatedAt,
     };
   }
 
-  static toPayloadList(entities: Template[]): TemplatePayload[] {
-    return entities.map((e) => this.toPayload(e));
+  static toPayloadList(
+    list: Array<{ template: Template; version: TemplateVersion }>,
+  ): TemplatePayload[] {
+    return list.map((item) => this.toPayload(item));
   }
 }

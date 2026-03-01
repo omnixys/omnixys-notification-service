@@ -1,83 +1,74 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
-
-import {
-  CurrentUser,
-  CurrentUserData,
-} from '../../auth/decorators/current-user.decorator.js';
-import { CookieAuthGuard } from '../../auth/guards/cookie-auth.guard.js';
+import { LoggerPlus } from '../../logger/logger-plus.js';
 import { LoggerPlusService } from '../../logger/logger-plus.service.js';
-import {
-  ListAllNotificationsInput,
-  ListNotificationsInput,
-} from '../models/inputs/inputs.js';
-import {
-  NotificationPagePayload,
-  NotificationPayload,
-} from '../models/payloads/notification.payload.js';
+import { Args, Int, Query, Resolver } from '@nestjs/graphql';
+
+import { NotificationFilterInput } from '../models/inputs/notification-filter.input.js';
+import { NotificationMapper } from '../models/mappers/notification.mapper.js';
+import { NotificationPayload } from '../models/payloads/notification.payload.js';
 import { NotificationReadService } from '../services/notification-read.service.js';
-import { ForbiddenException, UseGuards } from '@nestjs/common';
-import { Args, ID, Query, Resolver } from '@nestjs/graphql';
 
 @Resolver()
 export class NotificationQueryResolver {
-  private readonly logger;
+  private readonly logger: LoggerPlus;
 
   constructor(
-    private readonly loggerService: LoggerPlusService,
+    loggerService: LoggerPlusService,
     private readonly notificationReadService: NotificationReadService,
   ) {
-    this.logger = this.loggerService.getLogger(NotificationQueryResolver.name);
+    this.logger = loggerService.getLogger(NotificationQueryResolver.name);
   }
 
-  @Query(() => NotificationPayload, { nullable: true })
-  @UseGuards(CookieAuthGuard)
-  async notification(
-    @Args('id', { type: () => ID }) id: string,
-    @CurrentUser() user: CurrentUserData,
-  ) {
-    void this.logger.debug('notificationById: id=%s', id);
+  // ─────────────────────────────────────────────
+  // FIND BY ID
+  // ─────────────────────────────────────────────
 
-    const notification = await this.notificationReadService.findById(id);
+  @Query(() => NotificationPayload)
+  async notification(@Args('id') id: string): Promise<NotificationPayload> {
+    this.logger.debug('notification: id=%s', id);
 
-    if (notification.recipientId !== user.id) {
-      throw new ForbiddenException('Access denied');
-    }
-
-    return notification;
+    const entity = await this.notificationReadService.findById(id);
+    return NotificationMapper.toPayload(entity);
   }
+
+  // ─────────────────────────────────────────────
+  // GENERIC FIND WITH FILTER
+  // ─────────────────────────────────────────────
 
   @Query(() => [NotificationPayload])
-  @UseGuards(CookieAuthGuard)
-  async myNotifications(
-    @CurrentUser() user: CurrentUserData,
+  async notifications(
+    @Args('filter', { nullable: true }) filter?: NotificationFilterInput,
+    @Args('limit', { type: () => Int, nullable: true }) limit?: number,
   ): Promise<NotificationPayload[]> {
-    void this.logger.debug('notificationByUser: user=%o', user);
-    const notifications = await this.notificationReadService.findByUser(
-      user.id,
+    this.logger.debug('notifications: filter=%o limit=%s', filter, limit);
+
+    const entities = await this.notificationReadService.find(
+      filter,
+      limit ?? 50,
     );
-    void this.logger.debug(
-      'notificationByUser: notifications=%o',
-      notifications,
-    );
-    return notifications;
+
+    return NotificationMapper.toPayloadList(entities);
   }
 
-  @Query(() => NotificationPagePayload)
-  async notificationsPaged(
-    @Args('input') input: ListAllNotificationsInput,
-  ): Promise<NotificationPagePayload> {
-    const result = await this.notificationReadService.findConnection(input);
-    return result;
-  }
+  // ─────────────────────────────────────────────
+  // FIND BY USER ID
+  // ─────────────────────────────────────────────
 
-  @Query(() => NotificationPagePayload)
-  async myNotificationsPaged(
-    @Args('input') input: ListNotificationsInput,
-    @CurrentUser() user: CurrentUserData,
-  ): Promise<NotificationPagePayload> {
-    return this.notificationReadService.findConnectionForUser({
-      ...input,
-      recipientUsername: user.username,
-    });
+  @Query(() => [NotificationPayload])
+  async myNotifications(
+    @Args('recipientId') recipientId: string,
+    @Args('limit', { type: () => Int, nullable: true }) limit?: number,
+  ): Promise<NotificationPayload[]> {
+    this.logger.debug(
+      'notificationsByUser: recipientId=%s limit=%s',
+      recipientId,
+      limit,
+    );
+
+    const entities = await this.notificationReadService.findByUserId(
+      recipientId,
+      limit ?? 50,
+    );
+
+    return NotificationMapper.toPayloadList(entities);
   }
 }

@@ -1,27 +1,46 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+// src/notification/models/mappers/notification.mapper.ts
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import type { Notification } from '../../../prisma/generated/client.js';
-import type { Channel } from '../enums/channel.enum.js';
-import type { NotificationStatus } from '../enums/notification-status.enum.js';
-import type { Priority } from '../enums/priority.enum.js';
 import type { NotificationPayload } from '../payloads/notification.payload.js';
 
 export class NotificationMapper {
   static toPayload(entity: Notification): NotificationPayload {
     return {
       id: entity.id,
+      tenantId: entity.tenantId ?? undefined,
+
       recipientUsername: entity.recipientUsername,
       recipientId: entity.recipientId ?? undefined,
-      channel: entity.channel as Channel,
-      priority: entity.priority as Priority,
-      status: entity.status as NotificationStatus,
-      renderedTitle: entity.renderedTitle ?? undefined,
-      renderedBody: entity.renderedBody,
-      linkUrl: entity.linkUrl ?? undefined,
-      read: entity.read,
+      recipientAddress: entity.recipientAddress ?? undefined,
+
+      channel: entity.channel as any,
+      priority: entity.priority as any,
+      status: entity.status as any,
+
+      variables: entity.variables as Record<string, unknown>,
+      metadata: entity.metadata as Record<string, unknown>,
+
+      sensitive: entity.sensitive,
+
+      readAt: entity.readAt ?? undefined,
+      deliveredAt: entity.deliveredAt ?? undefined,
+      expiresAt: entity.expiresAt ?? undefined,
+      archivedAt: entity.archivedAt ?? undefined,
+      purgedAt: entity.purgedAt ?? undefined,
+
+      createdBy: entity.createdBy ?? undefined,
+      provider: entity.provider ?? undefined,
+      providerRef: entity.providerRef ?? undefined,
+
       createdAt: entity.createdAt,
+      updatedAt: entity.updatedAt,
     };
   }
 
-  static toPayloadList(list: Notification[]): NotificationPayload[] {
-    return list.map((x) => this.toPayload(x));
+  static toPayloadList(entities: Notification[]): NotificationPayload[] {
+    return entities.map((e) => this.toPayload(e));
   }
 }

@@ -37,7 +37,7 @@ permissions:
 
 env:
   COSIGN_EXPERIMENTAL: 'true'
-  IMAGE_NAME: ${{ secrets.DOCKER_USER }}/${{ secrets.SERVICE }}-service
+  IMAGE_NAME: ${{ secrets.DOCKER_USER }}/${{ vars.SERVICE }}-service
   IMAGE_NAME_REPOSITORY: ghcr.io/${{ github.repository }}
   CURRENT_VERSION: ${{ vars.CURRENT_VERSION }}
 
@@ -62,7 +62,7 @@ env:
   KC_CLIENT_SECRET: ${{ secrets.KC_CLIENT_SECRET }}
 
   KEYS_PATH: ${{ secrets.KEYS_PATH }}
-  SERVICE: ${{ secrets.SERVICE }}
+  SERVICE: ${{ vars.SERVICE }}
   PORT: ${{ secrets.PORT }}
   GRAPHQL_PLAYGROUND: ${{ secrets.GRAPHQL_PLAYGROUND }}
   NODE_ENV: ${{ secrets.NODE_ENV }}
@@ -79,7 +79,7 @@ env:
 
 jobs:
   push-docker:
-    # if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     name: 🐳 Build & Push Multi-Arch Images (Docker)
     runs-on: ubuntu-latest
     strategy:
@@ -89,6 +89,21 @@ jobs:
     steps:
       - name: 🧾 Checkout repository
         uses: actions/checkout@v4
+
+      - name: 🔎 Check if Docker tag already exists
+        id: check_tag
+        run: |
+          set -e
+
+          echo "Checking if tag exists: $IMAGE_NAME:${CURRENT_VERSION}"
+
+          if docker manifest inspect "$IMAGE_NAME:${CURRENT_VERSION}" > /dev/null 2>&1; then
+            echo "Tag exists → skipping build"
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "Tag does not exist → build required"
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -128,7 +143,7 @@ jobs:
             REVISION=${{ github.sha }}
             CREATED=${{ env.CURRENT_DATE }}
             APP_VERSION=${{ env.CURRENT_VERSION }}
-            APP_NAME=${{ secrets.SERVICE }}
+            APP_NAME=${{ vars.SERVICE }}
             NODE_VERSION=${{ matrix.node-version }}
             DATABASE_URL=${{ env.DATABASE_URL }}
             SHADOW_DATABASE_URL=${{ env.SHADOW_DATABASE_URL }}
@@ -144,7 +159,7 @@ jobs:
           cosign sign --yes --recursive ${{ env.IMAGE_NAME }}:latest
 
   push-github:
-    # if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     name: 🐳 Build & Push Multi-Arch Images (Github)
     runs-on: ubuntu-latest
     strategy:
@@ -154,6 +169,21 @@ jobs:
     steps:
       - name: 🧾 Checkout repository
         uses: actions/checkout@v4
+
+      - name: 🔎 Check if Docker tag already exists
+        id: check_tag
+        run: |
+          set -e
+
+          echo "Checking if tag exists: $IMAGE_NAME:${CURRENT_VERSION}"
+
+          if docker manifest inspect "$IMAGE_NAME:${CURRENT_VERSION}" > /dev/null 2>&1; then
+            echo "Tag exists → skipping build"
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "Tag does not exist → build required"
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -194,7 +224,7 @@ jobs:
             REVISION=${{ github.sha }}
             CREATED=${{ env.CURRENT_DATE }}
             APP_VERSION=${{ env.CURRENT_VERSION }}
-            APP_NAME=${{ secrets.SERVICE }}
+            APP_NAME=${{ vars.SERVICE }}
             NODE_VERSION=${{ matrix.node-version }}
             DATABASE_URL=${{ env.DATABASE_URL }}
             SHADOW_DATABASE_URL=${{ env.SHADOW_DATABASE_URL }}

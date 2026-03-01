@@ -1,7 +1,5 @@
 import { ScalarsModule } from '../core/scalars/scalar.module.js';
-import { KafkaModule } from '../messaging/kafka.module.js';
-import { EmailNotificationProvider } from '../notification/providers/email/email.provider.js';
-import { WhatsAppNotificationProvider } from '../notification/providers/whatsapp/whatsapp.provider.js';
+import { KafkaModule } from '../kafka/kafka.module.js';
 import { PrismaModule } from '../prisma/prisma.module.js';
 import { TemplateMutationResolver } from './resolvers/template-mutation.resolver.js';
 import { TemplateQueryResolver } from './resolvers/template-query.resolver.js';
@@ -16,8 +14,6 @@ import { Module } from '@nestjs/common';
     TemplateMutationResolver,
     TemplateReadService,
     TemplateWriteService,
-    EmailNotificationProvider,
-    WhatsAppNotificationProvider,
   ],
   exports: [TemplateReadService, TemplateWriteService],
 })

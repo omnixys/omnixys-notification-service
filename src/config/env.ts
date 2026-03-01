@@ -94,9 +94,10 @@ export const env = {
   SMTP_PASS: process.env.SMTP_PASS ?? '',
 
   WHATSAPP_PHONE_ID: process.env.WHATSAPP_PHONE_ID ?? '',
-  WHATSAPP_TOKEN:
-    process.env.WHATSAPP_TOKEN ??
-    'EAAbcdKumlAkBQOG1UetZAANeympwY6lwhQWdgBXZAFhNgJQPReiZBLrEkvvghHnw1UhaF9daHiZCQSiTjpepDpuOZBZAdbQD7ZCjssFPcQJogxru7xXtgeTEK5vTunIZCDv7C5GAsEnipMhvzCzVJtZCMwb01FRHLkWjmqmMMavmY6gx6iBJWzelHV3gMJscdPLD4vcNyEohrnw82lQKzApMa2uiktN7AifsN2KNK8TMxTy0v0ZCHSS0LfTj9KahgUL9d1G4N6nruknCeYfl72PN8XcG0I',
+  WHATSAPP_TOKEN: process.env.WHATSAPP_TOKEN ?? 'd',
+  RESEND_API_KEY: process.env.RESEND_API_KEY ?? 'sdf',
+  VALKEY_URL: process.env.VALKEY_URL ?? '',
+  VALKEY_PASSWORD: process.env.VALKEY_PASSWORD ?? '',
 } as const;
 
 // /**

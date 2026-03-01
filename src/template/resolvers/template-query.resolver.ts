@@ -4,12 +4,9 @@ import { LoggerPlus } from '../../logger/logger-plus.js';
 import { LoggerPlusService } from '../../logger/logger-plus.service.js';
 
 import { Channel } from '../../notification/models/enums/channel.enum.js';
+import { TemplateMapper } from '../models/mappers/template.mapper.js';
 import { TemplatePayload } from '../models/payloads/template.payload.js';
 import { TemplateReadService } from '../services/template-read.service.js';
-
-// Optional: Admin guard
-// import { RolesGuard } from '../../auth/guards/roles.guard';
-// import { Roles } from '../../auth/decorators/roles.decorator';
 
 @Resolver()
 export class TemplateQueryResolver {
@@ -22,45 +19,39 @@ export class TemplateQueryResolver {
     this.logger = loggerService.getLogger(TemplateQueryResolver.name);
   }
 
-  /**
-   * Admin query – list/search templates (all versions).
-   */
-  // @UseGuards(RolesGuard)
-  // @Roles('ADMIN')
   @Query(() => [TemplatePayload])
   async templates(
-    @Args('search', { type: () => String, nullable: true })
-    search?: string,
-
-    @Args('limit', { type: () => Int, nullable: true })
-    limit?: number,
+    @Args('search', { nullable: true }) search?: string,
+    @Args('limit', { type: () => Int, nullable: true }) limit?: number,
   ): Promise<TemplatePayload[]> {
-    this.logger.debug('templates: search=%s limit=%d', search, limit);
+    this.logger.debug('');
+    const templates = await this.templateReadService.findForAdmin(
+      search,
+      limit ?? 50,
+    );
 
-    return this.templateReadService.findForAdmin(search, limit ?? 50);
+    const result: TemplatePayload[] = [];
+
+    for (const template of templates) {
+      for (const version of template.versions) {
+        result.push(TemplateMapper.toPayload({ template, version }));
+      }
+    }
+
+    return result;
   }
 
-  /**
-   * Runtime-safe query.
-   * Returns the latest active template for key + channel + locale.
-   */
   @Query(() => TemplatePayload)
   async activeTemplate(
     @Args('key') key: string,
-    @Args('channel', { type: () => String }) channel: Channel,
+    @Args('channel', { type: () => Channel }) channel: Channel,
     @Args('locale', { nullable: true }) locale?: string,
   ): Promise<TemplatePayload> {
-    return this.templateReadService.findActiveByKey(
+    const result = await this.templateReadService.findActiveByKey(
       key,
       channel,
       locale ?? 'de-DE',
     );
-  }
-
-  @Query(() => [TemplatePayload], {
-    description: 'Returns active invitation templates (EMAIL / WHATSAPP)',
-  })
-  async invitationTemplates(): Promise<TemplatePayload[]> {
-    return this.templateReadService.findInvitationTemplates();
+    return TemplateMapper.toPayload(result);
   }
 }

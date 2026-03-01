@@ -1,19 +1,14 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-import { Injectable, NotFoundException } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
 
 import { LoggerPlus } from '../../logger/logger-plus.js';
 import { LoggerPlusService } from '../../logger/logger-plus.service.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
-
-import { ListAllNotificationsInput, ListNotificationsInput } from '../models/inputs/inputs.js';
-
-import { Notification, Prisma } from '../../prisma/generated/client.js';
-import { NotificationMapper } from '../models/mappers/notification.mapper.js';
-import {
-  NotificationPagePayload,
-  NotificationPayload,
-} from '../models/payloads/notification.payload.js';
-import { NotificationWriteService } from './notification-write.service.js';
+import { toPrismaModelChannel } from '../models/enums/channel.enum.js';
+import { NotificationFilterInput } from '../models/inputs/notification-filter.input.js';
+import { Injectable, NotFoundException } from '@nestjs/common';
 
 @Injectable()
 export class NotificationReadService {
@@ -22,16 +17,17 @@ export class NotificationReadService {
   constructor(
     private readonly prisma: PrismaService,
     loggerService: LoggerPlusService,
-    private readonly notificationWriteService: NotificationWriteService,
-    // private readonly notificationReadService: NotificationReadService,
   ) {
     this.logger = loggerService.getLogger(NotificationReadService.name);
   }
 
-  async findById(id: string): Promise<NotificationPayload> {
+  // ─────────────────────────────────────────────
+  // FIND BY ID
+  // ─────────────────────────────────────────────
+  async findById(id: string) {
     this.logger.debug('findById: id=%s', id);
 
-    let notification: Notification | null = await this.prisma.notification.findUnique({
+    const notification = await this.prisma.notification.findUnique({
       where: { id },
     });
 
@@ -39,106 +35,58 @@ export class NotificationReadService {
       throw new NotFoundException('Notification not found');
     }
 
-    // 🔹 AUTO-MARK-AS-READ (idempotent)
-    if (!notification.read) {
-      await this.notificationWriteService.markAsRead(id);
+    return notification;
+  }
 
-      // 🔄 Optional: re-read to return updated payload
-      notification = await this.prisma.notification.findUnique({
-        where: { id },
-      });
+  // ─────────────────────────────────────────────
+  // FIND WITH OPTIONAL FILTER
+  // ─────────────────────────────────────────────
+  async find(filter?: NotificationFilterInput, limit = 50) {
+    this.logger.debug('find: filter=%o limit=%s', filter, limit);
 
-      if (!notification) {
-        throw new NotFoundException('Notification not found');
-      }
+    const where: any = {};
 
-      return NotificationMapper.toPayload(notification);
+    if (filter?.recipientId) {
+      where.recipientId = filter.recipientId;
     }
 
-    return NotificationMapper.toPayload(notification);
-  }
-
-  async findByUser(userId: string): Promise<NotificationPayload[]> {
-    this.logger.debug('findByUser: userId=%s', userId);
-
-    const notifications = await this.prisma.notification.findMany({
-      where: { recipientId: userId },
-      orderBy: { createdAt: 'desc' },
-    });
-
-    return NotificationMapper.toPayloadList(notifications);
-  }
-
-  async findConnection(input: ListAllNotificationsInput): Promise<NotificationPagePayload> {
-    const take = Math.min(Math.max(input.limit ?? 50, 1), 200);
-
-    const where: Prisma.NotificationWhereInput = {
-      ...(input.category ? { category: input.category } : {}),
-      ...(input.includeRead === false ? { read: false } : {}),
-    };
-
-    const notifications = await this.prisma.notification.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-      take,
-      ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
-    });
-
-    const nextCursor =
-      notifications.length === take
-        ? (notifications[notifications.length - 1]?.id ?? undefined)
-        : undefined;
-
-    return {
-      items: NotificationMapper.toPayloadList(notifications),
-      nextCursor,
-    };
-  }
-
-  async findConnectionForUser(input: ListNotificationsInput): Promise<NotificationPagePayload> {
-    const take = Math.min(input.limit ?? 20, 100);
-
-    const where: Prisma.NotificationWhereInput = {
-      recipientUsername: input.recipientUsername,
-      ...(input.includeRead ? {} : { read: false }),
-      ...(input.category ? { category: input.category } : {}),
-    };
-
-    const notifications = await this.prisma.notification.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-      take,
-      ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
-    });
-
-    const nextCursor =
-      notifications.length === take
-        ? (notifications[notifications.length - 1]?.id ?? undefined)
-        : undefined;
-
-    return {
-      items: NotificationMapper.toPayloadList(notifications),
-      nextCursor,
-    };
-  }
-
-  async findByIds(ids: string[]): Promise<NotificationPayload[]> {
-    this.logger.debug('findByIds: count=%d', ids.length);
-
-    if (ids.length === 0) {
-      return [];
+    if (filter?.status) {
+      where.status = filter.status;
     }
 
-    const notifications = await this.prisma.notification.findMany({
+    if (filter?.channel) {
+      where.channel = toPrismaModelChannel(filter.channel);
+    }
+
+    if (filter?.unreadOnly) {
+      where.readAt = null;
+    }
+
+    return this.prisma.notification.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      take: Math.min(limit, 100),
+    });
+  }
+
+  // ─────────────────────────────────────────────
+  // FIND BY USER ID
+  // ─────────────────────────────────────────────
+  async findByUserId(recipientId: string, limit = 50) {
+    this.logger.debug('findByUserId: recipientId=%s', recipientId);
+
+    return this.prisma.notification.findMany({
       where: {
-        id: { in: ids },
+        recipientId,
       },
+      orderBy: { createdAt: 'desc' },
+      take: Math.min(limit, 100),
     });
-
-    if (notifications.length !== ids.length) {
-      throw new NotFoundException('One or more notifications not found');
-    }
-
-    return NotificationMapper.toPayloadList(notifications);
   }
 }
+
+// await mailService.send({
+//   to: notification.recipientUsername,
+//   subject: notification.renderedTitle ?? 'Notification',
+//   html: notification.renderedBody,
+// });

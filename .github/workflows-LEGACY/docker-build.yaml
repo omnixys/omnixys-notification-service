@@ -33,7 +33,7 @@ permissions:
 
 env:
   COSIGN_EXPERIMENTAL: 'true'
-  IMAGE_NAME: ${{ secrets.DOCKER_USER }}/${{ secrets.SERVICE }}-service
+  IMAGE_NAME: ${{ secrets.DOCKER_USER }}/${{ vars.SERVICE }}-service
   IMAGE_NAME_REPOSITORY: ghcr.io/${{ github.repository }}
 
   GH_PAT: ${{ secrets.GH_PAT }}
@@ -62,7 +62,7 @@ env:
   KC_CLIENT_SECRET: ${{ secrets.KC_CLIENT_SECRET }}
 
   KEYS_PATH: ${{ secrets.KEYS_PATH }}
-  SERVICE: ${{ secrets.SERVICE }}
+  SERVICE: ${{ vars.SERVICE }}
   PORT: ${{ secrets.PORT }}
   GRAPHQL_PLAYGROUND: ${{ secrets.GRAPHQL_PLAYGROUND }}
   NODE_ENV: ${{ secrets.NODE_ENV }}
@@ -150,7 +150,7 @@ jobs:
             REVISION=${{ github.sha }}
             CREATED=${{ env.CURRENT_DATE }}
             APP_VERSION=${{ steps.repovar.outputs.version }}
-            APP_NAME=${{ secrets.SERVICE }}
+            APP_NAME=${{ vars.SERVICE }}
             NODE_VERSION=${{ matrix.node-version }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
@@ -227,7 +227,7 @@ jobs:
             REVISION=${{ github.sha }}
             CREATED=${{ env.CURRENT_DATE }}
             APP_VERSION=${{ steps.repovar.outputs.version }}
-            APP_NAME=${{ secrets.SERVICE }}
+            APP_NAME=${{ vars.SERVICE }}
             NODE_VERSION=${{ matrix.node-version }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
