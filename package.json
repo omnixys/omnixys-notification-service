@@ -1,7 +1,7 @@
 {
   "name": "notification-service",
   "version": "1.0.0",
-  "description": "Omnixys Event Service",
+  "description": "Omnixys Notification Service",
   "author": {
     "name": "Caleb Gyamfi",
     "email": "caleb@omnixys.com",
