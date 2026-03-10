@@ -66,12 +66,12 @@ export type ModelName = (typeof ModelName)[keyof typeof ModelName];
  * Enums
  */
 
-export const TransactionIsolationLevel = {
+export const TransactionIsolationLevel = runtime.makeStrictEnum({
   ReadUncommitted: 'ReadUncommitted',
   ReadCommitted: 'ReadCommitted',
   RepeatableRead: 'RepeatableRead',
   Serializable: 'Serializable',
-} as const;
+} as const);
 
 export type TransactionIsolationLevel =
   (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel];
@@ -152,7 +152,7 @@ export const SortOrder = {
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder];
 
 export const JsonNullValueInput = {
-  JsonNull: 'JsonNull',
+  JsonNull: JsonNull,
 } as const;
 
 export type JsonNullValueInput =
@@ -173,9 +173,9 @@ export const NullsOrder = {
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder];
 
 export const JsonNullValueFilter = {
-  DbNull: 'DbNull',
-  JsonNull: 'JsonNull',
-  AnyNull: 'AnyNull',
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull,
 } as const;
 
 export type JsonNullValueFilter =

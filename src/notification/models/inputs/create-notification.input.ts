@@ -4,7 +4,7 @@
 import { JsonScalar } from '../../../core/scalars/json.scalar.js';
 import { Channel } from '../enums/channel.enum.js';
 import { Priority } from '../enums/priority.enum.js';
-import { Field, InputType } from '@nestjs/graphql';
+import { Field, InputType, GraphQLISODateTime } from '@nestjs/graphql';
 
 @InputType()
 export class CreateNotificationInput {
@@ -38,7 +38,7 @@ export class CreateNotificationInput {
   @Field({ nullable: true })
   sensitive?: boolean;
 
-  @Field({ nullable: true })
+  @Field(() => GraphQLISODateTime, { nullable: true })
   expiresAt?: Date;
 
   @Field({ nullable: true })

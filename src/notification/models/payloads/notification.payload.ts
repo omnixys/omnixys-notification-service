@@ -4,7 +4,7 @@ import { JsonScalar } from '../../../core/scalars/json.scalar.js';
 import { Channel } from '../enums/channel.enum.js';
 import { NotificationStatus } from '../enums/notification-status.enum.js';
 import { Priority } from '../enums/priority.enum.js';
-import { Field, ID, ObjectType } from '@nestjs/graphql';
+import { Field, ID, ObjectType, GraphQLISODateTime } from '@nestjs/graphql';
 
 @ObjectType()
 export class NotificationPayload {
@@ -41,19 +41,19 @@ export class NotificationPayload {
   @Field()
   sensitive!: boolean;
 
-  @Field({ nullable: true })
+  @Field(() => GraphQLISODateTime, { nullable: true })
   readAt?: Date;
 
-  @Field({ nullable: true })
+  @Field(() => GraphQLISODateTime, { nullable: true })
   deliveredAt?: Date;
 
-  @Field({ nullable: true })
+  @Field(() => GraphQLISODateTime, { nullable: true })
   expiresAt?: Date;
 
-  @Field({ nullable: true })
+  @Field(() => GraphQLISODateTime, { nullable: true })
   archivedAt?: Date;
 
-  @Field({ nullable: true })
+  @Field(() => GraphQLISODateTime, { nullable: true })
   purgedAt?: Date;
 
   @Field({ nullable: true })
@@ -65,9 +65,9 @@ export class NotificationPayload {
   @Field({ nullable: true })
   providerRef?: string;
 
-  @Field()
+  @Field(() => GraphQLISODateTime)
   createdAt!: Date;
 
-  @Field()
+  @Field(() => GraphQLISODateTime)
   updatedAt!: Date;
 }

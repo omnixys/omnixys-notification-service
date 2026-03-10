@@ -98,6 +98,9 @@ export const env = {
   RESEND_API_KEY: process.env.RESEND_API_KEY ?? 'sdf',
   VALKEY_URL: process.env.VALKEY_URL ?? '',
   VALKEY_PASSWORD: process.env.VALKEY_PASSWORD ?? '',
+  APP_BASE_URL: process.env.APP_BASE_URL ?? 'http://localhost:3000',
+
+  VERIFY_PATH: process.env.VERIFY_PATH ?? '/verify',
 } as const;
 
 // /**

@@ -1,7 +1,6 @@
-import { Args, Int, Query, Resolver } from '@nestjs/graphql';
-
 import { LoggerPlus } from '../../logger/logger-plus.js';
 import { LoggerPlusService } from '../../logger/logger-plus.service.js';
+import { Args, Int, Query, Resolver } from '@nestjs/graphql';
 
 import { Channel } from '../../notification/models/enums/channel.enum.js';
 import { TemplateMapper } from '../models/mappers/template.mapper.js';

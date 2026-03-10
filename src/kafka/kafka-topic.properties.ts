@@ -31,6 +31,8 @@ export const KafkaTopics = {
     sendSecurityAlert: `${SERVICE}.sendSecurityAlert.user`,
     resetPassword: `${SERVICE}.resetPassword.user`,
     createUser: `${SERVICE}.notify.user`,
+    sendRequestReset: `${SERVICE}.requestReset.authentication`,
+    sendMagigLink: `${SERVICE}.sendMagicLink.authentication`,
   },
   gateway: {
     sendCredentials: `gateway.send.${SERVICE}`,

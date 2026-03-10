@@ -1,6 +1,8 @@
-// TODO resolve eslint
-
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+// TODO resolve eslint
 
 import { env } from '../config/env.js';
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';

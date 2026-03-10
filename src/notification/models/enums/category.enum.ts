@@ -6,3 +6,9 @@ export enum Category {
   WARNING = 'WARNING',
 }
 registerEnumType(Category, { name: 'Category' });
+
+export enum AddressType {
+  HOME = 'HOME',
+  WORK = 'WORK',
+}
+registerEnumType(AddressType, { name: 'AddressType' });

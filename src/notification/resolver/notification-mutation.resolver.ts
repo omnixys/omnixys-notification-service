@@ -1,11 +1,11 @@
 import { LoggerPlus } from '../../logger/logger-plus.js';
 import { LoggerPlusService } from '../../logger/logger-plus.service.js';
 import { CreateNotificationInput } from '../models/inputs/create-notification.input.js';
-import { CreateUserInput } from '../models/inputs/create-user.input.js';
 import { NotificationMapper } from '../models/mappers/notification.mapper.js';
 import { NotificationPayload } from '../models/payloads/notification.payload.js';
 import { NotificationWriteService } from '../services/notification-write.service.js';
 import { Args, Mutation, Resolver } from '@nestjs/graphql';
+import { CreateUserInput } from '@omnixys/graphql';
 
 @Resolver()
 export class NotificationMutationResolver {
@@ -102,7 +102,7 @@ export class NotificationMutationResolver {
 
   @Mutation(() => Boolean)
   async createSignupVerification(
-    @Args('createUserInput') createUserInput: CreateUserInput, // replace with real type
+    @Args('createUserInput') createUserInput: CreateUserInput,
   ): Promise<boolean> {
     this.logger.info(
       'createSignupVerification: username=%s',

@@ -4,7 +4,7 @@
 import { JsonScalar } from '../../../core/scalars/json.scalar.js';
 import { Channel } from '../../../notification/models/enums/channel.enum.js';
 import { ContentFormat } from '../../../notification/models/enums/content-format.enum.js';
-import { Field, ID, ObjectType } from '@nestjs/graphql';
+import { Field, GraphQLISODateTime, ID, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
 export class TemplatePayload {
@@ -41,9 +41,9 @@ export class TemplatePayload {
   @Field(() => [String])
   tags!: string[];
 
-  @Field()
+  @Field(() => GraphQLISODateTime)
   createdAt!: Date;
 
-  @Field()
+  @Field(() => GraphQLISODateTime)
   updatedAt!: Date;
 }

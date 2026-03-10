@@ -6,6 +6,7 @@
 
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 
+import { env } from '../../config/env.js';
 import { LoggerPlus } from '../../logger/logger-plus.js';
 import { LoggerPlusService } from '../../logger/logger-plus.service.js';
 import { MailService } from '../../messages/services/mail.service.js';
@@ -15,6 +16,7 @@ import { NotificationCacheService } from './notification-cache.service.js';
 import { TemplateRenderService } from './template-renderer.service.js';
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 
+const { APP_BASE_URL, VERIFY_PATH } = env;
 // notification/models/dto/create-notification.dto.ts
 export interface CreateNotificationDTO {
   tenantId?: string;
@@ -292,7 +294,8 @@ export class NotificationWriteService {
       60 * 15,
     );
 
-    const verifyUrl = `https://omnixys.com/verify?token=${verificationId}`;
+    const verifyUrl = `${APP_BASE_URL}${VERIFY_PATH}?token=${verificationId}`;
+    this.logger.debug('Created Verify Link %s', verifyUrl);
 
     // 2️⃣ Render Template
     const { templateId, renderedTitle, renderedBody } =
@@ -338,7 +341,7 @@ export class NotificationWriteService {
       subject: renderedTitle ?? '',
       html: renderedBody,
       format: 'HTML',
-      from: 'onboarding@resend.dev',
+      from: 'omnixys',
       metadata: {
         notificationId: notification.id,
         flow: 'signup-verification',
@@ -349,5 +352,7 @@ export class NotificationWriteService {
     await this.markAsSent(notification.id, {
       provider: 'resend',
     });
+
+    return verificationId;
   }
 }

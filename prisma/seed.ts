@@ -334,6 +334,212 @@ Falls du diese Anfrage nicht gestellt hast, ignoriere diese E-Mail.
   });
 
   console.log('✅ sign-up-verification template seeded successfully');
+
+  // ─────────────────────────────────────────────
+  // TEMPLATE: AUTH_PASSWORD_RESET (EMAIL)
+  // ─────────────────────────────────────────────
+
+  const template_reset = await prisma.template.upsert({
+    where: {
+      tenantId_key_channel: {
+        tenantId: tenant.id,
+        key: 'AUTH_PASSWORD_RESET',
+        channel: Channel.EMAIL,
+      },
+    },
+    update: {},
+    create: {
+      tenantId: tenant.id,
+      key: 'AUTH_PASSWORD_RESET',
+      channel: Channel.EMAIL,
+      tags: ['auth', 'security', 'password', 'reset'],
+    },
+  });
+
+  // Common Variables Definition
+  const variables = {
+    firstName: 'string',
+    resetUrl: 'string (absolute URL)',
+    expiresInMinutes: 'number',
+    ipAddress: 'string',
+    device: 'string',
+    location: 'string',
+    supportEmail: 'string',
+    year: 'number',
+  };
+
+  // ─────────────────────────────────────────────
+  // VERSION 1 – GERMAN
+  // ─────────────────────────────────────────────
+
+  await prisma.templateVersion.upsert({
+    where: {
+      templateId_locale_version: {
+        templateId: template_reset.id,
+        locale: 'de-DE',
+        version: 1,
+      },
+    },
+    update: {},
+    create: {
+      templateId: template_reset.id,
+      locale: 'de-DE',
+      version: 1,
+      format: ContentFormat.HTML,
+      subject: 'Passwort zurücksetzen – Sicherheitsbenachrichtigung',
+      variables,
+      body: `
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<title>Passwort zurücksetzen</title>
+</head>
+<body style="margin:0;padding:0;background:#f5f6f8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
+<tr>
+<td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;padding:40px;">
+<tr>
+<td>
+
+<h2 style="margin-top:0;color:#111;">Passwort zurücksetzen</h2>
+
+<p>Hallo {{firstName}},</p>
+
+<p>wir haben eine Anfrage erhalten, dein Passwort zurückzusetzen.</p>
+
+<p style="text-align:center;margin:32px 0;">
+<a href="{{resetUrl}}"
+style="background:#111;color:#fff;text-decoration:none;padding:14px 28px;border-radius:8px;font-weight:600;">
+Passwort jetzt zurücksetzen
+</a>
+</p>
+
+<p>Dieser Link ist <strong>{{expiresInMinutes}} Minuten</strong> gültig.</p>
+
+<hr style="border:none;border-top:1px solid #eee;margin:32px 0;" />
+
+<p style="font-size:13px;color:#666;">
+Anfragedetails:
+</p>
+<ul style="font-size:13px;color:#666;">
+<li>IP-Adresse: {{ipAddress}}</li>
+<li>Gerät: {{device}}</li>
+<li>Standort: {{location}}</li>
+</ul>
+
+<p style="font-size:13px;color:#666;">
+Falls du diese Anfrage nicht gestellt hast, kannst du diese E-Mail ignorieren.
+Dein Passwort bleibt unverändert.
+</p>
+
+<p style="font-size:13px;color:#666;">
+Support: <a href="mailto:{{supportEmail}}">{{supportEmail}}</a>
+</p>
+
+<p style="margin-top:40px;font-size:12px;color:#aaa;">
+© {{year}} Omnixys Technologies
+</p>
+
+</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+</body>
+</html>
+      `,
+    },
+  });
+
+  // ─────────────────────────────────────────────
+  // VERSION 1 – ENGLISH
+  // ─────────────────────────────────────────────
+
+  await prisma.templateVersion.upsert({
+    where: {
+      templateId_locale_version: {
+        templateId: template_reset.id,
+        locale: 'en-US',
+        version: 1,
+      },
+    },
+    update: {},
+    create: {
+      templateId: template_reset.id,
+      locale: 'en-US',
+      version: 1,
+      format: ContentFormat.HTML,
+      subject: 'Reset your password – Security Notice',
+      variables,
+      body: `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Password Reset</title>
+</head>
+<body style="margin:0;padding:0;background:#f5f6f8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
+<tr>
+<td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;padding:40px;">
+<tr>
+<td>
+
+<h2 style="margin-top:0;color:#111;">Reset your password</h2>
+
+<p>Hello {{firstName}},</p>
+
+<p>We received a request to reset your password.</p>
+
+<p style="text-align:center;margin:32px 0;">
+<a href="{{resetUrl}}"
+style="background:#111;color:#fff;text-decoration:none;padding:14px 28px;border-radius:8px;font-weight:600;">
+Reset Password
+</a>
+</p>
+
+<p>This link expires in <strong>{{expiresInMinutes}} minutes</strong>.</p>
+
+<hr style="border:none;border-top:1px solid #eee;margin:32px 0;" />
+
+<p style="font-size:13px;color:#666;">
+Request Details:
+</p>
+<ul style="font-size:13px;color:#666;">
+<li>IP Address: {{ipAddress}}</li>
+<li>Device: {{device}}</li>
+<li>Location: {{location}}</li>
+</ul>
+
+<p style="font-size:13px;color:#666;">
+If you did not request this, you can safely ignore this email.
+</p>
+
+<p style="font-size:13px;color:#666;">
+Support: <a href="mailto:{{supportEmail}}">{{supportEmail}}</a>
+</p>
+
+<p style="margin-top:40px;font-size:12px;color:#aaa;">
+© {{year}} Omnixys Technologies
+</p>
+
+</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+</body>
+</html>
+      `,
+    },
+  });
+
+  console.log('✅ Password reset templates seeded (de-DE & en-US)');
   console.log('✅ Templates erfolgreich im neuen Schema geseedet');
 }
 

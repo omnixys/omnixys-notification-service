@@ -50,6 +50,7 @@ env:
   OMNIXYS_USER_USERNAME: ${{ secrets.OMNIXYS_USER_USERNAME }}
   OMNIXYS_USER_PASSWORD: ${{ secrets.OMNIXYS_USER_PASSWORD }}
   OMNIXYS_EMAIL_DOMAIN: ${{ secrets.OMNIXYS_EMAIL_DOMAIN }}
+  OMNIXYS_TOKEN: ${{ secrets.OMNIXYS_TOKEN }}
 
   KAFKA_BROKER: ${{ secrets.KAFKA_BROKER }}
   TEMPO_URI: ${{ secrets.TEMPO_URI }}
@@ -86,6 +87,13 @@ jobs:
     steps:
       - name: 🧾 Checkout repository
         uses: actions/checkout@v4
+
+      - name: Setup npm registry auth
+        run: |
+          echo "@omnixys:registry=https://npm.pkg.github.com" >> .npmrc
+          echo "//npm.pkg.github.com/:_authToken=${OMNIXYS_TOKEN}" >> .npmrc
+        env:
+          OMNIXYS_TOKEN: ${{ secrets.OMNIXYS_TOKEN }}
 
       - name: 🔎 Check if Docker tag already exists
         id: check_tag
@@ -126,6 +134,8 @@ jobs:
         if: steps.check_tag.outputs.exists == 'false'
         uses: docker/build-push-action@v5
         with:
+          secrets: |
+            omnixys_token=${{ env.OMNIXYS_TOKEN }}
           context: .
           push: true
           platforms: linux/amd64,linux/arm64
@@ -207,6 +217,8 @@ jobs:
         if: steps.check_tag.outputs.exists == 'false'
         uses: docker/build-push-action@v5
         with:
+          secrets: |
+            omnixys_token=${{ env.OMNIXYS_TOKEN }}
           context: .
           push: true
           platforms: linux/amd64,linux/arm64

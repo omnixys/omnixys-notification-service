@@ -4,6 +4,7 @@ import { MessageModule } from '../messages/message.module.js';
 import { PrismaModule } from '../prisma/prisma.module.js';
 import { TemplateModule } from '../template/template.module.js';
 import { ValkeyModule } from '../valkey/valkey.module.js';
+import { DebugResolver } from './resolver/debug.resolver.js';
 import { NotificationMutationResolver } from './resolver/notification-mutation.resolver.js';
 import { NotificationQueryResolver } from './resolver/notification-query.resolver.js';
 import { NotificationCacheService } from './services/notification-cache.service.js';
@@ -19,6 +20,7 @@ import { Module } from '@nestjs/common';
     NotificationRenderer,
     NotificationQueryResolver,
     NotificationMutationResolver,
+    DebugResolver,
     NotificationReadService,
     NotificationWriteService,
     NotificationCacheService,

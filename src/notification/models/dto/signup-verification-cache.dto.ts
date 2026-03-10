@@ -1,12 +1,15 @@
 // src/auth/registration/dto/signup-verification-cache.dto.ts
 
-import type { AddSecurityQuestionInput } from '../inputs/security-question.input.js';
+import type {
+  AddSecurityQuestionInput,
+  UserAddressInput,
+} from '@omnixys/graphql';
 
 export interface SignupVerificationCacheDTO<TCreateUserInput> {
   input: TCreateUserInput;
 
   meta: {
-    createdAt: string; // ISO
+    createdAt: string; //  ISO
     ip?: string;
     userAgent?: string;
   };
@@ -22,7 +25,15 @@ export interface SignupUserCacheDTO<TUserPayload> {
   };
 }
 
-// auth/models/dto/signup-auth-cache.dto.ts
+export interface SignupAddressCacheDTO {
+  addresses?: UserAddressInput[];
+  meta: {
+    createdAt: string;
+    ip?: string;
+    userAgent?: string;
+  };
+}
+
 export interface SignupAuthCacheDTO {
   username: string;
   email: string;
