@@ -1,5 +1,5 @@
 {
-  "name": "omnixys-notification-service",
+  "name": "notification-service",
   "version": "1.0.0",
   "description": "Omnixys Event Service",
   "author": {
@@ -9,10 +9,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/omnixys/omnixys-notification-service.git"
+    "url": "https://github.com/omnixys/notification-service.git"
   },
   "bugs": {
-    "url": "https://github.com/omnixys/omnixys-notification-service/issues"
+    "url": "https://github.com/omnixys/notification-service/issues"
   },
   "homepage": "https://omnixys.com",
   "license": "GPL-3.0-or-later",
