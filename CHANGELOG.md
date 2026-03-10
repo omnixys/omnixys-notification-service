@@ -1,3 +1,48 @@
+# 🧾 Changelog
+
+All notable changes in this project will be documented in this file.
+
+
+## 1.0.0 (2026-03-10)
+
+### Ci
+
+* **Ci:** add ci jobs ([](https://github.com/omnixys/notification-service/commit/67f075ba41555bbfbfeb66aaa48a179f178727c1))
+
+### Dockerfile
+
+* **Dockerfile:** add private npm auth and update Dockerfile & deps ([](https://github.com/omnixys/notification-service/commit/7798b007d311633d3160115bee2ebf646bd8ab01))
+
+### Other
+
+* **Other:** add CookieAuthGuard ([](https://github.com/omnixys/notification-service/commit/cebd8d6fcc8107ec8c0d809a3424dda3bd09b086))
+* **Other:** add notification methods ([](https://github.com/omnixys/notification-service/commit/5c1c206c552fec1dca5730d4c89b3be1c5be9a4f))
+* **Other:** add Status ARCHIVED ([](https://github.com/omnixys/notification-service/commit/3b77aa3bb310c826a7d0a032f7b5f480524d0a21))
+* **Other:** Create deploy.yml ([](https://github.com/omnixys/notification-service/commit/94752c775804e565492c7126016b2b625587062c))
+* **Other:** Initial commit ([](https://github.com/omnixys/notification-service/commit/523a157a82e42686bb2614f537b4435ad897da81))
+* **Other:** lint fix ([](https://github.com/omnixys/notification-service/commit/0ffe12b01ce6fe59f5db3743ed27cf67fbf18c9f))
+* **Other:** Update deploy.yml ([](https://github.com/omnixys/notification-service/commit/3420393f5a0ac902a4deb113edffabad622178e6))
+* **Other:** Update docker-build.yaml ([](https://github.com/omnixys/notification-service/commit/2b0b8a56a49e4d7cb2e1f2f71cd61d54e8b05be8))
+* **Other:** Update Dockerfile ([](https://github.com/omnixys/notification-service/commit/5da5a3ec50b1de6be7e0a6f1ebf6abe7a71336fb))
+* **Other:** Update notification-mutation.resolver.ts ([](https://github.com/omnixys/notification-service/commit/ae97ffcde12bc4809cfeedbcb7e98e40e4f5863f))
+* **Other:** Update notification-write.service.ts ([](https://github.com/omnixys/notification-service/commit/42c6fa74e2c33dfe445d7ae8a69b2d111c887051))
+* **Other:** Update package.json ([](https://github.com/omnixys/notification-service/commit/0373f0b994be6c7d7375ca8edca5dee57ce26d81))
+
+### Package.json
+
+* **Package.json:** update pnpm lockfile ([](https://github.com/omnixys/notification-service/commit/53e2aee3107f3b0985016ca1fee4ab654f30d7b7))
+* **Package.json:** update pnpm lockfile ([](https://github.com/omnixys/notification-service/commit/a357c3bb40e1887b2fda8d716b2a5fee06460d06))
+* **Package.json:** update pnpm lockfile ([](https://github.com/omnixys/notification-service/commit/5bce90a73eccab65fbc31313d960e13979239444))
+* **Package.json:** update pnpm lockfile ([](https://github.com/omnixys/notification-service/commit/77980b2b3e060926f709e5b6a68c4127d0d6e9c5))
+
+### Register
+
+* **Register:** add register flow ([](https://github.com/omnixys/notification-service/commit/e60465093aa3c13868c5e13473ae7ebb7ffd50c7))
+
+### Release
+
+* **Release:** update ([](https://github.com/omnixys/notification-service/commit/83ca7547359d13d72ebf4e6c860ea6e076e96795))
+
 ## <small>1.0.1 (2025-11-07)</small>
 
 - Initial commit ([135641e](https://github.com/omnixys/omnixys-event-service/commit/135641e))
