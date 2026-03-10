@@ -3,6 +3,12 @@
 All notable changes in this project will be documented in this file.
 
 
+## [1.0.1](https://github.com/omnixys/notification-service/compare/v1.0.0...v1.0.1) (2026-03-10)
+
+### Package.json
+
+* **Package.json:** Update workflow trigger and package description ([](https://github.com/omnixys/notification-service/commit/56947d2ea698831d9f8a17ac60bfe755c97f3e56))
+
 ## 1.0.0 (2026-03-10)
 
 ### Ci
