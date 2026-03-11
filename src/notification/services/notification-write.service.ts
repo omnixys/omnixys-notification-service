@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-useless-catch */
 
@@ -10,14 +7,15 @@ import { env } from '../../config/env.js';
 import { LoggerPlus } from '../../logger/logger-plus.js';
 import { LoggerPlusService } from '../../logger/logger-plus.service.js';
 import { MailService } from '../../messages/services/mail.service.js';
-import { Channel, NotificationStatus, Priority, Prisma } from '../../prisma/generated/client.js';
+import { NotificationStatus, Priority, Prisma } from '../../prisma/generated/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
+import { Channel } from '../models/enums/channel.enum.js';
 import { NotificationCacheService } from './notification-cache.service.js';
 import { TemplateRenderService } from './template-renderer.service.js';
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { CreateUserInput } from '@omnixys/graphql';
 
-const { APP_BASE_URL, VERIFY_PATH } = env;
-// notification/models/dto/create-notification.dto.ts
+const { APP_BASE_URL, VERIFY_PATH, MAGIC_PATH, RESET_PATH, FROM_SUPPORT, FROM_NO_REPLY } = env;
 export interface CreateNotificationDTO {
   tenantId?: string;
   recipientUsername: string;
@@ -284,7 +282,13 @@ export class NotificationWriteService {
     });
   }
 
-  async createSignupVerification(createUserInput: any) {
+  async createSignupVerification({
+    createUserInput,
+    locale,
+  }: {
+    createUserInput: CreateUserInput;
+    locale: string;
+  }) {
     this.logger.debug('creating signUp verification');
 
     // 1️⃣ Store payload in Valkey
@@ -300,14 +304,13 @@ export class NotificationWriteService {
     // 2️⃣ Render Template
     const { templateId, renderedTitle, renderedBody } =
       await this.templateRenderService.renderFromKey({
-        templateKey: 'sign-up-verification',
+        templateKey: 'auth.sign-up-verification.request',
         channel: Channel.EMAIL,
-        locale: 'de-DE',
+        locale,
         variables: {
           firstName: createUserInput.personalInfo.firstName,
           lastName: createUserInput.personalInfo.lastName,
-          username: createUserInput.username,
-          verifyUrl,
+          actionUrl: verifyUrl,
           expiresInMinutes: 15,
         },
       });
@@ -324,7 +327,7 @@ export class NotificationWriteService {
         firstName: createUserInput.personalInfo.firstName,
         lastName: createUserInput.personalInfo.lastName,
         username: createUserInput.username,
-        verifyUrl,
+        actionUrl: verifyUrl,
         expiresInMinutes: 15,
       },
       metadata: {
@@ -332,7 +335,7 @@ export class NotificationWriteService {
       },
       sensitive: false,
       expiresAt: new Date(Date.now() + 15 * 60 * 1000),
-      createdBy: 'auth-service',
+      createdBy: 'notification-service',
     });
 
     // 4️⃣ Send Mail
@@ -341,7 +344,7 @@ export class NotificationWriteService {
       subject: renderedTitle ?? '',
       html: renderedBody,
       format: 'HTML',
-      from: 'omnixys',
+      from: FROM_NO_REPLY,
       metadata: {
         notificationId: notification.id,
         flow: 'signup-verification',
@@ -354,5 +357,162 @@ export class NotificationWriteService {
     });
 
     return verificationId;
+  }
+
+  async sendMagigLink({
+    token,
+    email,
+    locale,
+    username,
+    device,
+    ipAddress,
+  }: {
+    username: string;
+    token: string;
+    email: string;
+    locale: string;
+    device: string;
+    ipAddress: string;
+  }) {
+    this.logger.debug('creating Magic Link');
+
+    const magicLink = `${APP_BASE_URL}${MAGIC_PATH}?token=${encodeURIComponent(token)}`;
+    this.logger.debug('Created Magic Link %s', magicLink);
+
+    const { templateId, renderedTitle, renderedBody } =
+      await this.templateRenderService.renderFromKey({
+        templateKey: 'auth.magic-link.request',
+        channel: Channel.EMAIL,
+        locale,
+        variables: {
+          firstName: username,
+          actionUrl: magicLink,
+          expiresInMinutes: 15,
+          ipAddress,
+          device,
+        },
+      });
+
+    const notification = await this.create({
+      tenantId: 'omnixys',
+      recipientUsername: username,
+      recipientAddress: email,
+      channel: Channel.EMAIL,
+      priority: Priority.NORMAL,
+      templateId,
+      variables: {
+        firstName: username,
+        actionUrl: magicLink,
+        expiresInMinutes: 15,
+        ipAddress,
+        device,
+      },
+      metadata: {
+        flow: 'create-magic-link',
+      },
+      sensitive: false,
+      expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+      createdBy: 'notification-service',
+    });
+
+    // 4️⃣ Send Mail
+    await this.mailService.send({
+      to: email,
+      subject: renderedTitle ?? '',
+      html: renderedBody,
+      format: 'HTML',
+      from: FROM_NO_REPLY,
+      metadata: {
+        notificationId: notification.id,
+        flow: 'signup-verification',
+      },
+    });
+
+    // 5️⃣ Mark as sent
+    await this.markAsSent(notification.id, {
+      provider: 'resend',
+    });
+  }
+
+  async sendRequestReset({
+    token,
+    email,
+    locale,
+    username,
+    device,
+    ipAddress,
+    location,
+  }: {
+    username: string;
+    token: string;
+    email: string;
+    locale: string;
+    device: string;
+    ipAddress: string;
+    location: string;
+  }) {
+    this.logger.debug('creating Reset Link');
+
+    const resetLink = `${APP_BASE_URL}${RESET_PATH}?token=${encodeURIComponent(token)}`;
+    this.logger.debug('Created Reset Link %s', resetLink);
+
+    const { templateId, renderedTitle, renderedBody } =
+      await this.templateRenderService.renderFromKey({
+        templateKey: 'auth.password-reset.request',
+        channel: Channel.EMAIL,
+        locale,
+        variables: {
+          firstName: username,
+          actionUrl: resetLink,
+          expiresInMinutes: 15,
+          ipAddress,
+          device,
+          location,
+          supportEmail: FROM_SUPPORT,
+        },
+      });
+
+    const notification = await this.create({
+      tenantId: 'omnixys',
+      recipientUsername: username,
+      recipientAddress: email,
+      channel: Channel.EMAIL,
+      priority: Priority.NORMAL,
+      templateId,
+      variables: {
+        firstName: username,
+        actionUrl: resetLink,
+        expiresInMinutes: 15,
+        ipAddress,
+        device,
+        location,
+        supportEmail: FROM_SUPPORT,
+      },
+      metadata: {
+        flow: 'create-passwort-reset-link',
+      },
+      sensitive: false,
+      expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+      createdBy: 'notification-service',
+    });
+
+    // 4️⃣ Send Mail
+    await this.mailService.send({
+      to: email,
+      subject: renderedTitle ?? '',
+      html: renderedBody,
+      format: 'HTML',
+      from: FROM_NO_REPLY,
+      replyTo: FROM_SUPPORT,
+      metadata: {
+        notificationId: notification.id,
+        flow: 'create-passwort-reset-link',
+      },
+    });
+
+    // 5️⃣ Mark as sent
+    await this.markAsSent(notification.id, {
+      provider: 'resend',
+    });
   }
 }

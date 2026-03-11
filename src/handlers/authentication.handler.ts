@@ -31,8 +31,8 @@ import {
 import { getTopic, getTopics } from '../kafka/kafka-topic.properties.js';
 import { LoggerPlusService } from '../logger/logger-plus.service.js';
 import { UserCredentialDTO } from '../notification/models/dto/user-created-schema.dto.js';
+import { NotificationWriteService } from '../notification/services/notification-write.service.js';
 import { Injectable } from '@nestjs/common';
-import { Resend } from 'resend';
 
 /**
  * Kafka event handler responsible for useristrative commands such as
@@ -46,10 +46,6 @@ import { Resend } from 'resend';
 @Injectable()
 export class AuthenticationHandler implements KafkaEventHandler {
   private readonly logger;
-  private readonly appBaseUrl: string;
-  private readonly resetPath: string;
-  private readonly resend: Resend;
-  private readonly from: string;
 
   /**
    * Creates a new instance of {@link UserHandler}.
@@ -57,12 +53,11 @@ export class AuthenticationHandler implements KafkaEventHandler {
    * @param loggerService - The central logger service used for structured logging.
    * @param userService - The service responsible for handling system-level user operations.
    */
-  constructor(private readonly loggerService: LoggerPlusService) {
+  constructor(
+    private readonly loggerService: LoggerPlusService,
+    private readonly service: NotificationWriteService,
+  ) {
     this.logger = this.loggerService.getLogger(AuthenticationHandler.name);
-    this.appBaseUrl = process.env.APP_BASE_URL ?? '';
-    this.resetPath = process.env.RESET_PATH ?? '/reset';
-    this.resend = new Resend(process.env.RESEND_API_KEY);
-    this.from = process.env.MAIL_FROM ?? 'no-reply@example.com';
   }
 
   /**
@@ -110,75 +105,43 @@ export class AuthenticationHandler implements KafkaEventHandler {
   // }
 
   private async sendRequestReset(data: {
-    payload: { rawToken: string; email: string };
+    payload: {
+      username: string;
+      token: string;
+      email: string;
+      locale: string;
+      device: string;
+      ipAddress: string;
+      location: string;
+    };
   }): Promise<void> {
-    const resetUrl = `${this.appBaseUrl}${this.resetPath}?token=${encodeURIComponent(data.payload.rawToken)}`;
-
-    try {
-      await this.resend.emails.send({
-        from: this.from,
-        to: data.payload.email,
-        subject: 'Reset your password',
-        html: this.buildResetHtml(resetUrl),
-        text: this.buildResetText(resetUrl),
-      });
-    } catch (error: any) {
-      this.logger.error('Failed to send reset email', {
-        email: data.payload.email,
-        error: error?.message,
-      });
-      throw error;
-    }
+    void this.service.sendMagigLink({
+      token: data.payload.token,
+      email: data.payload.email,
+      username: data.payload.username,
+      locale: data.payload.locale,
+      device: data.payload.device,
+      ipAddress: data.payload.ipAddress,
+    });
   }
 
   private async sendMagigLink(data: {
-    payload: { token: string; email: string };
+    payload: {
+      username: string;
+      token: string;
+      email: string;
+      locale: string;
+      device: string;
+      ipAddress: string;
+    };
   }): Promise<void> {
-    const resetUrl = `${this.appBaseUrl}/verify?token=${encodeURIComponent(data.payload.token)}`;
-
-    try {
-      await this.resend.emails.send({
-        from: this.from,
-        to: data.payload.email,
-        subject: 'Reset your password',
-        html: this.buildResetHtml(resetUrl),
-        text: this.buildResetText(resetUrl),
-      });
-    } catch (error: any) {
-      this.logger.error('Failed to send reset email', {
-        email: data.payload.email,
-        error: error?.message,
-      });
-      throw error;
-    }
-  }
-
-  private buildResetHtml(resetUrl: string): string {
-    return `
-      <div style="font-family: Arial, sans-serif;">
-        <h2>Password Reset</h2>
-        <p>You requested to reset your password.</p>
-        <p>This link expires in 15 minutes.</p>
-        <a href="${resetUrl}" 
-           style="display:inline-block;padding:10px 16px;background:#111;color:#fff;text-decoration:none;border-radius:6px;">
-           Reset Password
-        </a>
-        <p>If you did not request this, ignore this email.</p>
-      </div>
-    `;
-  }
-
-  private buildResetText(resetUrl: string): string {
-    return `
-Password Reset
-
-You requested to reset your password.
-This link expires in 15 minutes.
-
-Reset here:
-${resetUrl}
-
-If you did not request this, ignore this email.
-`;
+    void this.service.sendMagigLink({
+      token: data.payload.token,
+      email: data.payload.email,
+      username: data.payload.username,
+      locale: data.payload.locale,
+      device: data.payload.device,
+      ipAddress: data.payload.ipAddress,
+    });
   }
 }

@@ -6,7 +6,7 @@ import { LoggerPlusService } from '../../logger/logger-plus.service.js';
 import { ResponseTimeInterceptor } from '../../logger/response-time.interceptor.js';
 import { NotificationWriteService } from '../services/notification-write.service.js';
 import { UseGuards, UseInterceptors } from '@nestjs/common';
-import { Args, Mutation, Resolver } from '@nestjs/graphql';
+import { Args, Context, Mutation, Resolver } from '@nestjs/graphql';
 import { CreateUserInput } from '@omnixys/graphql';
 
 @Resolver()
@@ -26,16 +26,22 @@ export class DebugResolver {
   @Roles('ADMIN')
   async createSignupVerification(
     @Args('createUserInput') createUserInput: CreateUserInput,
+    @Context() ctx: any,
   ): Promise<string> {
+    const cookieReq = ctx.req;
+    const locale: string = cookieReq.cookies.locale ?? 'de-DE';
+
     this.logger.info(
-      'createSignupVerification: username=%s',
+      'createSignupVerification: username=%s locale=%s',
       createUserInput.username,
+      locale,
     );
 
     const payload =
-      await this.notificationWriteService.createSignupVerification(
+      await this.notificationWriteService.createSignupVerification({
         createUserInput,
-      );
+        locale,
+      });
 
     return payload;
   }

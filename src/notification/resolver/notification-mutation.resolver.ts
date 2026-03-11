@@ -4,7 +4,7 @@ import { CreateNotificationInput } from '../models/inputs/create-notification.in
 import { NotificationMapper } from '../models/mappers/notification.mapper.js';
 import { NotificationPayload } from '../models/payloads/notification.payload.js';
 import { NotificationWriteService } from '../services/notification-write.service.js';
-import { Args, Mutation, Resolver } from '@nestjs/graphql';
+import { Args, Context, Mutation, Resolver } from '@nestjs/graphql';
 import { CreateUserInput } from '@omnixys/graphql';
 
 @Resolver()
@@ -103,15 +103,21 @@ export class NotificationMutationResolver {
   @Mutation(() => Boolean)
   async createSignupVerification(
     @Args('createUserInput') createUserInput: CreateUserInput,
+    @Context() ctx: any,
   ): Promise<boolean> {
+    const cookieReq = ctx.req;
+    const locale: string = cookieReq.cookies.locale ?? 'de-DE';
+
     this.logger.info(
-      'createSignupVerification: username=%s',
+      'createSignupVerification: username=%s locale=%s',
       createUserInput.username,
+      locale,
     );
 
-    await this.notificationWriteService.createSignupVerification(
+    await this.notificationWriteService.createSignupVerification({
       createUserInput,
-    );
+      locale,
+    });
 
     return true;
   }

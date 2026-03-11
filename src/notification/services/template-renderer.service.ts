@@ -2,14 +2,17 @@ import { Channel as PrismaChannel } from '../../prisma/generated/client.js';
 import { Channel } from '../models/enums/channel.enum.js';
 
 import { TemplateReadService } from '../../template/services/template-read.service.js';
+import { MagicLinkVariables } from '../models/variables/magic.link.variables.js';
+import { PasswordResetVariables } from '../models/variables/password-reset.variables.js';
+import { SignUpVerificationVariables } from '../models/variables/sign-up-verification.variables.js';
 import { NotificationRenderer, VariableSchema } from '../utils/notification.renderer.js';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 
-interface RenderTemplateInput {
+export interface RenderTemplateInput<TVariables = Record<string, unknown>> {
   templateKey: string;
-  channel: Channel | PrismaChannel;
+  channel: Channel;
   locale?: string;
-  variables?: Record<string, unknown>;
+  variables?: TVariables;
 }
 
 interface RenderResult {
@@ -19,6 +22,12 @@ interface RenderResult {
   renderedBody: string;
 }
 
+export interface TemplateVariablesMap {
+  'auth.password-reset.request': PasswordResetVariables;
+  'auth.magic-link.request': MagicLinkVariables;
+  'auth.sign-up-verification.request': SignUpVerificationVariables;
+}
+
 @Injectable()
 export class TemplateRenderService {
   constructor(
@@ -26,7 +35,11 @@ export class TemplateRenderService {
     private readonly renderer: NotificationRenderer,
   ) {}
 
-  async renderFromKey(input: RenderTemplateInput): Promise<RenderResult> {
+  async renderFromKey<TKey extends keyof TemplateVariablesMap>(
+    input: RenderTemplateInput<TemplateVariablesMap[TKey]> & {
+      templateKey: TKey;
+    },
+  ): Promise<RenderResult> {
     const { template, version } = await this.templateReadService.findActiveByKey(
       input.templateKey,
       input.channel,
