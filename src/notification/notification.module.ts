@@ -1,4 +1,3 @@
-import { AuthModule } from '../auth/auth.module.js';
 import { KafkaModule } from '../kafka/kafka.module.js';
 import { MessageModule } from '../messages/message.module.js';
 import { PrismaModule } from '../prisma/prisma.module.js';
@@ -13,9 +12,10 @@ import { NotificationWriteService } from './services/notification-write.service.
 import { TemplateRenderService } from './services/template-renderer.service.js';
 import { NotificationRenderer } from './utils/notification.renderer.js';
 import { Module } from '@nestjs/common';
+import { AuthModule } from '@omnixys/auth';
 
 @Module({
-  imports: [PrismaModule, AuthModule, TemplateModule, KafkaModule, ValkeyModule, MessageModule],
+  imports: [PrismaModule, TemplateModule, AuthModule, KafkaModule, ValkeyModule, MessageModule],
   providers: [
     NotificationRenderer,
     NotificationQueryResolver,

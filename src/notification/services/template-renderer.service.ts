@@ -1,4 +1,3 @@
-import { Channel as PrismaChannel } from '../../prisma/generated/client.js';
 import { Channel } from '../models/enums/channel.enum.js';
 
 import { TemplateReadService } from '../../template/services/template-read.service.js';
