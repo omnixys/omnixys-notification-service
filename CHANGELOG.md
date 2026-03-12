@@ -3,6 +3,24 @@
 All notable changes in this project will be documented in this file.
 
 
+## [2.0.0](https://github.com/omnixys/notification-service/compare/v1.0.1...v2.0.0) (2026-03-12)
+
+### Ci
+
+* **Ci:** update release.yml ([](https://github.com/omnixys/notification-service/commit/35b2fe3067c2b16e7f4da84f4d09cd253634d239))
+
+### Other
+
+* **Other:** Merge branch 'main' of https://github.com/omnixys/notification-service ([](https://github.com/omnixys/notification-service/commit/04ce9a2914b8b3a64d959e253e2ef146169c073b))
+
+### Schema
+
+* **Schema:** new schema ([](https://github.com/omnixys/notification-service/commit/ef2f754547e374ca03637b0a07a3a269e3ff0d1d))
+
+### Template
+
+* **Template:** add new Templates ([](https://github.com/omnixys/notification-service/commit/599c04f8a63f1a7120c603db728b9f3ca730ce91))
+
 ## [1.0.1](https://github.com/omnixys/notification-service/compare/v1.0.0...v1.0.1) (2026-03-10)
 
 ### Package.json
