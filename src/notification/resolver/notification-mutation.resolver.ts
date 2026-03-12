@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
-/* eslint-disable curly */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 import { LoggerPlus } from '../../logger/logger-plus.js';
 import { LoggerPlusService } from '../../logger/logger-plus.service.js';
@@ -8,10 +6,8 @@ import { NotificationMapper } from '../models/mappers/notification.mapper.js';
 import { NotificationPayload } from '../models/payloads/notification.payload.js';
 import { NotificationWriteService } from '../services/notification-write.service.js';
 import { Args, Mutation, Resolver } from '@nestjs/graphql';
-import { ClientIp, RequestCookies, RequestHeaders } from '@omnixys/context';
+import { ClientIp, Device, Location, RequestCookies } from '@omnixys/context';
 import { CreateUserInput } from '@omnixys/graphql';
-import geoip from 'geoip-lite';
-import { UAParser } from 'ua-parser-js';
 
 @Resolver()
 export class NotificationMutationResolver {
@@ -110,7 +106,8 @@ export class NotificationMutationResolver {
   async createSignupVerification(
     @Args('createUserInput') createUserInput: CreateUserInput,
     @RequestCookies() cookies: Record<string, string>,
-    @RequestHeaders() headers: Record<string, string>,
+    @Device() device: string,
+    @Location() location: string,
     @ClientIp() ipAddress?: string,
   ): Promise<boolean> {
     const locale = cookies.locale ?? 'en-US';
@@ -121,12 +118,6 @@ export class NotificationMutationResolver {
       locale,
     );
 
-    const userAgent = headers['user-agent'];
-    const device = extractDevice(userAgent);
-
-    const geo = ipAddress ? geoip.lookup(ipAddress) : null;
-    const location = geo ? `${geo.city}, ${geo.country}` : 'Unknown location';
-
     console.debug({ ipAddress, device, location });
 
     await this.notificationWriteService.createSignupVerification({
@@ -136,19 +127,4 @@ export class NotificationMutationResolver {
 
     return true;
   }
-}
-
-export function extractDevice(userAgent?: string) {
-  if (!userAgent) return 'Unknown device';
-
-  if (userAgent.includes('PostmanRuntime')) {
-    return 'Postman client';
-  }
-
-  const parser = new UAParser(userAgent);
-
-  const browser = parser.getBrowser().name ?? 'Unknown browser';
-  const os = parser.getOS().name ?? 'Unknown OS';
-
-  return `${browser} on ${os}`;
 }

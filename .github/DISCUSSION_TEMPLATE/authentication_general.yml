@@ -14,9 +14,9 @@
 # For more information, visit <https://www.gnu.org/licenses/>.
 
 # name: 🧵 General Discussion
-# description: Start an open discussion or share general feedback about the Authentication Service.
-labels: ["general", "authentication"]
-title: "[Authentication Service Discussion] "
+# description: Start an open discussion or share general feedback about the Notification Service.
+labels: ["general", "notification"]
+title: "[Notification Service Discussion] "
 # category: "🧵 General"
 
 body:
@@ -24,7 +24,7 @@ body:
     attributes:
       value: |
         ## 💬 Topic
-        This space is for open conversations, brainstorming, and general feedback related to the Authentication Service.
+        This space is for open conversations, brainstorming, and general feedback related to the Notification Service.
 
   - type: textarea
     id: topic

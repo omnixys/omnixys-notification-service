@@ -1,8 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /**
  * @license GPL-3.0-or-later
  * Copyright (C) 2025 Caleb Gyamfi - Omnixys Technologies
@@ -30,9 +25,12 @@ import {
 } from '../kafka/interface/kafka-event.interface.js';
 import { getTopic, getTopics } from '../kafka/kafka-topic.properties.js';
 import { LoggerPlusService } from '../logger/logger-plus.service.js';
-import { UserCredentialDTO } from '../notification/models/dto/user-created-schema.dto.js';
 import { NotificationWriteService } from '../notification/services/notification-write.service.js';
 import { Injectable } from '@nestjs/common';
+import {
+  SendMagicLinkMessageDTO,
+  SendResetLinkMessageDTO,
+} from '@omnixys/contracts';
 
 /**
  * Kafka event handler responsible for useristrative commands such as
@@ -74,11 +72,12 @@ export class AuthenticationHandler implements KafkaEventHandler {
   )
   async handle(
     topic: string,
-    data: { payload: UserCredentialDTO },
+    data: SendMagicLinkMessageDTO | SendResetLinkMessageDTO,
     context: KafkaEventContext,
   ): Promise<void> {
     this.logger.warn(`User command received: ${topic}`);
     this.logger.debug('Kafka context: %o', context);
+    this.logger.debug('Kafka data: %o', data);
 
     switch (topic) {
       // case getTopic('sendCredentials'):
@@ -86,11 +85,11 @@ export class AuthenticationHandler implements KafkaEventHandler {
       //   break;
 
       case getTopic('sendRequestReset'):
-        await this.sendRequestReset(data as any);
+        await this.sendRequestReset(data);
         break;
 
       case getTopic('sendMagigLink'):
-        await this.sendMagigLink(data as any);
+        await this.sendMagigLink(data);
         break;
 
       default:
@@ -104,44 +103,11 @@ export class AuthenticationHandler implements KafkaEventHandler {
   //   await this.notificationWriteService.sendCredentials(data.payload);
   // }
 
-  private async sendRequestReset(data: {
-    payload: {
-      username: string;
-      token: string;
-      email: string;
-      locale: string;
-      device: string;
-      ipAddress: string;
-      location: string;
-    };
-  }): Promise<void> {
-    void this.service.sendMagigLink({
-      token: data.payload.token,
-      email: data.payload.email,
-      username: data.payload.username,
-      locale: data.payload.locale,
-      device: data.payload.device,
-      ipAddress: data.payload.ipAddress,
-    });
+  private async sendRequestReset(data: SendResetLinkMessageDTO): Promise<void> {
+    void this.service.sendRequestReset(data.payload);
   }
 
-  private async sendMagigLink(data: {
-    payload: {
-      username: string;
-      token: string;
-      email: string;
-      locale: string;
-      device: string;
-      ipAddress: string;
-    };
-  }): Promise<void> {
-    void this.service.sendMagigLink({
-      token: data.payload.token,
-      email: data.payload.email,
-      username: data.payload.username,
-      locale: data.payload.locale,
-      device: data.payload.device,
-      ipAddress: data.payload.ipAddress,
-    });
+  private async sendMagigLink(data: SendMagicLinkMessageDTO): Promise<void> {
+    void this.service.sendMagicLink(data.payload);
   }
 }

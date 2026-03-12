@@ -14,9 +14,9 @@
 # For more information, visit <https://www.gnu.org/licenses/>.
 
 # name: 🧪 Implementation or Architecture Discussion
-# description: Discuss technical design, architecture, or integration details for the Authentication Service.
-labels: ["🧪 Implementation", "authentication"]
-title: "[Authentication Implementation] "
+# description: Discuss technical design, architecture, or integration details for the Notification Service.
+labels: ["🧪 Implementation", "notification"]
+title: "[Notification Implementation] "
 # category: "🧪 Implementation Details"
 
 body:

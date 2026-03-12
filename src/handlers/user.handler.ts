@@ -128,7 +128,7 @@
 //         username: dto.username,
 //         verificationUrl,
 //       },
-//       createdBy: 'authentication-service',
+//       createdBy: 'notification-service',
 //     });
 
 //     // 3️⃣ Send Mail

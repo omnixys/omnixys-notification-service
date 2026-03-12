@@ -37,7 +37,7 @@ export async function seedMagicLinkTemplates(
 
 <h2 style="margin-top:0;color:#111;">Sicherer Login-Link</h2>
 
-<p>Hallo {{userName}},</p>
+<p>Hallo {{username}},</p>
 
 <p>du hast einen sicheren Login-Link für dein Omnixys-Konto angefordert.</p>
 
@@ -62,7 +62,7 @@ Anfragedetails:
 </p>
 <ul style="font-size:13px;color:#666;">
 <li>Zeitpunkt der Anfrage: {{requestTime}}</li>
-<li>IP-Adresse: {{ipAddress}}</li>
+<li>IP-Adresse: {{ip}}</li>
 <li>Gerät: {{device}}</li>
 <li>Standort: {{location}}</li>
 </ul>
@@ -92,14 +92,14 @@ Support: <a href="mailto:{{supportEmail}}">{{supportEmail}}</a>
       `,
       ContentFormat.HTML,
       {
-  userName: "string",
+  username: "string",
   actionUrl: "string",
-  ipAddress: "string",
-        requestTime: "string",
-    device: "string",
+  ip: "string",
+  requestTime: "string",
+  device: "string",
   location: "string",
   expiresInMinutes: "number",
-        supportEmail: "string",
+  supportEmail: "string",
 },
   );
   
@@ -126,7 +126,7 @@ Support: <a href="mailto:{{supportEmail}}">{{supportEmail}}</a>
 
 <h2 style="margin-top:0;color:#111;">Secure sign-in link</h2>
 
-<p>Hello {{userName}},</p>
+<p>Hello {{username}},</p>
 
 <p>You requested a secure sign-in link for your Omnixys account.</p>
 
@@ -151,7 +151,7 @@ Request Details:
 </p>
 <ul style="font-size:13px;color:#666;">
 <li>Request time: {{requestTime}}</li>
-<li>IP Address: {{ipAddress}}</li>
+<li>IP Address: {{ip}}</li>
 <li>Device: {{device}}</li>
 <li>Location: {{location}}</li>
 </ul>
@@ -182,14 +182,14 @@ Need help? Contact us at
       `,
       ContentFormat.HTML,
       {
-  userName: "string",
+  username: "string",
   actionUrl: "string",
-  ipAddress: "string",
-        requestTime: "string",
-    device: "string",
+  ip: "string",
+  requestTime: "string",
+  device: "string",
   location: "string",
   expiresInMinutes: "number",
-        supportEmail: "string",
+  supportEmail: "string",
 },
     );
   

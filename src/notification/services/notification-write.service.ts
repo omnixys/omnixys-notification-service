@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-useless-catch */
 
@@ -10,9 +12,11 @@ import { MailService } from '../../messages/services/mail.service.js';
 import { NotificationStatus, Priority, Prisma } from '../../prisma/generated/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { Channel } from '../models/enums/channel.enum.js';
+import { formatRequestTime } from '../utils/date.util.js';
 import { NotificationCacheService } from './notification-cache.service.js';
 import { TemplateRenderService } from './template-renderer.service.js';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { SendMagicLinkDTO, SendResetLinkDTO } from '@omnixys/contracts';
 import { CreateUserInput } from '@omnixys/graphql';
 
 const { APP_BASE_URL, VERIFY_PATH, MAGIC_PATH, RESET_PATH, FROM_SUPPORT, FROM_NO_REPLY } = env;
@@ -359,21 +363,7 @@ export class NotificationWriteService {
     return verificationId;
   }
 
-  async sendMagigLink({
-    token,
-    email,
-    locale,
-    username,
-    device,
-    ipAddress,
-  }: {
-    username: string;
-    token: string;
-    email: string;
-    locale: string;
-    device: string;
-    ipAddress: string;
-  }) {
+  async sendMagicLink({ token, email, locale, username, device, ip, location }: SendMagicLinkDTO) {
     this.logger.debug('creating Magic Link');
 
     const magicLink = `${APP_BASE_URL}${MAGIC_PATH}?token=${encodeURIComponent(token)}`;
@@ -385,11 +375,14 @@ export class NotificationWriteService {
         channel: Channel.EMAIL,
         locale,
         variables: {
-          firstName: username,
+          username,
           actionUrl: magicLink,
           expiresInMinutes: 15,
-          ipAddress,
+          ip,
           device,
+          location,
+          requestTime: formatRequestTime(locale),
+          supportEmail: FROM_SUPPORT,
         },
       });
 
@@ -401,11 +394,14 @@ export class NotificationWriteService {
       priority: Priority.NORMAL,
       templateId,
       variables: {
-        firstName: username,
+        username,
         actionUrl: magicLink,
         expiresInMinutes: 15,
-        ipAddress,
+        ip,
         device,
+        location,
+        requestTime: formatRequestTime(locale),
+        supportEmail: FROM_SUPPORT,
       },
       metadata: {
         flow: 'create-magic-link',
@@ -440,17 +436,9 @@ export class NotificationWriteService {
     locale,
     username,
     device,
-    ipAddress,
+    ip,
     location,
-  }: {
-    username: string;
-    token: string;
-    email: string;
-    locale: string;
-    device: string;
-    ipAddress: string;
-    location: string;
-  }) {
+  }: SendResetLinkDTO) {
     this.logger.debug('creating Reset Link');
 
     const resetLink = `${APP_BASE_URL}${RESET_PATH}?token=${encodeURIComponent(token)}`;
@@ -462,12 +450,13 @@ export class NotificationWriteService {
         channel: Channel.EMAIL,
         locale,
         variables: {
-          firstName: username,
+          username,
           actionUrl: resetLink,
           expiresInMinutes: 15,
-          ipAddress,
+          ip,
           device,
           location,
+          requestTime: formatRequestTime(locale),
           supportEmail: FROM_SUPPORT,
         },
       });
@@ -483,9 +472,10 @@ export class NotificationWriteService {
         firstName: username,
         actionUrl: resetLink,
         expiresInMinutes: 15,
-        ipAddress,
+        ip,
         device,
         location,
+        requestTime: formatRequestTime(locale),
         supportEmail: FROM_SUPPORT,
       },
       metadata: {

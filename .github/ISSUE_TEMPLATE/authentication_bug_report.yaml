@@ -13,10 +13,10 @@
 #
 # For more information, visit <https://www.gnu.org/licenses/>.
 
-name: 🐛 Authentication Service Bug Report
-description: Report a reproducible issue or unexpected behavior in the Authentication microservice
-title: '[Authentication Bug] '
-labels: [bug, authentication, needs-triage]
+name: 🐛 Notification Service Bug Report
+description: Report a reproducible issue or unexpected behavior in the Notification microservice
+title: '[Notification Bug] '
+labels: [bug, notification, needs-triage]
 assignees: []
 body:
   - type: markdown
@@ -51,7 +51,7 @@ body:
       label: Steps to reproduce
       description: How can we reproduce the bug?
       placeholder: |
-        1. Start the authentication-service with `pnpm run start:dev`
+        1. Start the notification-service with `pnpm run start:dev`
         2. Send a login mutation via GraphQL
         3. Observe error response
     validations:

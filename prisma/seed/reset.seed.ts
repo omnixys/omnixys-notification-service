@@ -37,7 +37,7 @@ export async function seedResetPasswordTemplates(
 
 <h2 style="margin-top:0;color:#111;">Passwort zurücksetzen</h2>
 
-<p>Hallo {{firstName}},</p>
+<p>Hallo {{username}},</p>
 
 <p>wir haben eine Anfrage erhalten, um das Passwort für dein Omnixys-Konto zurückzusetzen.</p>
 
@@ -61,7 +61,7 @@ Anfragedetails:
 </p>
 <ul style="font-size:13px;color:#666;">
 <li>Zeitpunkt der Anfrage: {{requestTime}}</li>
-<li>IP-Adresse: {{ipAddress}}</li>
+<li>IP-Adresse: {{ip}}</li>
 <li>Gerät: {{device}}</li>
 <li>Standort: {{location}}</li>
 </ul>
@@ -92,11 +92,11 @@ Support: <a href="mailto:{{supportEmail}}">{{supportEmail}}</a>
       `,
       ContentFormat.HTML,
       {
-    firstName: 'string',
+    username: 'string',
     actionUrl: 'string',
-        expiresInMinutes: 'number',
+    expiresInMinutes: 'number',
     requestTime: 'string',
-    ipAddress: 'string',
+    ip: 'string',
     device: 'string',
     location: 'string',
     supportEmail: 'string',
@@ -126,7 +126,7 @@ Support: <a href="mailto:{{supportEmail}}">{{supportEmail}}</a>
 
 <h2 style="margin-top:0;color:#111;">Reset your password</h2>
 
-<p>Hello {{firstName}},</p>
+<p>Hello {{username}},</p>
 
 <p>We received a request to reset the password for your Omnixys account.</p>
 
@@ -146,7 +146,7 @@ Request Details:
 </p>
 <ul style="font-size:13px;color:#666;">
 <li>Request time: {{requestTime}}</li>
-<li>IP Address: {{ipAddress}}</li>
+<li>IP Address: {{ip}}</li>
 <li>Device: {{device}}</li>
 <li>Location: {{location}}</li>
 </ul>
@@ -179,11 +179,11 @@ If you need assistance, contact us at
       `,
       ContentFormat.HTML,
       {
-    firstName: 'string',
+    username: 'string',
     actionUrl: 'string',
-        expiresInMinutes: 'number',
+    expiresInMinutes: 'number',
     requestTime: 'string',
-    ipAddress: 'string',
+    ip: 'string',
     device: 'string',
     location: 'string',
     supportEmail: 'string',

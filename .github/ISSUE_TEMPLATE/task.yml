@@ -11,9 +11,9 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # See the GNU General Public License for more details.
 name: ✅ Task
-description: Create or track a technical task within the Authentication Service project
+description: Create or track a technical task within the Notification Service project
 title: '[Auth Task] '
-labels: ['task', 'authentication']
+labels: ['task', 'notification']
 
 body:
   - type: input

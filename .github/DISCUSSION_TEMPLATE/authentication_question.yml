@@ -13,10 +13,10 @@
 #
 # For more information, visit <https://www.gnu.org/licenses/>.
 
-# name: ❓ Authentication Service Question or Support Request
-# description: Ask a question or request help with setup, deployment, or usage of the Authentication Service.
-labels: ["question", "authentication"]
-title: "[Authentication Question] "
+# name: ❓ Notification Service Question or Support Request
+# description: Ask a question or request help with setup, deployment, or usage of the Notification Service.
+labels: ["question", "notification"]
+title: "[Notification Question] "
 # category: "❓ Questions & Support"
 
 body:
@@ -46,7 +46,7 @@ body:
       placeholder: |
         Provide relevant background such as:
         - Environment (Docker Compose, Local Node, Kubernetes)
-        - Authentication Service version and dependencies
+        - Notification Service version and dependencies
         - Any related error messages or logs
     validations:
       required: true

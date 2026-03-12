@@ -1,9 +1,10 @@
 export interface PasswordResetVariables {
-  firstName: string;
+  username: string;
   actionUrl: string;
   expiresInMinutes: number;
-  ipAddress?: string;
-  device?: string;
-  location?: string;
+  requestTime: string;
+  ip: string;
+  device: string;
+  location: string;
   supportEmail?: string;
 }

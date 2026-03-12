@@ -13,10 +13,10 @@
 #
 # For more information, visit <https://www.gnu.org/licenses/>.
 
-name: 💡 Authentication Service Feature Request
-description: Suggest a new feature or enhancement for the Authentication microservice
-title: '[Authentication Feature] '
-labels: [enhancement, authentication]
+name: 💡 Notification Service Feature Request
+description: Suggest a new feature or enhancement for the Notification microservice
+title: '[Notification Feature] '
+labels: [enhancement, notification]
 body:
   - type: markdown
     attributes:
@@ -35,7 +35,7 @@ body:
     id: description
     attributes:
       label: Feature Description
-      placeholder: What should this feature do, and how does it improve authentication flow?
+      placeholder: What should this feature do, and how does it improve notification flow?
     validations:
       required: true
 

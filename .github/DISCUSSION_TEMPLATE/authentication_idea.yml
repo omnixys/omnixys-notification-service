@@ -13,10 +13,10 @@
 #
 # For more information, visit <https://www.gnu.org/licenses/>.
 
-# name: 💡 Authentication Service Idea or Proposal
-# description: Share an idea or suggestion to improve the Authentication microservice.
-labels: ["idea", "authentication"]
-title: "[Authentication Service Idea] "
+# name: 💡 Notification Service Idea or Proposal
+# description: Share an idea or suggestion to improve the Notification microservice.
+labels: ["idea", "notification"]
+title: "[Notification Service Idea] "
 # category: "💡 Ideas & Suggestions"
 
 body:
@@ -24,7 +24,7 @@ body:
     attributes:
       value: |
         ## 💭 Description
-        Propose an improvement, feature, or workflow enhancement for the Authentication Service.
+        Propose an improvement, feature, or workflow enhancement for the Notification Service.
 
   - type: textarea
     id: idea

@@ -13,10 +13,10 @@
 #
 # For more information, visit <https://www.gnu.org/licenses/>.
 
-name: 🆘 Authentication Service Support Request
-description: Get help with setup, configuration, or usage of the Authentication Service
-title: '[Authentication Support] '
-labels: [support, question, authentication]
+name: 🆘 Notification Service Support Request
+description: Get help with setup, configuration, or usage of the Notification Service
+title: '[Notification Support] '
+labels: [support, question, notification]
 body:
   - type: markdown
     attributes:

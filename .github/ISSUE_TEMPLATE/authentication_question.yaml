@@ -13,10 +13,10 @@
 #
 # For more information, visit <https://www.gnu.org/licenses/>.
 
-name: ❓ Authentication Service Question or Help Request
-description: Ask a question or request help regarding setup, configuration, or usage of the Authentication Service.
-title: '[Authentication Question] '
-labels: ['question', 'authentication', 'needs-triage']
+name: ❓ Notification Service Question or Help Request
+description: Ask a question or request help regarding setup, configuration, or usage of the Notification Service.
+title: '[Notification Question] '
+labels: ['question', 'notification', 'needs-triage']
 assignees: []
 body:
   - type: markdown
@@ -44,7 +44,7 @@ body:
       label: Context
       placeholder: |
         Describe what you were working on:
-        - Which version of the Authentication Service?
+        - Which version of the Notification Service?
         - Are you running via Docker Compose, local Node, or Kubernetes?
         - Any relevant dependencies (Keycloak, Redis, Kafka)?
     validations:

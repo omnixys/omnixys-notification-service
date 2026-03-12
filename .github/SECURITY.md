@@ -1,6 +1,6 @@
 # 🔒 Security Policy
 
-If you discover a vulnerability in the **Omnixys Authentication Service**, please follow the responsible disclosure process below.  
+If you discover a vulnerability in the **Omnixys Notification Service**, please follow the responsible disclosure process below.  
 Do **not** open public issues for sensitive security reports.
 
 ---

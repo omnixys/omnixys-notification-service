@@ -27,12 +27,12 @@ const { SERVICE } = env;
  */
 export const KafkaTopics = {
   [SERVICE]: {
-    sendCredentials: `${SERVICE}.notify.authentication`,
+    sendCredentials: `${SERVICE}.notify.notification`,
     sendSecurityAlert: `${SERVICE}.sendSecurityAlert.user`,
     resetPassword: `${SERVICE}.resetPassword.user`,
     createUser: `${SERVICE}.notify.user`,
-    sendRequestReset: `${SERVICE}.requestReset.authentication`,
-    sendMagigLink: `${SERVICE}.sendMagicLink.authentication`,
+    sendRequestReset: `${SERVICE}.requestReset.notification`,
+    sendMagigLink: `${SERVICE}.sendMagicLink.notification`,
   },
   gateway: {
     sendCredentials: `gateway.send.${SERVICE}`,

@@ -16,7 +16,7 @@ Warum ist diese Änderung notwendig?
 
 - [ ] Lokale Tests erfolgreich
 - [ ] Integration mit Kafka getestet
-- [ ] Keycloak-Authentication geprüft
+- [ ] Keycloak-Notification geprüft
 - [ ] CI/CD läuft durch
 
 ## 📸 Screenshots / Logs (optional)

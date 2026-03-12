@@ -1,6 +1,6 @@
-# 🤝 Contributing to Omnixys Authentication Service
+# 🤝 Contributing to Omnixys Notification Service
 
-Thank you for your interest in contributing to the **Omnixys Authentication Service**!  
+Thank you for your interest in contributing to the **Omnixys Notification Service**!  
 This document defines our contribution workflow, coding standards, and pull request guidelines.
 
 ---
@@ -9,8 +9,8 @@ This document defines our contribution workflow, coding standards, and pull requ
 
 1. **Fork and clone** the repository  
    ```bash
-   git clone https://github.com/your-username/omnixys-authentication-service.git
-   cd omnixys-authentication-service
+   git clone https://github.com/your-username/omnixys-notification-service.git
+   cd omnixys-notification-service
    ```
 
 2. **Install dependencies**

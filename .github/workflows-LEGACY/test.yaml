@@ -194,7 +194,7 @@ jobs:
       - name: 🧱 Build project
         run: pnpm build
 
-      - name: 🧪 Run E2E Authentication Tests
+      - name: 🧪 Run E2E Notification Tests
         run: |
           echo "🧪 Running Jest test suite..."
           pnpm t
@@ -203,7 +203,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-authentication-logs
+          name: e2e-notification-logs
           path: ./__tests__/reports/
 
       - name: 📊 Upload coverage to Codecov

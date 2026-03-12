@@ -14,8 +14,8 @@
 # For more information, visit <https://www.gnu.org/licenses/>.
 
 contact_links:
-  - name: 🔐 Authentication Service Docs
-    url: https://github.com/omnixys/omnixys-authentication-service#readme
+  - name: 🔐 Notification Service Docs
+    url: https://github.com/omnixys/omnixys-notification-service#readme
     about: Read the documentation before creating an issue.
   - name: 💬 Omnixys Discussion Board
     url: https://github.com/orgs/omnixys/discussions

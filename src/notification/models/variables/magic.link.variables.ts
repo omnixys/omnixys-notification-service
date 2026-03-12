@@ -1,7 +1,10 @@
 export interface MagicLinkVariables {
-  firstName: string;
+  username: string;
   actionUrl: string;
+  ip: string;
+  requestTime: string;
+  device: string;
+  location: string;
   expiresInMinutes: number;
-  ipAddress?: string;
-  device?: string;
+  supportEmail: string;
 }
