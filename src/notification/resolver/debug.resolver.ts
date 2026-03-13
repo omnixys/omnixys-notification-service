@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 import { LoggerPlus } from '../../logger/logger-plus.js';
 import { LoggerPlusService } from '../../logger/logger-plus.service.js';
@@ -7,7 +9,7 @@ import { UseGuards, UseInterceptors } from '@nestjs/common';
 import { Args, Mutation, Resolver } from '@nestjs/graphql';
 import { CookieAuthGuard, RoleGuard, Roles } from '@omnixys/auth';
 import { RequestCookies } from '@omnixys/context';
-import { RealmRole } from '@omnixys/contracts';
+import { RealmRoleType } from '@omnixys/contracts';
 import { CreateUserInput } from '@omnixys/graphql';
 
 @Resolver()
@@ -24,7 +26,7 @@ export class DebugResolver {
 
   @Mutation(() => String, { name: 'DEBUG_createSignupVerification' })
   @UseGuards(CookieAuthGuard, RoleGuard)
-  @Roles(RealmRole.ADMIN)
+  @Roles(RealmRoleType.ADMIN)
   async createSignupVerification(
     @Args('createUserInput') createUserInput: CreateUserInput,
     @RequestCookies() cookies: Record<string, string>,
