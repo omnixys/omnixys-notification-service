@@ -15,11 +15,11 @@
  * For more information, visit <https://www.gnu.org/licenses/>.
  */
 
-import { Module } from '@nestjs/common';
 import { AdminModule } from '../admin/admin.module.js';
 import { NotificationModule } from '../notification/notification.module.js';
 import { AdminHandler } from './admin.handler.js';
 import { AuthenticationHandler } from './authentication.handler.js';
+import { Module } from '@nestjs/common';
 
 @Module({
   imports: [AdminModule, NotificationModule],
