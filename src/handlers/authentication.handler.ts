@@ -68,7 +68,7 @@ export class AuthenticationHandler implements KafkaEventHandler {
    * @returns A Promise that resolves once the command has been processed.
    */
   @KafkaEvent(
-    ...getTopics('sendCredentials', 'sendRequestReset', 'sendMagigLink'),
+    ...getTopics('sendCredentials', 'sendRequestReset', 'sendMagicLink'),
   )
   async handle(
     topic: string,
@@ -88,7 +88,7 @@ export class AuthenticationHandler implements KafkaEventHandler {
         await this.sendRequestReset(data);
         break;
 
-      case getTopic('sendMagigLink'):
+      case getTopic('sendMagicLink'):
         await this.sendMagigLink(data);
         break;
 
