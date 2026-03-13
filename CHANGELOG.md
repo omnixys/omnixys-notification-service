@@ -3,6 +3,16 @@
 All notable changes in this project will be documented in this file.
 
 
+## [3.0.1](https://github.com/omnixys/notification-service/compare/v3.0.0...v3.0.1) (2026-03-13)
+
+### Other
+
+* **Other:** Merge branch 'main' of https://github.com/omnixys/notification-service ([](https://github.com/omnixys/notification-service/commit/fc9abdabc3974d915af4207ac681dedea9892535))
+
+### Update
+
+* **Update:** update @omnixys/graphql ([](https://github.com/omnixys/notification-service/commit/eecceacd2ac59758153ec332d450eb18c4494dc9))
+
 ## [3.0.0](https://github.com/omnixys/notification-service/compare/v2.0.0...v3.0.0) (2026-03-12)
 
 ### Other
