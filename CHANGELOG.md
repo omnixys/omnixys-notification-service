@@ -3,6 +3,16 @@
 All notable changes in this project will be documented in this file.
 
 
+## [1.0.1](https://github.com/omnixys/notification-service/compare/v1.0.0...v1.0.1) (2026-05-24)
+
+### Docker
+
+* **Docker:** fix pnpm version ([](https://github.com/omnixys/notification-service/commit/9aa56abd71eb40855126345f476331e2982a9158))
+
+### Prisma
+
+* **Prisma:** update prisma schema ([](https://github.com/omnixys/notification-service/commit/f37e23d3e94cddee921d22654aee788a4747579e))
+
 ## 1.0.0 (2026-05-01)
 
 ### 1.0.0
