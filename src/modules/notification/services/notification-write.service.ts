@@ -401,13 +401,14 @@ export class NotificationWriteService {
     });
   }
 
-  async confirmGuest(input: CreatePendingUserDTO, eventName: string, seat?: string): Promise<void> {
+  async confirmGuest(input: CreatePendingUserDTO, eventName: string, seat?: string, eventEndsAt?: Date): Promise<void> {
     return TraceRunner.run('Create Guest SignUp Verification', async () => {
       this.logger.debug('creating Guest signUp verification');
 
+      const finalInput = {...input, eventEndsAt}
       // 1️⃣ Store payload in Valkey
       const guestSignUpTokens: GuestSignUpTokenPayload =
-        await this.notificationCacheService.storeGuestVerificationPayload(input, 60 * 15);
+        await this.notificationCacheService.storeGuestVerificationPayload(finalInput, 60 * 15);
 
       const payload = {
         ...guestSignUpTokens,

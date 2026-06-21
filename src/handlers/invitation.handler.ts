@@ -63,7 +63,8 @@ export class InvitationHandler {
     context: IKafkaEventContext,
   ): Promise<void> {
     return TraceRunner.run('[HANDLER] confirmGuest', async () => {
-      const { token, eventName, seat, seatId } = payload;
+      this.logger.debug('[KAFKA HANDLER] Received Event Message to Add GuestId for Event', payload.eventName)
+      const { token, eventName, seat, seatId, eventEndsAt } = payload;
 
       const headers = context.headers;
 
@@ -92,10 +93,11 @@ export class InvitationHandler {
         ...input,
         seatId,
         actorId,
+        eventEndsAt,
       };
 
       try {
-        await this.service.confirmGuest(finalInput, eventName, seat);
+        await this.service.confirmGuest(finalInput, eventName, seat, eventEndsAt);
 
         await this.cache.delete(ValkeyKey.pendingContact, token);
       } catch (e: unknown) {
