@@ -17,7 +17,9 @@ export class WhatsAppService {
     try {
       await this.provider.send(input);
     } catch (error) {
-      if (isStructuredError(error)) throw error;
+      if (isStructuredError(error)) {
+        throw error;
+      }
       throw new NotificationDeliveryException('WHATSAPP', error);
     }
   }

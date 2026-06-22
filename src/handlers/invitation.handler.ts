@@ -15,9 +15,9 @@
  * For more information, visit <https://www.gnu.org/licenses/>.
  */
 
-import { NotificationStateException } from '../modules/notification/errors/notification.error.js';
 import { Injectable } from '@nestjs/common';
 import { ValkeyKey, ValkeyService } from '@omnixys/cache';
+import { FrameworkException } from '@omnixys/contracts';
 import { CreatePendingUserDTO, GuestNotificationDTO } from '@omnixys/shared';
 
 import { NotificationWriteService } from '../modules/notification/services/notification-write.service.js';
@@ -31,25 +31,20 @@ import {
 import { OmnixysLogger } from '@omnixys/logger';
 import { TraceRunner } from '@omnixys/observability';
 
-/**
- * Kafka event handler responsible for useristrative commands such as
- * shutdown and restart. It listens for specific user-related topics
- * and delegates the actual process control logic to the {@link UserService}.
- *
- * @category Messaging
- * @since 1.0.0
- */
+const PERMANENT_ERROR_CODES = new Set([
+  'NOTIFICATION_INPUT_INVALID',
+  'NOTIFICATION_STATE_INVALID',
+  'NOTIFICATION_CHANNEL_UNAVAILABLE',
+  'NOTIFICATION_NOT_FOUND',
+  'MESSAGE_INPUT_INVALID',
+  'TEMPLATE_NOT_FOUND',
+]);
+
 @KafkaEventHandler('invitation')
 @Injectable()
 export class InvitationHandler {
   private readonly logger;
 
-  /**
-   * Creates a new instance of {@link UserHandler}.
-   *
-   * @param loggerService - The central logger service used for structured logging.
-   * @param userService - The service responsible for handling system-level user operations.
-   */
   constructor(
     loggerService: OmnixysLogger,
     private readonly service: NotificationWriteService,
@@ -74,26 +69,28 @@ export class InvitationHandler {
         eventName,
         actorId,
       );
-      this.logger.debug(
-        'confirmGuest processing started: eventName=%s seat=%s actorId=%s',
-        eventName,
-        seat,
-        actorId,
-      );
 
-      this.logger.debug(
-        'confirmGuest pending contact lookup started: eventName=%s',
-        eventName,
-      );
       const raw = await this.cache.get(ValkeyKey.pendingContact, token);
 
-      this.logger.debug('confirmGuest pending contact found=%s', Boolean(raw));
       if (!raw) {
         this.logger.warn(
-          'confirmGuest message ignored: pending contact not found',
+          'confirmGuest skipped: pending contact not found (already processed or expired) token=%s',
+          token,
         );
-        throw new NotificationStateException('pending-contact-expired');
+        return;
       }
+
+      const idempotencyKey = `notification:confirmGuest:${token}`;
+      const alreadyProcessing = await this.cache.rawGet(idempotencyKey);
+      if (alreadyProcessing) {
+        this.logger.warn(
+          'confirmGuest skipped: already being processed token=%s',
+          token,
+        );
+        return;
+      }
+
+      await this.cache.rawSet(idempotencyKey, '1', 900);
 
       const input = JSON.parse(raw) as CreatePendingUserDTO;
 
@@ -137,24 +134,21 @@ export class InvitationHandler {
           actorId,
           e instanceof Error ? e.message : String(e),
         );
-        throw new NotificationStateException('guest-confirmation-failed', e);
+
+        const errorCode = e instanceof FrameworkException ? e.code : undefined;
+
+        if (errorCode && PERMANENT_ERROR_CODES.has(errorCode)) {
+          this.logger.warn(
+            'confirmGuest permanent error classified, not retrying: eventName=%s code=%s',
+            eventName,
+            errorCode,
+          );
+          return;
+        }
+
+        await this.cache.client.del(this.cache.key(idempotencyKey));
+        throw e;
       }
     });
   }
-
-  // @KafkaEvent(KafkaTopics.notification.createGuest)
-  // async handleCreateGuest(
-  //   payload: CreatePlusOneAccountDTO,
-  //   context: IKafkaEventContext,
-  // ): Promise<void> {
-  //   return TraceRunner.run('[HANDLER] Create Guest', async () => {
-  //     const headers = context.headers;
-  //     const actorId = headers[KAFKA_HEADERS.ACTOR_ID] ?? 'Unkown';
-
-  //     this.logger.debug('handleCreateGuest: %o | actorId=%s', payload, actorId);
-
-  //     await this.userWriteService.createGuestUser();
-  //     await this.adminWriteService.deleteUser(payload.userId, actorId);
-  //   });
-  // }
 }

@@ -6,6 +6,7 @@ import {
 import { Injectable } from '@nestjs/common';
 import { ValkeyKey, ValkeyService } from '@omnixys/cache';
 import { CreateUserInput } from '@omnixys/graphql';
+import { OmnixysLogger } from '@omnixys/logger';
 import { TraceRunner } from '@omnixys/observability';
 import {
   SignUpTokenPayload,
@@ -19,7 +20,14 @@ import {
 
 @Injectable()
 export class NotificationCacheService {
-  constructor(private readonly cache: ValkeyService) {}
+  private readonly logger;
+
+  constructor(
+    loggerService: OmnixysLogger,
+    private readonly cache: ValkeyService,
+  ) {
+    this.logger = loggerService.log(this.constructor.name);
+  }
 
   async storeSignupVerificationPayload(
     input: CreateUserInput,
@@ -58,6 +66,13 @@ export class NotificationCacheService {
         securityQuestions,
         meta: baseMeta,
       };
+
+      this.logger.debug(
+        '[TRACE] securityQuestions at cache-serialize boundary: %s %o from %s',
+        authPayload.firstName,
+        authPayload.securityQuestions,
+        authPayload.username,
+      );
 
       const [authKey, userKey, addressKey] = await Promise.all([
         this.cache.set(ValkeyKey.signupVerificationAuth, JSON.stringify(authPayload), ttlSeconds),

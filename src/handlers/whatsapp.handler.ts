@@ -1,6 +1,7 @@
-import { WhatsAppWebProvider } from '../modules/messages/providers/whatsapp/whatsapp-web.provider.js';
+import type { WhatsAppProvider } from '../modules/messages/providers/whatsapp/whatsapp.provider.interface.js';
+import { WHATSAPP_PROVIDER } from '../modules/messages/providers/whatsapp/whatsapp.provider.token.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   KafkaEvent,
   KafkaEventHandler,
@@ -19,7 +20,8 @@ export class WhatsAppHandler {
   private readonly log;
 
   constructor(
-    private readonly whatsapp: WhatsAppWebProvider,
+    @Inject(WHATSAPP_PROVIDER)
+    private readonly whatsapp: WhatsAppProvider,
     private readonly prisma: PrismaService,
     readonly omnixysLogger: OmnixysLogger,
     private readonly kafka: KafkaProducerService,

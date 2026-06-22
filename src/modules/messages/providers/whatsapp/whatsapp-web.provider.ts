@@ -36,6 +36,7 @@ export class WhatsAppWebProvider
   private ready = false;
   private initializing = false;
 
+  private readyPromise: Promise<void> | null = null;
   private resolveReady: (() => void) | null = null;
 
   private latestQr?: string;
@@ -57,8 +58,36 @@ export class WhatsAppWebProvider
 
   async onApplicationBootstrap(): Promise<void> {
     this.logger.log('Bootstrapping WhatsApp Web Provider...');
+    this.ensureReadyPromise();
+    void this.init();
+  }
 
-    void this.init(); // 🔥 non-blocking
+  private ensureReadyPromise(): void {
+    this.readyPromise ??= new Promise((resolve) => {
+      this.resolveReady = resolve;
+    });
+  }
+
+  private async waitForReady(timeoutMs = 45_000): Promise<void> {
+    if (this.ready) {
+      return;
+    }
+
+    this.ensureReadyPromise();
+
+    if (!this.initializing) {
+      await this.init();
+    }
+
+    if (!this.ready && this.readyPromise) {
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(
+          () => reject(new Error('WhatsApp Web client ready timeout')),
+          timeoutMs,
+        ),
+      );
+      await Promise.race([this.readyPromise, timeout]);
+    }
   }
 
   private async init(): Promise<void> {
@@ -74,7 +103,6 @@ export class WhatsAppWebProvider
     };
     const { Client: WhatsAppClient, LocalAuth } = pkg.default ?? pkg;
 
-    // 🔥 cleanup old client (important!)
     if (this.client) {
       try {
         await this.client.destroy();
@@ -132,6 +160,7 @@ export class WhatsAppWebProvider
       this.latestQr = undefined;
 
       this.resolveReady?.();
+      this.resolveReady = null;
 
       const chats = await client.getChats();
       this.logger.debug('Chats loaded: %s', chats.length);
@@ -199,7 +228,9 @@ export class WhatsAppWebProvider
       this.initializing = false;
       this.state = WhatsAppState.DISCONNECTED;
 
-      // 🔥 auto reconnect
+      this.readyPromise = null;
+      this.resolveReady = null;
+
       setTimeout(() => {
         void this.init();
       }, 5000);
@@ -215,11 +246,13 @@ export class WhatsAppWebProvider
   }
 
   async send(input: SendWhatsappInput): Promise<SendWhatsappResult> {
-    if (!this.ready) {
-      this.logger.debug(
-        'WhatsApp Web client is not ready; initialization started',
+    await this.waitForReady();
+
+    if (!this.ready || !this.client) {
+      throw new NotificationChannelUnavailableException(
+        'WHATSAPP',
+        'client-not-ready',
       );
-      await this.init();
     }
 
     const chatId = this.formatNumber(input.to);

@@ -130,9 +130,10 @@ export class NotificationMutationResolver {
     const locale = cookies.locale ?? 'en-US';
 
     this.logger.info(
-      'createSignupVerification: username=%s locale=%s',
+      'createSignupVerification: username=%s locale=%s securityQuestions=%o',
       createUserInput.username,
       locale,
+      createUserInput.securityQuestions,
     );
 
     this.logger.debug(

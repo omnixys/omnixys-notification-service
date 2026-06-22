@@ -44,8 +44,8 @@ export class DebugResolver {
     const locale = cookies.locale ?? 'en-US';
 
     this.logger.debug(
-      'createSignupVerification: username=%s locale=%s',
-      createUserInput.username,
+      'createSignupVerification: input=%o locale=%s',
+      createUserInput,
       locale,
     );
 

@@ -9,6 +9,8 @@ import { PrismaService } from '../../../prisma/prisma.service.js';
 import { MailService } from '../../messages/services/mail.service.js';
 import { WhatsAppService } from '../../messages/services/whatsapp.service.js';
 import {
+  NotificationChannelUnavailableException,
+  NotificationDeliveryException,
   NotificationInputException,
   NotificationNotFoundException,
   NotificationStateException,
@@ -540,28 +542,39 @@ export class NotificationWriteService {
       /**
        * 5️⃣ Dispatch via Channel Adapter
        */
-      await this.dispatchNotification({
-        channel,
-        notificationId: notification.id,
-        to: input.email ?? phoneNumber,
-        subject: renderedTitle ?? '',
-        body: renderedBody,
-        flow: 'guest-verification',
-      });
+      try {
+        await this.dispatchNotification({
+          channel,
+          notificationId: notification.id,
+          to: input.email ?? phoneNumber,
+          subject: renderedTitle ?? '',
+          body: renderedBody,
+          flow: 'guest-verification',
+        });
 
-      /**
-       * 6️⃣ Mark as sent
-       */
-      await this.markAsSent(notification.id, {
-        provider: this.resolveProvider(channel),
-      });
+        /**
+         * 6️⃣ Mark as sent (only if dispatch succeeded)
+         */
+        await this.markAsSent(notification.id, {
+          provider: this.resolveProvider(channel),
+        });
 
-      this.logger.info(
-        'confirmGuest notification processing completed: notificationId=%s eventName=%s channel=%s',
-        notification.id,
-        eventName,
-        channel,
-      );
+        this.logger.info(
+          'confirmGuest notification processing completed: notificationId=%s eventName=%s channel=%s',
+          notification.id,
+          eventName,
+          channel,
+        );
+      } catch (error: unknown) {
+        this.logger.error(
+          'confirmGuest dispatch failed: notificationId=%s eventName=%s channel=%s error=%s',
+          notification.id,
+          eventName,
+          channel,
+          error instanceof Error ? error.message : String(error),
+        );
+        throw error;
+      }
     });
   }
 
@@ -956,106 +969,106 @@ export class NotificationWriteService {
       channel,
     );
 
-    switch (channel) {
-      case Channel.EMAIL:
-        if (!to) {
-          this.logger.error(
-            'dispatchNotification failed: notificationId=%s channel=%s error=%s',
+    try {
+      switch (channel) {
+        case Channel.EMAIL:
+          if (!to) {
+            throw new NotificationInputException('email-address-missing', {
+              notificationId,
+              channel,
+            });
+          }
+          if (!input.subject) {
+            throw new NotificationInputException('email-subject-missing', {
+              notificationId,
+              channel,
+            });
+          }
+
+          this.logger.debug(
+            'dispatchNotification provider invocation started: notificationId=%s provider=%s',
+            notificationId,
+            'resend',
+          );
+          await this.mailService.send({
+            to,
+            subject: input.subject,
+            html: body,
+            format: 'HTML',
+            from: FROM_NO_REPLY,
+            metadata: {
+              notificationId,
+              channel: 'email',
+              flow: flow ?? 'Unknown Flow',
+            },
+          });
+          this.logger.info(
+            'dispatchNotification completed: notificationId=%s channel=%s provider=%s',
             notificationId,
             channel,
-            'Missing email address',
+            'resend',
           );
-          throw new NotificationInputException('email-address-missing', {
+          return;
+
+        case Channel.WHATSAPP:
+          if (!to) {
+            throw new NotificationInputException('phone-number-missing', {
+              notificationId,
+              channel,
+            });
+          }
+
+          this.logger.debug(
+            'dispatchNotification provider invocation started: notificationId=%s provider=%s',
+            notificationId,
+            'whatsapp-api',
+          );
+          await this.whatsappService.send({
+            to,
+            message: body,
+            metadata: {
+              notificationId,
+              channel: 'whatsapp',
+              flow: flow ?? 'Unknown Flow',
+            },
+          });
+          this.logger.info(
+            'dispatchNotification completed: notificationId=%s channel=%s provider=%s',
+            notificationId,
+            channel,
+            'whatsapp-api',
+          );
+          return;
+
+        case Channel.IN_APP:
+        case Channel.PUSH:
+        case Channel.SMS:
+          throw new NotificationInputException('channel-unsupported', {
             notificationId,
             channel,
           });
-        }
-        if (!input.subject) {
-          this.logger.error(
-            'dispatchNotification failed: notificationId=%s channel=%s error=%s',
-            notificationId,
-            channel,
-            'Missing email subject',
-          );
-          throw new NotificationInputException('email-subject-missing', {
-            notificationId,
-            channel,
+      }
+    } catch (error) {
+      if (
+        error instanceof NotificationInputException ||
+        error instanceof NotificationDeliveryException ||
+        error instanceof NotificationStateException ||
+        error instanceof NotificationChannelUnavailableException
+      ) {
+        await this.prisma.notification
+          .update({
+            where: { id: notificationId },
+            data: { status: NotificationStatus.FAILED },
+          })
+          .catch((updateError) => {
+            this.logger.error(
+              'dispatchNotification status update failed: notificationId=%s error=%s',
+              notificationId,
+              String(updateError),
+            );
           });
-        }
-
-        this.logger.debug(
-          'dispatchNotification provider invocation started: notificationId=%s provider=%s',
-          notificationId,
-          'resend',
-        );
-        await this.mailService.send({
-          to,
-          subject: input.subject,
-          html: body,
-          format: 'HTML',
-          from: FROM_NO_REPLY,
-          metadata: {
-            notificationId,
-            channel: 'email',
-            flow: flow ?? 'Unknown Flow',
-          },
-        });
-        this.logger.info(
-          'dispatchNotification completed: notificationId=%s channel=%s provider=%s',
-          notificationId,
-          channel,
-          'resend',
-        );
-        return;
-
-      case Channel.WHATSAPP:
-        if (!to) {
-          this.logger.error(
-            'dispatchNotification failed: notificationId=%s channel=%s error=%s',
-            notificationId,
-            channel,
-            'Missing phone number',
-          );
-          throw new NotificationInputException('phone-number-missing', {
-            notificationId,
-            channel,
-          });
-        }
-
-        this.logger.debug(
-          'dispatchNotification provider invocation started: notificationId=%s provider=%s',
-          notificationId,
-          'whatsapp-api',
-        );
-        await this.whatsappService.send({
-          to,
-          message: body,
-          metadata: {
-            notificationId,
-            channel: 'whatsapp',
-            flow: flow ?? 'Unknown Flow',
-          },
-        });
-        this.logger.info(
-          'dispatchNotification completed: notificationId=%s channel=%s provider=%s',
-          notificationId,
-          channel,
-          'whatsapp-api',
-        );
-        return;
-
-      case Channel.IN_APP:
-      case Channel.PUSH:
-      case Channel.SMS:
-        this.logger.warn(
-          'dispatchNotification failed: notificationId=%s unsupportedChannel=%s',
-          notificationId,
-          channel,
-        );
-        throw new NotificationInputException('channel-unsupported', {
-          notificationId,
-          channel,
-        });
+      }
+      throw error;
     }
   }
 
