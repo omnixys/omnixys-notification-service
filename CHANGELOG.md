@@ -3,6 +3,16 @@
 All notable changes in this project will be documented in this file.
 
 
+## [1.0.2](https://github.com/omnixys/notification-service/compare/v1.0.1...v1.0.2) (2026-05-25)
+
+### Docker
+
+* **Docker:** Dockerfile ([](https://github.com/omnixys/notification-service/commit/942d90c6474b29cd3a5af695a06563f4dbdd1f2d))
+
+### Other
+
+* **Other:** Merge branch 'main' of https://github.com/omnixys/notification-service ([](https://github.com/omnixys/notification-service/commit/4a5f22a02f8a64eb950349c234e660faa3d0edbf))
+
 ## [1.0.1](https://github.com/omnixys/notification-service/compare/v1.0.0...v1.0.1) (2026-05-24)
 
 ### Docker
