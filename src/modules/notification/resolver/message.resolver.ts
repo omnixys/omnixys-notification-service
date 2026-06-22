@@ -155,9 +155,9 @@ export class MessageResolver {
     @CurrentUser() user: CurrentUserData,
   ): Promise<boolean> {
     this.log.debug(
-      'sendInAppMessage called with input: %o | actor: %o',
-      input,
-      user,
+      'sendInAppMessage called: recipientId=%s actorId=%s',
+      input.userId,
+      user.id,
     );
     return true;
   }
@@ -168,7 +168,7 @@ export class MessageResolver {
     @Args('input') input: SendEmail,
     @CurrentUser() user: CurrentUserData,
   ): Promise<boolean> {
-    this.log.debug('sendEmail called with input: %o | actor: %o', input, user);
+    this.log.debug('sendEmail called: to=%s actorId=%s', input.email, user.id);
     return true;
   }
 }

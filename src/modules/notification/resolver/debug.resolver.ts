@@ -1,16 +1,17 @@
 import { WhatsAppWebProvider } from '../../messages/providers/whatsapp/whatsapp-web.provider.js';
 import { NotificationWriteService } from '../services/notification-write.service.js';
-import { UseGuards, UseInterceptors } from '@nestjs/common';
+import { UseGuards } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { RequestCookies } from '@omnixys/context';
 import { CreateUserInput } from '@omnixys/graphql';
-import { OmnixysLogger, LoggingInterceptor } from '@omnixys/logger';
+import { OmnixysLogger } from '@omnixys/logger';
 import { CookieAuthGuard, RoleGuard, Roles } from '@omnixys/security';
 import { RealmRoleType } from '@omnixys/shared';
 import type { OmnixysCookieRequest } from '@omnixys/shared';
 
 @Resolver()
-@UseInterceptors(LoggingInterceptor)
+@UseGuards(CookieAuthGuard, RoleGuard)
+@Roles(RealmRoleType.ADMIN)
 export class DebugResolver {
   private readonly logger;
 
@@ -26,7 +27,7 @@ export class DebugResolver {
   getQr(): string | null {
     const url = this.whatsAppProvider.getQrCodeUrl();
 
-    this.logger.debug('QR requested: %s', url ?? 'null');
+    this.logger.debug('QR requested: available=%s', Boolean(url));
 
     return url;
   }
@@ -36,8 +37,6 @@ export class DebugResolver {
   }
 
   @Mutation(() => String, { name: 'DEBUG_createSignupVerification' })
-  @UseGuards(CookieAuthGuard, RoleGuard)
-  @Roles(RealmRoleType.ADMIN)
   async createSignupVerification(
     @Args('createUserInput') createUserInput: CreateUserInput,
     @RequestCookies() cookies: OmnixysCookieRequest,

@@ -142,7 +142,9 @@ export const env = {
   ),
 
   CHROME_PATH: getEnv('CHROME_PATH', '', { required: true }),
-  COOKIE_SECRET: getEnv('COOKIE_SECRET', 'omnixys-default-secret'),
+  COOKIE_SECRET: getEnv('COOKIE_SECRET', 'omnixys-development-secret', {
+    required: true,
+  }),
 } as const;
 
 // /**

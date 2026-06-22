@@ -105,7 +105,7 @@ export class NotificationCacheService {
        */
       const authPayload: GuestAuthKey = {
         actorId: input.actorId,
-        eventEndsAt: Date,
+        eventEndsAt: input.eventEndsAt,
         invitees: invitees.map((i) => ({
           invitationId: i.invitationId,
           email: i.email,
@@ -169,7 +169,7 @@ export class NotificationCacheService {
         this.cache.set(ValkeyKey.guestVerificationSeat, JSON.stringify(seatPayload), ttlSeconds),
       ]);
 
-      return { eventKey, authKey, userKey, seatKey, eventEndAt:  };
+      return { eventKey, authKey, userKey, seatKey, eventEndAt: input.eventEndsAt };
     });
   }
 }

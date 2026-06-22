@@ -8,8 +8,9 @@ import { Args, Mutation, Resolver } from '@nestjs/graphql';
 import { ClientIp, Device, Location, RequestCookies } from '@omnixys/context';
 import { CreateUserInput } from '@omnixys/graphql';
 import { OmnixysLogger } from '@omnixys/logger';
-import { CookieAuthGuard } from '@omnixys/security';
+import { CookieAuthGuard, RoleGuard, Roles } from '@omnixys/security';
 import type { OmnixysCookieRequest } from '@omnixys/shared';
+import { RealmRoleType } from '@omnixys/shared';
 
 @Resolver()
 export class NotificationMutationResolver {
@@ -27,6 +28,8 @@ export class NotificationMutationResolver {
   // ─────────────────────────────────────────────
 
   @Mutation(() => NotificationPayload)
+  @UseGuards(CookieAuthGuard, RoleGuard)
+  @Roles(RealmRoleType.ADMIN)
   async createNotification(
     @Args('input') input: CreateNotificationInput,
   ): Promise<NotificationPayload> {
@@ -47,6 +50,8 @@ export class NotificationMutationResolver {
   // ─────────────────────────────────────────────
 
   @Mutation(() => NotificationPayload)
+  @UseGuards(CookieAuthGuard, RoleGuard)
+  @Roles(RealmRoleType.ADMIN)
   async markNotificationAsRead(
     @Args('id') id: string,
   ): Promise<NotificationPayload> {
@@ -55,6 +60,8 @@ export class NotificationMutationResolver {
   }
 
   @Mutation(() => NotificationPayload)
+  @UseGuards(CookieAuthGuard, RoleGuard)
+  @Roles(RealmRoleType.ADMIN)
   async markNotificationAsUnread(
     @Args('id') id: string,
   ): Promise<NotificationPayload> {
@@ -67,6 +74,8 @@ export class NotificationMutationResolver {
   // ─────────────────────────────────────────────
 
   @Mutation(() => NotificationPayload)
+  @UseGuards(CookieAuthGuard, RoleGuard)
+  @Roles(RealmRoleType.ADMIN)
   async archiveNotification(
     @Args('id') id: string,
   ): Promise<NotificationPayload> {
@@ -75,6 +84,8 @@ export class NotificationMutationResolver {
   }
 
   @Mutation(() => NotificationPayload)
+  @UseGuards(CookieAuthGuard, RoleGuard)
+  @Roles(RealmRoleType.ADMIN)
   async unarchiveNotification(
     @Args('id') id: string,
   ): Promise<NotificationPayload> {
@@ -87,6 +98,8 @@ export class NotificationMutationResolver {
   // ─────────────────────────────────────────────
 
   @Mutation(() => NotificationPayload)
+  @UseGuards(CookieAuthGuard, RoleGuard)
+  @Roles(RealmRoleType.ADMIN)
   async cancelNotification(
     @Args('id') id: string,
   ): Promise<NotificationPayload> {
@@ -99,6 +112,8 @@ export class NotificationMutationResolver {
   // ─────────────────────────────────────────────
 
   @Mutation(() => Boolean)
+  @UseGuards(CookieAuthGuard, RoleGuard)
+  @Roles(RealmRoleType.ADMIN)
   async deleteNotification(@Args('id') id: string): Promise<boolean> {
     await this.notificationWriteService.delete(id);
     return true;
@@ -120,7 +135,12 @@ export class NotificationMutationResolver {
       locale,
     );
 
-    console.debug({ ipAddress, device, location });
+    this.logger.debug(
+      'createSignupVerification context: ipAddressAvailable=%s deviceAvailable=%s locationAvailable=%s',
+      Boolean(ipAddress),
+      Boolean(device),
+      Boolean(location),
+    );
 
     await this.notificationWriteService.createSignupVerification({
       createUserInput,

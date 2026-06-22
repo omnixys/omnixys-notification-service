@@ -15,11 +15,12 @@
  * For more information, visit <https://www.gnu.org/licenses/>.
  */
 
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import 'dotenv/config';
 
 import { env } from '../config/env.js';
 import { PrismaClient } from './generated/client.js';
+import { OmnixysLogger } from '@omnixys/logger';
 import { setupPrismaSpans } from '@omnixys/observability';
 import { PrismaPg } from '@prisma/adapter-pg';
 
@@ -27,9 +28,9 @@ const { DATABASE_URL } = env;
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
-  private readonly logger = new Logger(PrismaService.name);
+  private readonly logger;
 
-  constructor() {
+  constructor(logger: OmnixysLogger) {
     const adapter = new PrismaPg({
       connectionString: DATABASE_URL,
     });
@@ -38,17 +39,18 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       adapter,
       log: [{ emit: 'event', level: 'query' }],
     });
+    this.logger = logger.log(this.constructor.name);
   }
 
   async onModuleInit(): Promise<void> {
     setupPrismaSpans(this);
 
     await this.$connect();
-    this.logger.log('Prisma connected');
+    this.logger.info('Database connection established');
   }
 
   async onModuleDestroy(): Promise<void> {
     await this.$disconnect();
-    this.logger.log('Prisma disconnected');
+    this.logger.info('Database connection closed');
   }
 }

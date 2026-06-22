@@ -15,6 +15,7 @@
  * For more information, visit <https://www.gnu.org/licenses/>.
  */
 
+import { NotificationStateException } from '../modules/notification/errors/notification.error.js';
 import { Injectable } from '@nestjs/common';
 import { ValkeyKey, ValkeyService } from '@omnixys/cache';
 import { CreatePendingUserDTO, GuestNotificationDTO } from '@omnixys/shared';
@@ -63,28 +64,35 @@ export class InvitationHandler {
     context: IKafkaEventContext,
   ): Promise<void> {
     return TraceRunner.run('[HANDLER] confirmGuest', async () => {
-      this.logger.debug('[KAFKA HANDLER] Received Event Message to Add GuestId for Event', payload.eventName)
       const { token, eventName, seat, seatId, eventEndsAt } = payload;
 
       const headers = context.headers;
-
-      this.logger.debug('confirmGuest headers=%o', headers);
-
       const actorId = headers[KAFKA_HEADERS.ACTOR_ID] ?? 'Unkown';
 
       this.logger.debug(
-        'Confirming guest fo event %s with seat %s with token: %s | Actor=%s',
+        'confirmGuest message received: eventName=%s actorId=%s',
+        eventName,
+        actorId,
+      );
+      this.logger.debug(
+        'confirmGuest processing started: eventName=%s seat=%s actorId=%s',
         eventName,
         seat,
         actorId,
       );
 
+      this.logger.debug(
+        'confirmGuest pending contact lookup started: eventName=%s',
+        eventName,
+      );
       const raw = await this.cache.get(ValkeyKey.pendingContact, token);
 
       this.logger.debug('confirmGuest pending contact found=%s', Boolean(raw));
       if (!raw) {
-        this.logger.warn('Token not found or already consumed: %s', token);
-        throw new Error('Invalid or expired token');
+        this.logger.warn(
+          'confirmGuest message ignored: pending contact not found',
+        );
+        throw new NotificationStateException('pending-contact-expired');
       }
 
       const input = JSON.parse(raw) as CreatePendingUserDTO;
@@ -97,12 +105,39 @@ export class InvitationHandler {
       };
 
       try {
-        await this.service.confirmGuest(finalInput, eventName, seat, eventEndsAt);
+        this.logger.debug(
+          'confirmGuest notification processing started: eventName=%s',
+          eventName,
+        );
+        await this.service.confirmGuest({
+          input: finalInput,
+          eventName,
+          seat,
+          eventEndsAt,
+        });
+        this.logger.debug(
+          'confirmGuest notification processing completed: eventName=%s',
+          eventName,
+        );
 
+        this.logger.debug(
+          'confirmGuest pending contact deletion started: eventName=%s',
+          eventName,
+        );
         await this.cache.delete(ValkeyKey.pendingContact, token);
+        this.logger.info(
+          'confirmGuest processing completed: eventName=%s actorId=%s',
+          eventName,
+          actorId,
+        );
       } catch (e: unknown) {
-        this.logger.error(e instanceof Error ? e.message : String(e));
-        throw new Error('Already Confirmed bzw. kp', { cause: e });
+        this.logger.error(
+          'confirmGuest processing failed: eventName=%s actorId=%s error=%s',
+          eventName,
+          actorId,
+          e instanceof Error ? e.message : String(e),
+        );
+        throw new NotificationStateException('guest-confirmation-failed', e);
       }
     });
   }

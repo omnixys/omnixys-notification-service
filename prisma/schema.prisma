@@ -5,7 +5,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  schemas  = ["notification"]
 }
 
 //
@@ -21,7 +20,6 @@ enum Channel {
   WHATSAPP
 
   @@map("channel")
-  @@schema("notification")
 }
 
 enum ContentFormat {
@@ -30,7 +28,6 @@ enum ContentFormat {
   MARKDOWN
 
   @@map("content_format")
-  @@schema("notification")
 }
 
 enum Priority {
@@ -40,7 +37,6 @@ enum Priority {
   URGENT
 
   @@map("priority")
-  @@schema("notification")
 }
 
 enum NotificationStatus {
@@ -54,7 +50,6 @@ enum NotificationStatus {
   ARCHIVED
 
   @@map("notification_status")
-  @@schema("notification")
 }
 
 enum DeliveryAttemptStatus {
@@ -62,7 +57,6 @@ enum DeliveryAttemptStatus {
   FAILED
 
   @@map("delivery_attempt_status")
-  @@schema("notification")
 }
 
 enum WebhookEventType {
@@ -71,8 +65,6 @@ enum WebhookEventType {
   OPENED
   CLICKED
   REJECTED
-
-  @@schema("notification")
 }
 
 model Tenant {
@@ -84,7 +76,6 @@ model Tenant {
   notifications Notification[]
 
   @@map("tenant")
-  @@schema("notification")
 }
 
 //
@@ -109,7 +100,6 @@ model Template {
 
   @@unique([tenantId, key, channel])
   @@map("template")
-  @@schema("notification")
 }
 
 model TemplateVersion {
@@ -133,7 +123,6 @@ model TemplateVersion {
   @@unique([templateId, locale, version])
   @@index([templateId, locale, isActive])
   @@map("template_version")
-  @@schema("notification")
 }
 
 //
@@ -189,7 +178,6 @@ model Notification {
   @@index([recipientUsername, createdAt])
   @@index([expiresAt])
   @@map("notification")
-  @@schema("notification")
 }
 
 ////////////////////////////////
@@ -200,8 +188,6 @@ enum ChatStatus {
   OPEN
   ASSIGNED
   CLOSED
-
-  @@schema("notification")
 }
 
 enum MessageStatus {
@@ -210,15 +196,11 @@ enum MessageStatus {
   READ
   FAILED
   QUEUED
-
-  @@schema("notification")
 }
 
 enum MessageDirection {
   INBOUND
   OUTBOUND
-
-  @@schema("notification")
 }
 
 model WhatsAppChat {
@@ -245,7 +227,6 @@ model WhatsAppChat {
   @@index([status])
   @@index([updatedAt])
   @@index([assignedTo, status])
-  @@schema("notification")
 }
 
 model WhatsAppMessage {
@@ -276,7 +257,6 @@ model WhatsAppMessage {
   @@index([chatId])
   @@index([createdAt])
   @@index([status])
-  @@schema("notification")
 }
 
 model WhatsAppAssignmentHistory {
@@ -291,7 +271,6 @@ model WhatsAppAssignmentHistory {
   createdAt DateTime @default(now())
 
   @@index([chatRefId])
-  @@schema("notification")
 }
 
 model WhatsAppParticipant {
@@ -306,5 +285,4 @@ model WhatsAppParticipant {
   createdAt DateTime @default(now())
 
   @@unique([chatRefId, phone])
-  @@schema("notification")
 }

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/switch-exhaustiveness-check */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 
+import { getLogger } from '@omnixys/logger';
 import Handlebars from 'handlebars';
 
 export interface VariableDefinition {
@@ -19,6 +20,8 @@ export class NotificationTemplateValidationError extends Error {
 }
 
 export class NotificationRenderer {
+  private readonly logger = getLogger(NotificationRenderer.name);
+
   validate(schema: VariableSchema, vars: Record<string, unknown>): void {
     for (const [key, def] of Object.entries(schema)) {
       const value = vars[key];
@@ -83,7 +86,13 @@ export class NotificationRenderer {
       case 'url':
         try {
           new URL(String(value));
-        } catch {
+        } catch (error: unknown) {
+          this.logger.error(
+            'validateType failed: variable=%s type=%s error=%s',
+            key,
+            type,
+            error instanceof Error ? error.message : String(error),
+          );
           throw new NotificationTemplateValidationError(
             `Variable ${key} must be valid URL`,
           );

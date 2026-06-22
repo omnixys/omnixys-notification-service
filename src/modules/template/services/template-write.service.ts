@@ -24,7 +24,12 @@ export class TemplateWriteService {
   // CREATE TEMPLATE (with initial version)
   // ─────────────────────────────────────────────
   async create(input: CreateTemplateInput) {
-    this.logger.debug('create template: %o', input);
+    this.logger.debug(
+      'create template: key=%s channel=%s locale=%s',
+      input.key,
+      input.channel,
+      input.locale ?? 'de-DE',
+    );
 
     const prismaChannel = toPrismaModelChannel(input.channel);
 

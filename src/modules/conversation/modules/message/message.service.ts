@@ -6,6 +6,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { KafkaProducerService, KafkaTopics } from '@omnixys/kafka';
 import { CurrentUserData } from '@omnixys/security';
+import { RealmRoleType } from '@omnixys/shared';
 
 interface ChatIdentity {
   primaryId: string; // always used internally (lid preferred)
@@ -150,7 +151,7 @@ export class MessageService {
     });
 
     // Access control
-    if (chat.assignedTo && chat.assignedTo !== user.id && !user.role?.includes('ADMIN')) {
+    if (chat.assignedTo && chat.assignedTo !== user.id && user.role !== RealmRoleType.ADMIN) {
       throw new Error('Forbidden');
     }
 
@@ -241,7 +242,7 @@ export class MessageService {
     }
 
     // Access control
-    if (chat.assignedTo && chat.assignedTo !== user.id && !user.role?.includes('ADMIN')) {
+    if (chat.assignedTo && chat.assignedTo !== user.id && user.role !== RealmRoleType.ADMIN) {
       throw new Error('Forbidden');
     }
 
@@ -413,6 +414,11 @@ export class MessageService {
         this.logger.debug('Duplicate message ignored');
         return null;
       }
+      this.logger.error(
+        'createInboundMessage failed: chatRefId=%s error=%s',
+        chat.id,
+        error instanceof Error ? error.message : String(error),
+      );
       throw error;
     }
   }
@@ -480,10 +486,7 @@ export class MessageService {
     const primaryId = lid ?? phone;
 
     if (!primaryId) {
-      this.logger.error('Cannot resolve identity', {
-        from: msg.from,
-        to: msg.to,
-      });
+      this.logger.error('Cannot resolve WhatsApp chat identity');
       throw new Error('Cannot resolve chat identity');
     }
 

@@ -70,10 +70,25 @@ export class TemplateReadService {
     });
 
     if (!template || template.versions.length === 0) {
+      this.logger.warn(
+        'findActiveByKey not found: key=%s channel=%s locale=%s',
+        key,
+        channel,
+        locale,
+      );
       throw new NotFoundException(`Active template not found for key=${key}, locale=${locale}`);
     }
 
     const activeVersion = template.versions[0]!;
+
+    this.logger.debug(
+      'findActiveByKey completed: key=%s channel=%s locale=%s templateId=%s version=%s',
+      key,
+      channel,
+      locale,
+      template.id,
+      activeVersion.version,
+    );
 
     return {
       template,

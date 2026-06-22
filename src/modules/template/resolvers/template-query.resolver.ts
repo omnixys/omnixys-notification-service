@@ -4,9 +4,14 @@ import { Channel } from '../../notification/models/enums/channel.enum.js';
 import { TemplateMapper } from '../models/mappers/template.mapper.js';
 import { TemplatePayload } from '../models/payloads/template.payload.js';
 import { TemplateReadService } from '../services/template-read.service.js';
+import { UseGuards } from '@nestjs/common';
 import { OmnixysLogger } from '@omnixys/logger';
+import { CookieAuthGuard, RoleGuard, Roles } from '@omnixys/security';
+import { RealmRoleType } from '@omnixys/shared';
 
 @Resolver()
+@UseGuards(CookieAuthGuard, RoleGuard)
+@Roles(RealmRoleType.ADMIN)
 export class TemplateQueryResolver {
   private readonly logger;
 

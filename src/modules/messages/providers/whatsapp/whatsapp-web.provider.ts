@@ -116,10 +116,6 @@ export class WhatsAppWebProvider
       this.state = WhatsAppState.WAITING_FOR_QR;
 
       this.logger.warn('WhatsApp QR Code received');
-
-      this.logger.debug(
-        `QR URL: https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qr)}`,
-      );
     });
 
     client.on('ready', async () => {
@@ -174,20 +170,12 @@ export class WhatsAppWebProvider
         return;
       }
 
-      this.logger.debug('🔥 MESSAGE', {
-        hasMedia: msg.hasMedia,
-        text: msg.body,
-        type: msg.type,
-        timestamp: msg.timestamp,
-        from2: msg.from,
-        to2: msg.to,
-        author: msg.author,
-        deviceType: msg.deviceType,
-        isForwarded: msg.isForwarded,
-        forwardingScore: msg.forwardingScore,
-        isStatus: msg.isStatus,
-        isStarred: msg.isStarred,
-      });
+      this.logger.debug(
+        'Incoming WhatsApp message: hasMedia=%s type=%s timestamp=%s',
+        msg.hasMedia,
+        msg.type,
+        msg.timestamp,
+      );
 
       this.eventEmitter.emit('whatsapp.incoming', msg);
     });
@@ -224,14 +212,28 @@ export class WhatsAppWebProvider
 
   async send(input: SendWhatsappInput): Promise<SendWhatsappResult> {
     if (!this.ready) {
+      this.logger.debug(
+        'WhatsApp Web client is not ready; initialization started',
+      );
       await this.init();
     }
 
     const chatId = this.formatNumber(input.to);
 
-    this.logger.debug('Sending WhatsApp message to %s', chatId);
+    this.logger.debug('WhatsApp Web payload created');
+    this.logger.debug('Sending WhatsApp Web message');
 
-    return this.getClient().sendMessage(chatId, input.message);
+    try {
+      const result = await this.getClient().sendMessage(chatId, input.message);
+      this.logger.log('WhatsApp Web message sent successfully');
+      return result;
+    } catch (error: unknown) {
+      this.logger.error(
+        'WhatsApp Web send failed: %s',
+        error instanceof Error ? error.message : String(error),
+      );
+      throw error;
+    }
   }
 
   private getClient(): Client {

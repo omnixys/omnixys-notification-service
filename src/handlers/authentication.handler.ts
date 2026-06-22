@@ -60,8 +60,20 @@ export class AuthenticationHandler {
     _context: IKafkaEventContext,
   ): Promise<void> {
     return TraceRunner.run('[HANDLER] Send Request Reset', async () => {
-      this.logger.debug('sendRequestReset payload=%o', payload);
+      this.logger.debug(
+        'sendRequestReset message received: username=%s locale=%s',
+        payload.username,
+        payload.locale,
+      );
+      this.logger.debug(
+        'sendRequestReset processing started: username=%s',
+        payload.username,
+      );
       void this.service.sendRequestReset(payload);
+      this.logger.debug(
+        'sendRequestReset processing dispatched: username=%s',
+        payload.username,
+      );
     });
   }
 
@@ -71,8 +83,20 @@ export class AuthenticationHandler {
     _context: IKafkaEventContext,
   ): Promise<void> {
     return TraceRunner.run('[HANDLER] Send Magic Link', async () => {
-      this.logger.debug('sendMagicLink payload=%o', payload);
+      this.logger.debug(
+        'sendMagicLink message received: username=%s locale=%s',
+        payload.username,
+        payload.locale,
+      );
+      this.logger.debug(
+        'sendMagicLink processing started: username=%s',
+        payload.username,
+      );
       void this.service.sendMagicLink(payload);
+      this.logger.debug(
+        'sendMagicLink processing dispatched: username=%s',
+        payload.username,
+      );
     });
   }
 

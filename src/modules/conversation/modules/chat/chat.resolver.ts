@@ -31,6 +31,9 @@ export class ChatResolver {
     return this.chatService.assignChat(chatId, user.id, user);
   }
 
+  @Mutation(() => Chat)
+  @UseGuards(CookieAuthGuard, RoleGuard)
+  @Roles(RealmRoleType.ADMIN)
   async assignChat(
     @Args('chatId') chatId: string,
     @Args('userId') userId: string,

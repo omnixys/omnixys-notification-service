@@ -4,9 +4,10 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 
 import { PrismaService } from '../../../prisma/prisma.service.js';
+import { NotificationNotFoundException } from '../errors/notification.error.js';
 import { toPrismaModelChannel } from '../models/enums/channel.enum.js';
 import { NotificationFilterInput } from '../models/inputs/notification-filter.input.js';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { OmnixysLogger } from '@omnixys/logger';
 
 @Injectable()
@@ -31,7 +32,7 @@ export class NotificationReadService {
     });
 
     if (!notification) {
-      throw new NotFoundException('Notification not found');
+      throw new NotificationNotFoundException(id);
     }
 
     return notification;

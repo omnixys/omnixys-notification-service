@@ -25,6 +25,7 @@ import { NotificationModule } from './modules/notification/notification.module.j
 import { Module } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ValkeyModule } from '@omnixys/cache';
+import { ContextModule } from '@omnixys/context';
 import { OmnixysGraphQLModule } from '@omnixys/graphql';
 import { KafkaModule } from '@omnixys/kafka';
 import { LoggerModule } from '@omnixys/logger';
@@ -45,6 +46,7 @@ const {
 
 @Module({
   imports: [
+    ContextModule.forRoot(),
     OmnixysGraphQLModule.forRoot({
       autoSchemaFile:
         SCHEMA_TARGET === 'tmp'
@@ -105,6 +107,7 @@ const {
 
     LoggerModule.forRoot({
       serviceName: SERVICE,
+      registerGlobalInterceptor: true,
 
       kafka: {
         enabled: true,

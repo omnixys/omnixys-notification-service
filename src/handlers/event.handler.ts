@@ -64,8 +64,12 @@ export class EventHandler {
       const actorId = headers[KAFKA_HEADERS.ACTOR_ID] ?? 'Unkown';
 
       this.logger.debug(
-        'handleNotifyEventCancelled: %o | actorId=%s',
-        payload,
+        'handleNotifyEventCancelled message received: eventCount=%s actorId=%s',
+        payload.eventIds.length,
+        actorId,
+      );
+      this.logger.warn(
+        'handleNotifyEventCancelled message ignored: processing is not implemented actorId=%s',
         actorId,
       );
 

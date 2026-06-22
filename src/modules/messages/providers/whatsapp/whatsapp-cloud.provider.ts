@@ -32,7 +32,10 @@ export class WhatsAppCloudProvider implements WhatsAppProvider {
       },
     };
 
+    this.logger.debug('Cloud WhatsApp payload created');
+
     try {
+      this.logger.debug('Sending Cloud WhatsApp message');
       await axios.post(this.apiUrl, payload, {
         headers: {
           Authorization: `Bearer ${this.token}`,
@@ -40,10 +43,13 @@ export class WhatsAppCloudProvider implements WhatsAppProvider {
         },
       });
 
-      this.logger.debug('Cloud WhatsApp sent to %s', input.to);
+      this.logger.log('Cloud WhatsApp message sent successfully');
       return {};
     } catch (error) {
-      this.logger.error('Cloud WhatsApp send failed', error);
+      this.logger.error(
+        'Cloud WhatsApp send failed: %s',
+        error instanceof Error ? error.message : String(error),
+      );
       throw error;
     }
   }

@@ -29,13 +29,35 @@ export class WhatsAppHandler {
 
   @KafkaEvent(KafkaTopics.whatsapp.outgoing)
   async handleOutgoing(payload: WhatsappOutgoingDTO): Promise<void> {
-    await this.process(payload.value);
+    this.log.debug(`WhatsApp message received: ${payload.value.messageId}`);
+
+    try {
+      await this.process(payload.value);
+    } catch (err: unknown) {
+      this.log.error(
+        `WhatsApp message processing failed: ${payload.value.messageId}`,
+        this.toErrorMessage(err),
+      );
+      throw err;
+    }
   }
 
   // 🔁 RETRY HANDLER
   @KafkaEvent(KafkaTopics.whatsapp.retry)
   async handleRetry(event: WhatsappOutgoingDTO): Promise<void> {
-    await this.process(event.value);
+    this.log.debug(
+      `WhatsApp retry message received: ${event.value.messageId} retryCount=${event.value.retryCount ?? 0}`,
+    );
+
+    try {
+      await this.process(event.value);
+    } catch (err: unknown) {
+      this.log.error(
+        `WhatsApp retry processing failed: ${event.value.messageId}`,
+        this.toErrorMessage(err),
+      );
+      throw err;
+    }
   }
 
   private async process(payload: WhatsappOutgoingValueDTO): Promise<void> {
@@ -43,13 +65,18 @@ export class WhatsAppHandler {
 
     const retryCount = payload.retryCount ?? 0;
 
+    this.log.debug(
+      `WhatsApp message processing started: ${messageId} retryCount=${retryCount}`,
+    );
+
+    this.log.debug(`WhatsApp message lookup started: ${messageId}`);
     const existing = await this.prisma.whatsAppMessage.findUnique({
       where: { id: messageId },
       select: { status: true },
     });
 
     if (!existing) {
-      this.log.warn(`Message not found: ${messageId}`);
+      this.log.warn(`Message ignored because it was not found: ${messageId}`);
       return;
     }
 
@@ -63,13 +90,16 @@ export class WhatsAppHandler {
     }
 
     try {
+      this.log.debug(`Sending WhatsApp message: ${messageId}`);
       const sent = await this.whatsapp.send({
         to,
         message,
       });
+      this.log.debug(`WhatsApp provider responded: ${messageId}`);
 
       const externalId = sent?.id?._serialized;
 
+      this.log.debug(`Updating sent WhatsApp message: ${messageId}`);
       await this.prisma.whatsAppMessage.update({
         where: { id: messageId },
         data: {
@@ -78,7 +108,7 @@ export class WhatsAppHandler {
         },
       });
 
-      this.log.info(`Message sent: ${messageId}`);
+      this.log.info(`Message sent: ${messageId} retryCount=${retryCount}`);
     } catch (err: unknown) {
       this.log.error(`Send failed (${retryCount})`, this.toErrorMessage(err));
 
@@ -122,6 +152,10 @@ export class WhatsAppHandler {
         tenantId: 'omnixys',
       },
     });
+
+    this.log.info(
+      `Retry scheduled: ${payload.messageId} retryCount=${nextRetry}`,
+    );
   }
 
   // 💀 DLQ
@@ -131,8 +165,12 @@ export class WhatsAppHandler {
   ): Promise<void> {
     const errorMessage = this.toErrorMessage(err);
 
-    this.log.error(`Moving to DLQ: ${payload.messageId}`);
+    this.log.error(
+      `Moving to DLQ: ${payload.messageId} error=%s`,
+      errorMessage,
+    );
 
+    this.log.debug(`Updating failed WhatsApp message: ${payload.messageId}`);
     await this.prisma.whatsAppMessage.update({
       where: { id: payload.messageId },
       data: {
@@ -141,6 +179,7 @@ export class WhatsAppHandler {
       },
     });
 
+    this.log.debug(`Publishing WhatsApp message to DLQ: ${payload.messageId}`);
     await this.kafka.send({
       topic: KafkaTopics.whatsapp.dlq,
       payload: {
@@ -161,6 +200,8 @@ export class WhatsAppHandler {
         tenantId: 'omnixys',
       },
     });
+
+    this.log.info(`Message moved to DLQ: ${payload.messageId}`);
   }
 
   // 📈 EXPONENTIAL BACKOFF

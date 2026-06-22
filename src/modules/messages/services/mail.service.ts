@@ -18,20 +18,38 @@ export class MailService {
   }
 
   async send(dto: SendMailDTO) {
-    this.logger.debug('Sending mail to=%s subject=%s', dto.to, dto.subject);
+    const notificationId = dto.metadata?.notificationId ?? 'unknown';
+
+    this.logger.debug('Mail send requested: notificationId=%s to=%s', notificationId, dto.to);
 
     if (!dto.html && !dto.text) {
+      this.logger.error(
+        'Mail creation failed: notificationId=%s error=%s',
+        notificationId,
+        'Mail content is missing',
+      );
       throw new InternalServerErrorException('Mail must contain either html or text content');
     }
 
     try {
+      this.logger.debug('Invoking mail provider: notificationId=%s', notificationId);
       const result = await this.provider.send(dto);
 
-      this.logger.info('Mail sent successfully to=%s providerRef=%s', dto.to, result.providerRef);
+      this.logger.info(
+        'Mail sent successfully: notificationId=%s to=%s providerRef=%s',
+        notificationId,
+        dto.to,
+        result.providerRef,
+      );
 
       return result;
     } catch (error) {
-      this.logger.error('Mail sending failed to=%s error=%o', dto.to, error);
+      this.logger.error(
+        'Mail sending failed: notificationId=%s to=%s error=%s',
+        notificationId,
+        dto.to,
+        error instanceof Error ? error.message : String(error),
+      );
 
       throw new InternalServerErrorException('Mail sending failed');
     }

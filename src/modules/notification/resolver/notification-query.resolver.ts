@@ -4,13 +4,16 @@ import { NotificationFilterInput } from '../models/inputs/notification-filter.in
 import { NotificationMapper } from '../models/mappers/notification.mapper.js';
 import { NotificationPayload } from '../models/payloads/notification.payload.js';
 import { NotificationReadService } from '../services/notification-read.service.js';
-import { UseGuards } from '@nestjs/common';
+import { UnauthorizedException, UseGuards } from '@nestjs/common';
 import { OmnixysLogger } from '@omnixys/logger';
 import {
   CookieAuthGuard,
   CurrentUser,
   CurrentUserData,
+  RoleGuard,
+  Roles,
 } from '@omnixys/security';
+import { RealmRoleType } from '@omnixys/shared';
 
 @Resolver()
 export class NotificationQueryResolver {
@@ -28,6 +31,8 @@ export class NotificationQueryResolver {
   // ─────────────────────────────────────────────
 
   @Query(() => NotificationPayload)
+  @UseGuards(CookieAuthGuard, RoleGuard)
+  @Roles(RealmRoleType.ADMIN)
   async notification(@Args('id') id: string): Promise<NotificationPayload> {
     this.logger.debug('notification: id=%s', id);
 
@@ -40,6 +45,8 @@ export class NotificationQueryResolver {
   // ─────────────────────────────────────────────
 
   @Query(() => [NotificationPayload])
+  @UseGuards(CookieAuthGuard, RoleGuard)
+  @Roles(RealmRoleType.ADMIN)
   async notifications(
     @Args('filter', { nullable: true }) filter?: NotificationFilterInput,
     @Args('limit', { type: () => Int, nullable: true }) limit?: number,
@@ -65,7 +72,7 @@ export class NotificationQueryResolver {
     @Args('limit', { type: () => Int, nullable: true }) limit?: number,
   ): Promise<NotificationPayload[]> {
     if (!currentUser) {
-      throw new Error('Not Authenticated');
+      throw new UnauthorizedException('Not authenticated');
     }
 
     this.logger.debug(

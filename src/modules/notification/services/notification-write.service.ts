@@ -90,12 +90,14 @@ export class NotificationWriteService {
   // CREATE (Idempotent optional)
   // ─────────────────────────────────────────────
   async create(input: CreateNotificationDTO): Promise<Notification> {
-    this.logger.debug('create notification: %o', {
-      ...input,
-      variables: '[masked]',
-    });
+    this.logger.debug(
+      'create notification: recipientUsername=%s channel=%s templateId=%s',
+      input.recipientUsername,
+      input.channel,
+      input.templateId ?? 'none',
+    );
 
-    return this.prisma.notification.create({
+    const notification = await this.prisma.notification.create({
       data: {
         tenantId: input.tenantId ?? null,
         recipientUsername: input.recipientUsername,
@@ -117,6 +119,14 @@ export class NotificationWriteService {
         createdBy: input.createdBy ?? null,
       },
     });
+
+    this.logger.debug(
+      'create notification completed: notificationId=%s channel=%s',
+      notification.id,
+      notification.channel,
+    );
+
+    return notification;
   }
 
   // ─────────────────────────────────────────────
@@ -303,7 +313,8 @@ export class NotificationWriteService {
       );
     }
 
-    return this.prisma.notification.update({
+    this.logger.debug('markAsSent update started: notificationId=%s', id);
+    const notification = await this.prisma.notification.update({
       where: { id },
       data: {
         status: NotificationStatus.SENT,
@@ -312,6 +323,14 @@ export class NotificationWriteService {
         providerRef: options?.providerRef ?? existing.providerRef ?? null,
       },
     });
+
+    this.logger.info(
+      'markAsSent update completed: notificationId=%s provider=%s',
+      id,
+      notification.provider ?? 'unknown',
+    );
+
+    return notification;
   }
 
   async createSignupVerification({
@@ -322,15 +341,27 @@ export class NotificationWriteService {
     locale: Locale;
   }): Promise<string> {
     return TraceRunner.run('Create SignUp Verification', async () => {
-      this.logger.debug('creating signUp verification');
+      this.logger.debug(
+        'createSignupVerification processing started: username=%s locale=%s',
+        createUserInput.username,
+        locale,
+      );
 
       // 1️⃣ Store payload in Valkey
+      this.logger.debug(
+        'createSignupVerification payload storage started: username=%s',
+        createUserInput.username,
+      );
       const signUpTokens: SignUpTokenPayload =
         await this.notificationCacheService.storeSignupVerificationPayload(
           createUserInput,
           {},
           60 * 15,
         );
+      this.logger.debug(
+        'createSignupVerification payload stored: username=%s',
+        createUserInput.username,
+      );
 
       const payload = {
         ...signUpTokens,
@@ -340,7 +371,10 @@ export class NotificationWriteService {
       const verificationId = this.encryptService.encrypt(JSON.stringify(payload), true);
 
       const verifyUrl = `${APP_BASE_URL}${VERIFY_PATH}?token=${verificationId}`;
-      this.logger.debug('Created Verify Link %s', verifyUrl);
+      this.logger.debug(
+        'createSignupVerification link created: username=%s',
+        createUserInput.username,
+      );
 
       // 2️⃣ Render Template
       const { templateId, renderedTitle, renderedBody } =
@@ -391,24 +425,52 @@ export class NotificationWriteService {
           flow: 'signup-verification',
         },
       });
+      this.logger.debug(
+        'createSignupVerification mail sending completed: notificationId=%s',
+        notification.id,
+      );
 
       // 5️⃣ Mark as sent
       await this.markAsSent(notification.id, {
         provider: 'resend',
       });
 
+      this.logger.info(
+        'createSignupVerification processing completed: notificationId=%s username=%s',
+        notification.id,
+        createUserInput.username,
+      );
+
       return verificationId;
     });
   }
 
-  async confirmGuest(input: CreatePendingUserDTO, eventName: string, seat?: string, eventEndsAt?: Date): Promise<void> {
+  async confirmGuest({
+    input,
+    eventName,
+    seat,
+    eventEndsAt,
+  }: {
+    input: CreatePendingUserDTO;
+    eventName: string;
+    seat?: string;
+    eventEndsAt: Date;
+  }): Promise<void> {
     return TraceRunner.run('Create Guest SignUp Verification', async () => {
-      this.logger.debug('creating Guest signUp verification');
+      this.logger.debug(
+        'confirmGuest notification processing started: eventName=%s channel=pending',
+        eventName,
+      );
 
-      const finalInput = {...input, eventEndsAt}
+      const finalInput = { ...input, eventEndsAt };
       // 1️⃣ Store payload in Valkey
+      this.logger.debug(
+        'confirmGuest verification payload storage started: eventName=%s',
+        eventName,
+      );
       const guestSignUpTokens: GuestSignUpTokenPayload =
         await this.notificationCacheService.storeGuestVerificationPayload(finalInput, 60 * 15);
+      this.logger.debug('confirmGuest verification payload stored: eventName=%s', eventName);
 
       const payload = {
         ...guestSignUpTokens,
@@ -418,7 +480,7 @@ export class NotificationWriteService {
       const verificationId = this.encryptService.encrypt(JSON.stringify(payload), true);
 
       const verifyUrl = `${APP_BASE_URL}${VERIFY_GUEST_PATH}?token=${verificationId}`;
-      this.logger.debug('Created Guest Verify Link %s', verifyUrl);
+      this.logger.debug('confirmGuest verification link created: eventName=%s', eventName);
 
       const phoneNumber = getPrimaryPhoneNumber(input.phoneNumbers);
 
@@ -484,6 +546,13 @@ export class NotificationWriteService {
       await this.markAsSent(notification.id, {
         provider: this.resolveProvider(channel),
       });
+
+      this.logger.info(
+        'confirmGuest notification processing completed: notificationId=%s eventName=%s channel=%s',
+        notification.id,
+        eventName,
+        channel,
+      );
     });
   }
 
@@ -496,16 +565,36 @@ export class NotificationWriteService {
     ip,
     location,
   }: SendAuthLinkDTO): Promise<void> {
-    this.logger.debug('creating Magic Link');
+    this.logger.debug('sendMagicLink processing started: username=%s locale=%s', username, locale);
 
-    const magicLink = `${APP_BASE_URL}${MAGIC_PATH}?token=${encodeURIComponent(token)}`;
-    this.logger.debug('Created Magic Link %s', magicLink);
+    try {
+      const magicLink = `${APP_BASE_URL}${MAGIC_PATH}?token=${encodeURIComponent(token)}`;
+      this.logger.debug('sendMagicLink link created: username=%s', username);
 
-    const { templateId, renderedTitle, renderedBody } =
-      await this.templateRenderService.renderFromKey({
-        templateKey: 'auth.magic-link.request',
+      const { templateId, renderedTitle, renderedBody } =
+        await this.templateRenderService.renderFromKey({
+          templateKey: 'auth.magic-link.request',
+          channel: Channel.EMAIL,
+          locale,
+          variables: {
+            username,
+            actionUrl: magicLink,
+            expiresInMinutes: 15,
+            ip,
+            device,
+            location,
+            requestTime: formatRequestTime(locale),
+            supportEmail: FROM_SUPPORT,
+          },
+        });
+
+      const notification = await this.create({
+        tenantId: 'omnixys',
+        recipientUsername: username,
+        recipientAddress: email,
         channel: Channel.EMAIL,
-        locale,
+        priority: Priority.NORMAL,
+        templateId,
         variables: {
           username,
           actionUrl: magicLink,
@@ -516,50 +605,46 @@ export class NotificationWriteService {
           requestTime: formatRequestTime(locale),
           supportEmail: FROM_SUPPORT,
         },
+        metadata: {
+          flow: 'create-magic-link',
+        },
+        sensitive: false,
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+        createdBy: 'notification-service',
       });
 
-    const notification = await this.create({
-      tenantId: 'omnixys',
-      recipientUsername: username,
-      recipientAddress: email,
-      channel: Channel.EMAIL,
-      priority: Priority.NORMAL,
-      templateId,
-      variables: {
+      // 4️⃣ Send Mail
+      await this.mailService.send({
+        to: email,
+        subject: renderedTitle ?? '',
+        html: renderedBody,
+        format: 'HTML',
+        from: FROM_NO_REPLY,
+        metadata: {
+          notificationId: notification.id,
+          flow: 'signup-verification',
+        },
+      });
+      this.logger.debug('sendMagicLink mail sending completed: notificationId=%s', notification.id);
+
+      // 5️⃣ Mark as sent
+      await this.markAsSent(notification.id, {
+        provider: 'resend',
+      });
+
+      this.logger.info(
+        'sendMagicLink processing completed: notificationId=%s username=%s',
+        notification.id,
         username,
-        actionUrl: magicLink,
-        expiresInMinutes: 15,
-        ip,
-        device,
-        location,
-        requestTime: formatRequestTime(locale),
-        supportEmail: FROM_SUPPORT,
-      },
-      metadata: {
-        flow: 'create-magic-link',
-      },
-      sensitive: false,
-      expiresAt: new Date(Date.now() + 15 * 60 * 1000),
-      createdBy: 'notification-service',
-    });
-
-    // 4️⃣ Send Mail
-    await this.mailService.send({
-      to: email,
-      subject: renderedTitle ?? '',
-      html: renderedBody,
-      format: 'HTML',
-      from: FROM_NO_REPLY,
-      metadata: {
-        notificationId: notification.id,
-        flow: 'signup-verification',
-      },
-    });
-
-    // 5️⃣ Mark as sent
-    await this.markAsSent(notification.id, {
-      provider: 'resend',
-    });
+      );
+    } catch (error: unknown) {
+      this.logger.error(
+        'sendMagicLink processing failed: username=%s error=%s',
+        username,
+        error instanceof Error ? error.message : String(error),
+      );
+      throw error;
+    }
   }
 
   async sendRequestReset({
@@ -571,18 +656,42 @@ export class NotificationWriteService {
     ip,
     location,
   }: SendAuthLinkDTO): Promise<void> {
-    this.logger.debug('creating Reset Link');
+    this.logger.debug(
+      'sendRequestReset processing started: username=%s locale=%s',
+      username,
+      locale,
+    );
 
-    const resetLink = `${APP_BASE_URL}${RESET_PATH}?token=${encodeURIComponent(token)}`;
-    this.logger.debug('Created Reset Link %s', resetLink);
+    try {
+      const resetLink = `${APP_BASE_URL}${RESET_PATH}?token=${encodeURIComponent(token)}`;
+      this.logger.debug('sendRequestReset link created: username=%s', username);
 
-    const { templateId, renderedTitle, renderedBody } =
-      await this.templateRenderService.renderFromKey({
-        templateKey: 'auth.password-reset.request',
+      const { templateId, renderedTitle, renderedBody } =
+        await this.templateRenderService.renderFromKey({
+          templateKey: 'auth.password-reset.request',
+          channel: Channel.EMAIL,
+          locale,
+          variables: {
+            username,
+            actionUrl: resetLink,
+            expiresInMinutes: 15,
+            ip,
+            device,
+            location,
+            requestTime: formatRequestTime(locale),
+            supportEmail: FROM_SUPPORT,
+          },
+        });
+
+      const notification = await this.create({
+        tenantId: 'omnixys',
+        recipientUsername: username,
+        recipientAddress: email,
         channel: Channel.EMAIL,
-        locale,
+        priority: Priority.NORMAL,
+        templateId,
         variables: {
-          username,
+          firstName: username,
           actionUrl: resetLink,
           expiresInMinutes: 15,
           ip,
@@ -591,58 +700,61 @@ export class NotificationWriteService {
           requestTime: formatRequestTime(locale),
           supportEmail: FROM_SUPPORT,
         },
+        metadata: {
+          flow: 'create-passwort-reset-link',
+        },
+        sensitive: false,
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+        createdBy: 'notification-service',
       });
 
-    const notification = await this.create({
-      tenantId: 'omnixys',
-      recipientUsername: username,
-      recipientAddress: email,
-      channel: Channel.EMAIL,
-      priority: Priority.NORMAL,
-      templateId,
-      variables: {
-        firstName: username,
-        actionUrl: resetLink,
-        expiresInMinutes: 15,
-        ip,
-        device,
-        location,
-        requestTime: formatRequestTime(locale),
-        supportEmail: FROM_SUPPORT,
-      },
-      metadata: {
-        flow: 'create-passwort-reset-link',
-      },
-      sensitive: false,
-      expiresAt: new Date(Date.now() + 15 * 60 * 1000),
-      createdBy: 'notification-service',
-    });
+      // 4️⃣ Send Mail
+      await this.mailService.send({
+        to: email,
+        subject: renderedTitle ?? '',
+        html: renderedBody,
+        format: 'HTML',
+        from: FROM_NO_REPLY,
+        replyTo: FROM_SUPPORT,
+        metadata: {
+          notificationId: notification.id,
+          flow: 'create-passwort-reset-link',
+        },
+      });
+      this.logger.debug(
+        'sendRequestReset mail sending completed: notificationId=%s',
+        notification.id,
+      );
 
-    // 4️⃣ Send Mail
-    await this.mailService.send({
-      to: email,
-      subject: renderedTitle ?? '',
-      html: renderedBody,
-      format: 'HTML',
-      from: FROM_NO_REPLY,
-      replyTo: FROM_SUPPORT,
-      metadata: {
-        notificationId: notification.id,
-        flow: 'create-passwort-reset-link',
-      },
-    });
+      // 5️⃣ Mark as sent
+      await this.markAsSent(notification.id, {
+        provider: 'resend',
+      });
 
-    // 5️⃣ Mark as sent
-    await this.markAsSent(notification.id, {
-      provider: 'resend',
-    });
+      this.logger.info(
+        'sendRequestReset processing completed: notificationId=%s username=%s',
+        notification.id,
+        username,
+      );
+    } catch (error: unknown) {
+      this.logger.error(
+        'sendRequestReset processing failed: username=%s error=%s',
+        username,
+        error instanceof Error ? error.message : String(error),
+      );
+      throw error;
+    }
   }
 
   async notifyUser(data: NotifyUserCreationEvent): Promise<void> {
     return TraceRunner.run('Notify User Creation', async () => {
-      this.logger.debug('Notifying user creation: %o', data);
-
       const { email, phoneNumber, username, locale } = data.payload;
+
+      this.logger.debug(
+        'notifyUser processing started: username=%s locale=%s',
+        username,
+        locale ?? 'de-DE',
+      );
 
       /**
        * 1️⃣ Channel Resolution (deterministic, extensible)
@@ -707,12 +819,22 @@ export class NotificationWriteService {
       await this.markAsSent(notification.id, {
         provider: this.resolveProvider(channel),
       });
+
+      this.logger.info(
+        'notifyUser processing completed: notificationId=%s username=%s channel=%s',
+        notification.id,
+        username,
+        channel,
+      );
     });
   }
 
   async sendBulkInvitations(input: BulkInvitationDTO): Promise<BulkInvitationDTO['guests']> {
     return TraceRunner.run('[INVITATION] sendBulkInvitations', async () => {
-      this.logger.debug('sendBulkInvitations: inpu=%o', input);
+      this.logger.debug(
+        'sendBulkInvitations processing started: guestCount=%s',
+        input.guests.length,
+      );
       const results = [];
       const error: BulkInvitationDTO['guests'] = [];
 
@@ -731,7 +853,7 @@ export class NotificationWriteService {
         const phoneNumber = getPrimaryPhoneNumber(guest.phoneNumbers);
 
         if (!phoneNumber && !guest.email) {
-          this.logger.debug('sendBulkInvitations: NO Contact INFO SKIP!!');
+          this.logger.warn('sendBulkInvitations guest ignored: contact information missing');
           error.push(guest);
           continue;
         }
@@ -780,6 +902,13 @@ export class NotificationWriteService {
         results.push(notification);
       }
 
+      this.logger.info(
+        'sendBulkInvitations processing completed: requested=%s sent=%s ignored=%s',
+        input.guests.length,
+        results.length,
+        error.length,
+      );
+
       return error;
       // return results;
     });
@@ -811,15 +940,39 @@ export class NotificationWriteService {
     flow?: string;
   }): Promise<void> {
     const { channel, notificationId, to, body, flow } = input;
+
+    this.logger.debug(
+      'dispatchNotification started: notificationId=%s channel=%s',
+      notificationId,
+      channel,
+    );
+
     switch (channel) {
       case Channel.EMAIL:
         if (!to) {
+          this.logger.error(
+            'dispatchNotification failed: notificationId=%s channel=%s error=%s',
+            notificationId,
+            channel,
+            'Missing email address',
+          );
           throw new Error('Missing email address');
         }
         if (!input.subject) {
+          this.logger.error(
+            'dispatchNotification failed: notificationId=%s channel=%s error=%s',
+            notificationId,
+            channel,
+            'Missing email subject',
+          );
           throw new Error('Missing email subject');
         }
 
+        this.logger.debug(
+          'dispatchNotification provider invocation started: notificationId=%s provider=%s',
+          notificationId,
+          'resend',
+        );
         await this.mailService.send({
           to,
           subject: input.subject,
@@ -832,13 +985,30 @@ export class NotificationWriteService {
             flow: flow ?? 'Unknown Flow',
           },
         });
+        this.logger.info(
+          'dispatchNotification completed: notificationId=%s channel=%s provider=%s',
+          notificationId,
+          channel,
+          'resend',
+        );
         return;
 
       case Channel.WHATSAPP:
         if (!to) {
+          this.logger.error(
+            'dispatchNotification failed: notificationId=%s channel=%s error=%s',
+            notificationId,
+            channel,
+            'Missing phone number',
+          );
           throw new Error('Missing phone number');
         }
 
+        this.logger.debug(
+          'dispatchNotification provider invocation started: notificationId=%s provider=%s',
+          notificationId,
+          'whatsapp-api',
+        );
         await this.whatsappService.send({
           to,
           message: body,
@@ -848,11 +1018,22 @@ export class NotificationWriteService {
             flow: flow ?? 'Unknown Flow',
           },
         });
+        this.logger.info(
+          'dispatchNotification completed: notificationId=%s channel=%s provider=%s',
+          notificationId,
+          channel,
+          'whatsapp-api',
+        );
         return;
 
       case Channel.IN_APP:
       case Channel.PUSH:
       case Channel.SMS:
+        this.logger.warn(
+          'dispatchNotification failed: notificationId=%s unsupportedChannel=%s',
+          notificationId,
+          channel,
+        );
         throw new Error(`Unsupported channel: ${channel}`);
     }
   }

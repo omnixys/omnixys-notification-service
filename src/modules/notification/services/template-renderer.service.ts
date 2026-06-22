@@ -8,6 +8,7 @@ import { PasswordResetVariables } from '../models/variables/password-reset.varia
 import { SignUpVerificationVariables } from '../models/variables/sign-up-verification.variables.js';
 import { NotificationRenderer, VariableSchema } from '../utils/notification.renderer.js';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { getLogger } from '@omnixys/logger';
 import type { Locale } from '@omnixys/shared';
 
 export interface RenderTemplateInput<TVariables = Record<string, unknown>> {
@@ -44,6 +45,8 @@ export interface TemplateVariablesMap {
 
 @Injectable()
 export class TemplateRenderService {
+  private readonly logger = getLogger(TemplateRenderService.name);
+
   constructor(
     private readonly templateReadService: TemplateReadService,
     private readonly renderer: NotificationRenderer,
@@ -54,37 +57,73 @@ export class TemplateRenderService {
       templateKey: TKey;
     },
   ): Promise<RenderResult> {
-    const { template, version } = await this.templateReadService.findActiveByKey(
+    const locale = input.locale ?? 'de-DE';
+
+    this.logger.debug(
+      'renderFromKey template lookup started: key=%s channel=%s locale=%s',
       input.templateKey,
       input.channel,
-      input.locale ?? 'de-DE',
+      locale,
     );
 
-    if (!version) {
-      throw new InternalServerErrorException(
-        `Active template version missing for key=${input.templateKey}`,
+    try {
+      const { template, version } = await this.templateReadService.findActiveByKey(
+        input.templateKey,
+        input.channel,
+        locale,
       );
+
+      if (!version) {
+        throw new InternalServerErrorException(
+          `Active template version missing for key=${input.templateKey}`,
+        );
+      }
+
+      this.logger.debug(
+        'renderFromKey template loaded: key=%s templateId=%s version=%s',
+        input.templateKey,
+        template.id,
+        version.version,
+      );
+
+      const variables = input.variables ?? {};
+
+      // 1️⃣ Validate against TemplateVersion schema
+      this.logger.debug('renderFromKey template validation started: key=%s', input.templateKey);
+      this.renderer.validate((version.variables as VariableSchema) ?? {}, variables);
+
+      // 2️⃣ Render
+      this.logger.debug('renderFromKey template rendering started: key=%s', input.templateKey);
+      const rendered = this.renderer.render(
+        {
+          title: version.subject ?? undefined,
+          body: version.body,
+        },
+        variables,
+      );
+
+      this.logger.debug(
+        'renderFromKey template rendered successfully: key=%s templateId=%s version=%s',
+        input.templateKey,
+        template.id,
+        version.version,
+      );
+
+      return {
+        templateId: template.id,
+        version: version.version,
+        renderedTitle: rendered.title,
+        renderedBody: rendered.body,
+      };
+    } catch (error: unknown) {
+      this.logger.error(
+        'renderFromKey failed: key=%s channel=%s locale=%s error=%s',
+        input.templateKey,
+        input.channel,
+        locale,
+        error instanceof Error ? error.message : String(error),
+      );
+      throw error;
     }
-
-    const variables = input.variables ?? {};
-
-    // 1️⃣ Validate against TemplateVersion schema
-    this.renderer.validate((version.variables as VariableSchema) ?? {}, variables);
-
-    // 2️⃣ Render
-    const rendered = this.renderer.render(
-      {
-        title: version.subject ?? undefined,
-        body: version.body,
-      },
-      variables,
-    );
-
-    return {
-      templateId: template.id,
-      version: version.version,
-      renderedTitle: rendered.title,
-      renderedBody: rendered.body,
-    };
   }
 }

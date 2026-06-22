@@ -1,7 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 
 // mail/providers/resend.provider.ts
 
@@ -24,7 +21,14 @@ export class ResendProvider implements MailProvider {
   }
 
   async send(dto: SendMailDTO) {
+    const notificationId = dto.metadata?.notificationId ?? 'unknown';
+
     try {
+      this.logger.debug(
+        'Sending mail through Resend: notificationId=%s to=%s',
+        notificationId,
+        dto.to,
+      );
       const response = await this.resend.emails.send({
         from: dto.from ?? 'no-reply@omnixys.com',
         to: dto.to,
@@ -34,15 +38,23 @@ export class ResendProvider implements MailProvider {
         replyTo: dto.replyTo,
       });
 
+      this.logger.info(
+        'Resend mail sent successfully: notificationId=%s providerRef=%s',
+        notificationId,
+        response.data?.id,
+      );
+
       return {
         provider: 'resend',
         providerRef: response.data?.id,
       };
-    } catch (error: any) {
-      this.logger.error('Failed to send reset email', {
-        to: dto.to,
-        error: error?.message,
-      });
+    } catch (error: unknown) {
+      this.logger.error(
+        'Resend mail sending failed: notificationId=%s to=%s error=%s',
+        notificationId,
+        dto.to,
+        error instanceof Error ? error.message : String(error),
+      );
       throw error;
     }
   }

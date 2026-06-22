@@ -26,6 +26,9 @@ export class StreamBootstrapService implements OnModuleInit {
         return;
       }
 
+      this.logger.error(
+        `Stream creation failed: ${stream} error=${err instanceof Error ? err.message : String(err)}`,
+      );
       throw err;
     }
   }

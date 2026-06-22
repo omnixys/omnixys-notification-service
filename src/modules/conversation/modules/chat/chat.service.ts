@@ -5,6 +5,7 @@ import { PrismaService } from '../../../../prisma/prisma.service.js';
 import { Injectable } from '@nestjs/common';
 import { ValkeyLockService } from '@omnixys/cache';
 import { CurrentUserData } from '@omnixys/security';
+import { RealmRoleType } from '@omnixys/shared';
 
 @Injectable()
 export class ChatService {
@@ -34,7 +35,7 @@ export class ChatService {
         throw new Error('Chat is closed');
       }
 
-      if (chat.assignedTo && chat.assignedTo !== userId && !actor?.role?.includes('ADMIN')) {
+      if (chat.assignedTo && chat.assignedTo !== userId && actor.role !== RealmRoleType.ADMIN) {
         throw new Error('Chat already assigned');
       }
 
@@ -62,7 +63,7 @@ export class ChatService {
   }
 
   async getChats(user: CurrentUserData): Promise<WhatsAppChat[]> {
-    if (user.role?.includes('ADMIN')) {
+    if (user.role === RealmRoleType.ADMIN) {
       return this.prisma.whatsAppChat.findMany({
         orderBy: { updatedAt: 'desc' },
       });
