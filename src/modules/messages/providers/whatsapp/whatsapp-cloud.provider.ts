@@ -1,3 +1,7 @@
+import {
+  NotificationChannelUnavailableException,
+  NotificationDeliveryException,
+} from '../../../notification/errors/notification.error.js';
 import type {
   SendWhatsappInput,
   SendWhatsappResult,
@@ -20,7 +24,10 @@ export class WhatsAppCloudProvider implements WhatsAppProvider {
 
   async send(input: SendWhatsappInput): Promise<SendWhatsappResult> {
     if (!this.token) {
-      throw new Error('WhatsApp Cloud API token missing');
+      throw new NotificationChannelUnavailableException(
+        'WHATSAPP',
+        'provider-not-configured',
+      );
     }
 
     const payload = {
@@ -50,7 +57,7 @@ export class WhatsAppCloudProvider implements WhatsAppProvider {
         'Cloud WhatsApp send failed: %s',
         error instanceof Error ? error.message : String(error),
       );
-      throw error;
+      throw new NotificationDeliveryException('WHATSAPP', error);
     }
   }
 }

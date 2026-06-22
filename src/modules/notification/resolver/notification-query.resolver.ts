@@ -4,9 +4,10 @@ import { NotificationFilterInput } from '../models/inputs/notification-filter.in
 import { NotificationMapper } from '../models/mappers/notification.mapper.js';
 import { NotificationPayload } from '../models/payloads/notification.payload.js';
 import { NotificationReadService } from '../services/notification-read.service.js';
-import { UnauthorizedException, UseGuards } from '@nestjs/common';
+import { UseGuards } from '@nestjs/common';
 import { OmnixysLogger } from '@omnixys/logger';
 import {
+  AuthenticationRequiredException,
   CookieAuthGuard,
   CurrentUser,
   CurrentUserData,
@@ -72,7 +73,7 @@ export class NotificationQueryResolver {
     @Args('limit', { type: () => Int, nullable: true }) limit?: number,
   ): Promise<NotificationPayload[]> {
     if (!currentUser) {
-      throw new UnauthorizedException('Not authenticated');
+      throw new AuthenticationRequiredException();
     }
 
     this.logger.debug(

@@ -2,6 +2,12 @@
 
 import type { WhatsAppChat } from '../../../../prisma/generated/client.js';
 import { PrismaService } from '../../../../prisma/prisma.service.js';
+import {
+  ChatAccessDeniedException,
+  ChatAssignmentConflictException,
+  ChatNotFoundException,
+  ChatStateException,
+} from '../../../notification/errors/notification.error.js';
 import { Injectable } from '@nestjs/common';
 import { ValkeyLockService } from '@omnixys/cache';
 import { CurrentUserData } from '@omnixys/security';
@@ -19,7 +25,7 @@ export class ChatService {
     const token = await this.lock.acquireLock(lockKey, 3000);
 
     if (!token) {
-      throw new Error('Chat is being assigned by another user');
+      throw new ChatAssignmentConflictException(chatId);
     }
 
     try {
@@ -28,15 +34,15 @@ export class ChatService {
       });
 
       if (!chat) {
-        throw new Error('Chat not found');
+        throw new ChatNotFoundException(chatId);
       }
 
       if (chat.status === 'CLOSED') {
-        throw new Error('Chat is closed');
+        throw new ChatStateException(chatId, chat.status);
       }
 
       if (chat.assignedTo && chat.assignedTo !== userId && actor.role !== RealmRoleType.ADMIN) {
-        throw new Error('Chat already assigned');
+        throw new ChatAccessDeniedException(chatId, 'assigned-to-another-user');
       }
 
       const updated = await this.prisma.whatsAppChat.update({

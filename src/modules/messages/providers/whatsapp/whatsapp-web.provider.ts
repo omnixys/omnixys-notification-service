@@ -1,5 +1,9 @@
 import { env } from '../../../../config/env.js';
 import { PrismaService } from '../../../../prisma/prisma.service.js';
+import {
+  MessageInputException,
+  NotificationChannelUnavailableException,
+} from '../../../notification/errors/notification.error.js';
 import type {
   SendWhatsappInput,
   SendWhatsappResult,
@@ -238,7 +242,10 @@ export class WhatsAppWebProvider
 
   private getClient(): Client {
     if (!this.client) {
-      throw new Error('WhatsApp client is not initialized');
+      throw new NotificationChannelUnavailableException(
+        'WHATSAPP',
+        'client-not-initialized',
+      );
     }
 
     return this.client;
@@ -248,7 +255,7 @@ export class WhatsAppWebProvider
     const cleaned = phone.replace(/\D/g, '');
 
     if (!cleaned) {
-      throw new Error('Invalid phone number');
+      throw new MessageInputException('phone-number-invalid');
     }
 
     return `${cleaned}@c.us`;

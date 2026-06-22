@@ -3,10 +3,15 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 
 import { PrismaService } from '../../../prisma/prisma.service.js';
+import {
+  TemplateAlreadyExistsException,
+  TemplateNotFoundException,
+  TemplateStateException,
+} from '../../notification/errors/notification.error.js';
 import { toPrismaModelChannel } from '../../notification/models/enums/channel.enum.js';
 import { CreateTemplateInput } from '../models/inputs/create-template.input.js';
 import { UpdateTemplateInput } from '../models/inputs/update-template.input.js';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { OmnixysLogger } from '@omnixys/logger';
 
 @Injectable()
@@ -41,7 +46,10 @@ export class TemplateWriteService {
     });
 
     if (existing) {
-      throw new BadRequestException('Template with same key/channel already exists');
+      throw new TemplateAlreadyExistsException({
+        key: input.key,
+        channel: input.channel,
+      });
     }
 
     const template = await this.prisma.template.create({
@@ -85,13 +93,15 @@ export class TemplateWriteService {
     });
 
     if (!template) {
-      throw new BadRequestException('Template not found');
+      throw new TemplateNotFoundException({ templateId: input.id });
     }
 
     const activeVersion = template.versions.find((v) => v.isActive);
 
     if (!activeVersion) {
-      throw new BadRequestException('Active template version not found');
+      throw new TemplateStateException('active-version-missing', {
+        templateId: input.id,
+      });
     }
 
     // ── CASE 1: No version bump

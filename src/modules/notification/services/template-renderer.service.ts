@@ -1,3 +1,4 @@
+import { TemplateStateException } from '../errors/notification.error.js';
 import { Channel } from '../models/enums/channel.enum.js';
 
 import { TemplateReadService } from '../../template/services/template-read.service.js';
@@ -7,7 +8,7 @@ import { MagicLinkVariables } from '../models/variables/magic.link.variables.js'
 import { PasswordResetVariables } from '../models/variables/password-reset.variables.js';
 import { SignUpVerificationVariables } from '../models/variables/sign-up-verification.variables.js';
 import { NotificationRenderer, VariableSchema } from '../utils/notification.renderer.js';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { getLogger } from '@omnixys/logger';
 import type { Locale } from '@omnixys/shared';
 
@@ -74,9 +75,11 @@ export class TemplateRenderService {
       );
 
       if (!version) {
-        throw new InternalServerErrorException(
-          `Active template version missing for key=${input.templateKey}`,
-        );
+        throw new TemplateStateException('active-version-missing', {
+          templateKey: input.templateKey,
+          channel: input.channel,
+          locale,
+        });
       }
 
       this.logger.debug(

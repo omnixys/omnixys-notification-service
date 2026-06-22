@@ -1,5 +1,6 @@
 import { ContextAccessor } from '@omnixys/context';
 import {
+  ErrorCode,
   FrameworkException,
   type FrameworkExceptionOptions,
 } from '@omnixys/contracts';
@@ -34,20 +35,153 @@ export class NotificationDomainException extends FrameworkException {
 }
 
 export class NotificationNotFoundException extends NotificationDomainException {
-  constructor(notificationId: string) {
-    super('NOTIFICATION_NOT_FOUND', 'Notification was not found', {
+  constructor(notificationId?: string) {
+    super(ErrorCode.NOTIFICATION_NOT_FOUND, 'Notification was not found', {
       notificationId,
     });
   }
 }
 
 export class NotificationStateException extends NotificationDomainException {
-  constructor(reason: string, cause?: unknown) {
+  constructor(
+    reason: string,
+    cause?: unknown,
+    metadata: Readonly<Record<string, unknown>> = {},
+  ) {
     super(
-      'NOTIFICATION_STATE_INVALID',
+      ErrorCode.NOTIFICATION_STATE_INVALID,
       'Notification state is invalid or expired',
-      { reason },
+      { reason, ...metadata },
       cause,
     );
+  }
+}
+
+export class NotificationInputException extends NotificationDomainException {
+  constructor(
+    reason: string,
+    metadata: Readonly<Record<string, unknown>> = {},
+  ) {
+    super(
+      ErrorCode.NOTIFICATION_INPUT_INVALID,
+      'Notification input is invalid',
+      {
+        reason,
+        ...metadata,
+      },
+    );
+  }
+}
+
+export class NotificationDeliveryException extends NotificationDomainException {
+  constructor(
+    channel: string,
+    cause?: unknown,
+    metadata: Readonly<Record<string, unknown>> = {},
+  ) {
+    super(
+      ErrorCode.NOTIFICATION_DELIVERY_FAILED,
+      'Notification delivery failed',
+      { channel, ...metadata },
+      cause,
+    );
+  }
+}
+
+export class NotificationChannelUnavailableException extends NotificationDomainException {
+  constructor(channel: string, reason = 'provider-unavailable') {
+    super(
+      ErrorCode.NOTIFICATION_CHANNEL_UNAVAILABLE,
+      'Notification channel is unavailable',
+      { channel, reason },
+    );
+  }
+}
+
+export class TemplateNotFoundException extends NotificationDomainException {
+  constructor(metadata: Readonly<Record<string, unknown>> = {}) {
+    super(
+      ErrorCode.TEMPLATE_NOT_FOUND,
+      'Notification template was not found',
+      metadata,
+    );
+  }
+}
+
+export class TemplateAlreadyExistsException extends NotificationDomainException {
+  constructor(metadata: Readonly<Record<string, unknown>> = {}) {
+    super(
+      ErrorCode.TEMPLATE_ALREADY_EXISTS,
+      'Notification template already exists',
+      metadata,
+    );
+  }
+}
+
+export class TemplateStateException extends NotificationDomainException {
+  constructor(
+    reason: string,
+    metadata: Readonly<Record<string, unknown>> = {},
+  ) {
+    super(
+      ErrorCode.TEMPLATE_STATE_INVALID,
+      'Notification template state is invalid',
+      {
+        reason,
+        ...metadata,
+      },
+    );
+  }
+}
+
+export class ChatNotFoundException extends NotificationDomainException {
+  constructor(chatId?: string) {
+    super(ErrorCode.CHAT_NOT_FOUND, 'Chat was not found', { chatId });
+  }
+}
+
+export class ChatAccessDeniedException extends NotificationDomainException {
+  constructor(chatId?: string, reason = 'insufficient-permission') {
+    super(ErrorCode.CHAT_ACCESS_DENIED, 'Chat access is not authorized', {
+      chatId,
+      reason,
+    });
+  }
+}
+
+export class ChatStateException extends NotificationDomainException {
+  constructor(chatId: string, state: string) {
+    super(
+      ErrorCode.CHAT_STATE_INVALID,
+      'Chat state does not allow this operation',
+      {
+        chatId,
+        state,
+      },
+    );
+  }
+}
+
+export class ChatAssignmentConflictException extends NotificationDomainException {
+  constructor(chatId: string) {
+    super(
+      ErrorCode.CHAT_ASSIGNMENT_CONFLICT,
+      'Chat assignment is already in progress',
+      {
+        chatId,
+      },
+    );
+  }
+}
+
+export class MessageInputException extends NotificationDomainException {
+  constructor(
+    reason: string,
+    metadata: Readonly<Record<string, unknown>> = {},
+  ) {
+    super(ErrorCode.MESSAGE_INPUT_INVALID, 'Message input is invalid', {
+      reason,
+      ...metadata,
+    });
   }
 }

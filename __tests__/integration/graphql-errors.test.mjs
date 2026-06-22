@@ -1,4 +1,7 @@
-import { NotificationNotFoundException } from '../../dist/modules/notification/errors/notification.error.js';
+import {
+  NotificationNotFoundException,
+  NotificationDeliveryException,
+} from '../../dist/modules/notification/errors/notification.error.js';
 import { toGraphQLError } from '@omnixys/graphql';
 import { ContextAccessor } from '@omnixys/context';
 import assert from 'node:assert/strict';
@@ -16,4 +19,19 @@ test('GraphQL maps notification failures with canonical identifiers', () => {
       assert.equal(mapped.extensions.correlationId, 'correlation-graphql');
     },
   );
+});
+
+test('GraphQL exposes safe delivery details without the provider cause', () => {
+  const mapped = toGraphQLError(
+    new NotificationDeliveryException('EMAIL', new Error('provider secret'), {
+      notificationId: 'notification-1',
+      accessToken: 'must-not-leak',
+    }),
+  );
+
+  assert.equal(mapped.extensions.code, 'NOTIFICATION_DELIVERY_FAILED');
+  assert.deepEqual(mapped.extensions.details, {
+    channel: 'EMAIL',
+    notificationId: 'notification-1',
+  });
 });

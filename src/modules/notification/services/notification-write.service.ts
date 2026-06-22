@@ -8,6 +8,11 @@ import {
 import { PrismaService } from '../../../prisma/prisma.service.js';
 import { MailService } from '../../messages/services/mail.service.js';
 import { WhatsAppService } from '../../messages/services/whatsapp.service.js';
+import {
+  NotificationInputException,
+  NotificationNotFoundException,
+  NotificationStateException,
+} from '../errors/notification.error.js';
 import { Channel } from '../models/enums/channel.enum.js';
 import { BulkInvitationDTO } from '../models/inputs/send-invitations.input.js';
 import { getVerificationChannelLabel } from '../models/mappers/verification-channel-label.mapper.js';
@@ -16,7 +21,7 @@ import { CreateGuestVariables } from '../models/variables/create-guest.variables
 import { formatRequestTime } from '../utils/date.util.js';
 import { NotificationCacheService } from './notification-cache.service.js';
 import { SendInvitationVariables, TemplateRenderService } from './template-renderer.service.js';
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateUserInput } from '@omnixys/graphql';
 import { OmnixysLogger } from '@omnixys/logger';
 import { TraceRunner } from '@omnixys/observability';
@@ -206,7 +211,10 @@ export class NotificationWriteService {
       existing.status === NotificationStatus.SENT ||
       existing.status === NotificationStatus.DELIVERED
     ) {
-      throw new BadRequestException('Cannot cancel already sent/delivered notification');
+      throw new NotificationStateException('cannot-cancel-delivered', undefined, {
+        notificationId: id,
+        status: existing.status,
+      });
     }
 
     return this.prisma.notification.update({
@@ -285,7 +293,7 @@ export class NotificationWriteService {
     });
 
     if (!entity) {
-      throw new NotFoundException('Notification not found');
+      throw new NotificationNotFoundException(id);
     }
 
     return entity;
@@ -308,9 +316,10 @@ export class NotificationWriteService {
       existing.status !== NotificationStatus.PENDING &&
       existing.status !== NotificationStatus.PROCESSING
     ) {
-      throw new BadRequestException(
-        `Cannot mark notification as SENT from status ${existing.status}`,
-      );
+      throw new NotificationStateException('cannot-mark-sent', undefined, {
+        notificationId: id,
+        status: existing.status,
+      });
     }
 
     this.logger.debug('markAsSent update started: notificationId=%s', id);
@@ -928,7 +937,7 @@ export class NotificationWriteService {
       return Channel.WHATSAPP;
     }
 
-    throw new Error('No valid communication channel provided (email or phoneNumber required)');
+    throw new NotificationInputException('recipient-channel-missing');
   }
 
   private async dispatchNotification(input: {
@@ -956,7 +965,10 @@ export class NotificationWriteService {
             channel,
             'Missing email address',
           );
-          throw new Error('Missing email address');
+          throw new NotificationInputException('email-address-missing', {
+            notificationId,
+            channel,
+          });
         }
         if (!input.subject) {
           this.logger.error(
@@ -965,7 +977,10 @@ export class NotificationWriteService {
             channel,
             'Missing email subject',
           );
-          throw new Error('Missing email subject');
+          throw new NotificationInputException('email-subject-missing', {
+            notificationId,
+            channel,
+          });
         }
 
         this.logger.debug(
@@ -1001,7 +1016,10 @@ export class NotificationWriteService {
             channel,
             'Missing phone number',
           );
-          throw new Error('Missing phone number');
+          throw new NotificationInputException('phone-number-missing', {
+            notificationId,
+            channel,
+          });
         }
 
         this.logger.debug(
@@ -1034,7 +1052,10 @@ export class NotificationWriteService {
           notificationId,
           channel,
         );
-        throw new Error(`Unsupported channel: ${channel}`);
+        throw new NotificationInputException('channel-unsupported', {
+          notificationId,
+          channel,
+        });
     }
   }
 

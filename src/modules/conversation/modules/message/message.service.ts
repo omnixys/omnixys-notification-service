@@ -1,5 +1,10 @@
 import { Prisma, WhatsAppChat, WhatsAppMessage } from '../../../../prisma/generated/client.js';
 import { PrismaService } from '../../../../prisma/prisma.service.js';
+import {
+  ChatAccessDeniedException,
+  ChatNotFoundException,
+  MessageInputException,
+} from '../../../notification/errors/notification.error.js';
 import { MessageDirection } from '../../common/models/enums/message-direction.enum.js';
 import { WhatsAppRawMessageDTO } from './entities/whatsapp-message.raw.dto.js';
 import { Injectable, Logger } from '@nestjs/common';
@@ -152,7 +157,7 @@ export class MessageService {
 
     // Access control
     if (chat.assignedTo && chat.assignedTo !== user.id && user.role !== RealmRoleType.ADMIN) {
-      throw new Error('Forbidden');
+      throw new ChatAccessDeniedException(chat.chatId, 'assigned-to-another-user');
     }
 
     const [savedMessage] = await this.prisma.$transaction([
@@ -243,7 +248,7 @@ export class MessageService {
 
     // Access control
     if (chat.assignedTo && chat.assignedTo !== user.id && user.role !== RealmRoleType.ADMIN) {
-      throw new Error('Forbidden');
+      throw new ChatAccessDeniedException(chat.chatId, 'assigned-to-another-user');
     }
 
     const [savedMessage] = await this.prisma.$transaction([
@@ -325,11 +330,11 @@ export class MessageService {
     });
 
     if (!chat) {
-      throw new Error('Chat not found');
+      throw new ChatNotFoundException(chatId);
     }
 
     if (chat.assignedTo && chat.assignedTo !== user.id && !user.roles?.includes('ADMIN')) {
-      throw new Error('Forbidden');
+      throw new ChatAccessDeniedException(chatId, 'assigned-to-another-user');
     }
 
     return this.prisma.whatsAppMessage.findMany({
@@ -442,7 +447,7 @@ export class MessageService {
   private normalizeToChatId(phone: string): string {
     const cleaned = phone.replace(/\D/g, '');
     if (!cleaned) {
-      throw new Error('Invalid phone number');
+      throw new MessageInputException('phone-number-invalid');
     }
     return `${cleaned}@c.us`;
   }
@@ -487,7 +492,7 @@ export class MessageService {
 
     if (!primaryId) {
       this.logger.error('Cannot resolve WhatsApp chat identity');
-      throw new Error('Cannot resolve chat identity');
+      throw new MessageInputException('chat-identity-unresolved');
     }
 
     return { primaryId, phone };

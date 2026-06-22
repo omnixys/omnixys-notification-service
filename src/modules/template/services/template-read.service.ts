@@ -4,8 +4,9 @@
 
 import { Channel as PrismaChannel } from '../../../prisma/generated/client.js';
 import { PrismaService } from '../../../prisma/prisma.service.js';
+import { TemplateNotFoundException } from '../../notification/errors/notification.error.js';
 import { Channel, toPrismaModelChannel } from '../../notification/models/enums/channel.enum.js';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { OmnixysLogger } from '@omnixys/logger';
 
 @Injectable()
@@ -33,7 +34,7 @@ export class TemplateReadService {
     });
 
     if (!template) {
-      throw new NotFoundException('Template not found');
+      throw new TemplateNotFoundException({ templateId: id });
     }
 
     return template;
@@ -76,7 +77,7 @@ export class TemplateReadService {
         channel,
         locale,
       );
-      throw new NotFoundException(`Active template not found for key=${key}, locale=${locale}`);
+      throw new TemplateNotFoundException({ key, channel, locale, active: true });
     }
 
     const activeVersion = template.versions[0]!;
@@ -126,9 +127,7 @@ export class TemplateReadService {
     });
 
     if (!template || template.versions.length === 0) {
-      throw new NotFoundException(
-        `Template version not found for key=${key}, locale=${locale}, version=${version}`,
-      );
+      throw new TemplateNotFoundException({ key, channel, locale, version });
     }
 
     return {

@@ -1,3 +1,4 @@
+import { NotificationDeliveryException } from '../../notification/errors/notification.error.js';
 import type {
   SendWhatsappInput,
   WhatsAppProvider,
@@ -13,6 +14,17 @@ export class WhatsAppService {
   ) {}
 
   async send(input: SendWhatsappInput): Promise<void> {
-    await this.provider.send(input);
+    try {
+      await this.provider.send(input);
+    } catch (error) {
+      if (isStructuredError(error)) throw error;
+      throw new NotificationDeliveryException('WHATSAPP', error);
+    }
   }
+}
+
+function isStructuredError(error: unknown): error is { code: string } {
+  return (
+    !!error && typeof error === 'object' && typeof (error as { code?: unknown }).code === 'string'
+  );
 }

@@ -1,9 +1,13 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 
+import {
+  NotificationDeliveryException,
+  NotificationInputException,
+} from '../../notification/errors/notification.error.js';
 import { SendMailDTO } from '../models/dto/send-mail.dto.js';
 import type { MailProvider } from '../providers/mail/mail-provider.interface.js';
 import { MAIL_PROVIDER } from '../providers/mail/mail-provider.token.js';
-import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { OmnixysLogger } from '@omnixys/logger';
 
 @Injectable()
@@ -28,7 +32,9 @@ export class MailService {
         notificationId,
         'Mail content is missing',
       );
-      throw new InternalServerErrorException('Mail must contain either html or text content');
+      throw new NotificationInputException('mail-content-missing', {
+        notificationId,
+      });
     }
 
     try {
@@ -51,7 +57,9 @@ export class MailService {
         error instanceof Error ? error.message : String(error),
       );
 
-      throw new InternalServerErrorException('Mail sending failed');
+      throw new NotificationDeliveryException('EMAIL', error, {
+        notificationId,
+      });
     }
   }
 }
