@@ -4,6 +4,7 @@ import { ResendProvider } from './providers/mail/resend.provider.js';
 import { WhatsAppCloudProvider } from './providers/whatsapp/whatsapp-cloud.provider.js';
 import { WhatsAppWebProvider } from './providers/whatsapp/whatsapp-web.provider.js';
 import { WhatsAppProviderFactory } from './providers/whatsapp/whatsapp.provider.factory.js';
+import { WHATSAPP_PROVIDER } from './providers/whatsapp/whatsapp.provider.token.js';
 import { MailService } from './services/mail.service.js';
 import { WhatsAppService } from './services/whatsapp.service.js';
 import { Module } from '@nestjs/common';
@@ -23,6 +24,6 @@ import { Module } from '@nestjs/common';
     WhatsAppProviderFactory,
     StreamBootstrapService,
   ],
-  exports: [MailService, WhatsAppService, WhatsAppWebProvider],
+  exports: [MailService, WhatsAppService, WhatsAppWebProvider, WHATSAPP_PROVIDER],
 })
 export class MessagingModule {}

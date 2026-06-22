@@ -68,28 +68,6 @@ export class WhatsAppWebProvider
     });
   }
 
-  private async waitForReady(timeoutMs = 45_000): Promise<void> {
-    if (this.ready) {
-      return;
-    }
-
-    this.ensureReadyPromise();
-
-    if (!this.initializing) {
-      await this.init();
-    }
-
-    if (!this.ready && this.readyPromise) {
-      const timeout = new Promise<never>((_, reject) =>
-        setTimeout(
-          () => reject(new Error('WhatsApp Web client ready timeout')),
-          timeoutMs,
-        ),
-      );
-      await Promise.race([this.readyPromise, timeout]);
-    }
-  }
-
   private async init(): Promise<void> {
     if (this.ready || this.initializing) {
       return;
@@ -246,12 +224,17 @@ export class WhatsAppWebProvider
   }
 
   async send(input: SendWhatsappInput): Promise<SendWhatsappResult> {
-    await this.waitForReady();
-
-    if (!this.ready || !this.client) {
+    if (!this.ready) {
       throw new NotificationChannelUnavailableException(
         'WHATSAPP',
         'client-not-ready',
+      );
+    }
+
+    if (!this.client) {
+      throw new NotificationChannelUnavailableException(
+        'WHATSAPP',
+        'client-not-initialized',
       );
     }
 
