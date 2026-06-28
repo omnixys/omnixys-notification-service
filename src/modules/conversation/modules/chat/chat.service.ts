@@ -10,8 +10,8 @@ import {
 } from '../../../notification/errors/notification.error.js';
 import { Injectable } from '@nestjs/common';
 import { ValkeyLockService } from '@omnixys/cache';
+import { RealmRoleType } from '@omnixys/contracts';
 import { CurrentUserData } from '@omnixys/security';
-import { RealmRoleType } from '@omnixys/shared';
 
 @Injectable()
 export class ChatService {

@@ -15,6 +15,7 @@ import {
   Query,
   Resolver,
 } from '@nestjs/graphql';
+import { RealmRoleType } from '@omnixys/contracts';
 import { OmnixysLogger } from '@omnixys/logger';
 import {
   CookieAuthGuard,
@@ -23,7 +24,6 @@ import {
   RoleGuard,
   Roles,
 } from '@omnixys/security';
-import { RealmRoleType } from '@omnixys/shared';
 
 @InputType()
 export class SendWhatsappMessageInput {

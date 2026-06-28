@@ -5,6 +5,7 @@ import { ChatService } from './chat.service.js';
 import { Chat } from './entities/chat.entity.js';
 import { UseGuards } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { RealmRoleType } from '@omnixys/contracts';
 import {
   CookieAuthGuard,
   CurrentUser,
@@ -12,7 +13,6 @@ import {
   RoleGuard,
   Roles,
 } from '@omnixys/security';
-import { RealmRoleType } from '@omnixys/shared';
 
 @Resolver()
 export class ChatResolver {

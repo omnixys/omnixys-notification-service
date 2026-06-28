@@ -18,7 +18,7 @@
 import { Injectable } from '@nestjs/common';
 import { ValkeyKey, ValkeyService } from '@omnixys/cache';
 import { FrameworkException } from '@omnixys/contracts';
-import { CreatePendingUserDTO, GuestNotificationDTO } from '@omnixys/shared';
+import { CreatePendingUserDTO, GuestNotificationDTO } from '@omnixys/contracts';
 
 import { NotificationWriteService } from '../modules/notification/services/notification-write.service.js';
 import {

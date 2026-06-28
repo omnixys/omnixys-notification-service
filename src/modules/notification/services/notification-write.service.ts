@@ -24,18 +24,18 @@ import { formatRequestTime } from '../utils/date.util.js';
 import { NotificationCacheService } from './notification-cache.service.js';
 import { SendInvitationVariables, TemplateRenderService } from './template-renderer.service.js';
 import { Injectable } from '@nestjs/common';
-import { CreateUserInput } from '@omnixys/graphql';
-import { OmnixysLogger } from '@omnixys/logger';
-import { TraceRunner } from '@omnixys/observability';
-import { EncryptionService } from '@omnixys/security';
-import { createTmpUsername, getPrimaryPhoneNumber } from '@omnixys/shared';
+import { createTmpUsername, getPrimaryPhoneNumber } from '@omnixys/contracts';
 import type {
   CreatePendingUserDTO,
   GuestSignUpTokenPayload,
   Locale,
   SendAuthLinkDTO,
   SignUpTokenPayload,
-} from '@omnixys/shared';
+} from '@omnixys/contracts';
+import { CreateUserInput } from '@omnixys/graphql';
+import { OmnixysLogger } from '@omnixys/logger';
+import { TraceRunner } from '@omnixys/observability';
+import { EncryptionService } from '@omnixys/security';
 import { InputJsonValue } from '@prisma/client/runtime/client';
 
 const {

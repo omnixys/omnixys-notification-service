@@ -3,11 +3,11 @@ import { NotificationWriteService } from '../services/notification-write.service
 import { UseGuards } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { RequestCookies } from '@omnixys/context';
+import { RealmRoleType } from '@omnixys/contracts';
+import type { OmnixysCookieRequest } from '@omnixys/contracts';
 import { CreateUserInput } from '@omnixys/graphql';
 import { OmnixysLogger } from '@omnixys/logger';
 import { CookieAuthGuard, RoleGuard, Roles } from '@omnixys/security';
-import { RealmRoleType } from '@omnixys/shared';
-import type { OmnixysCookieRequest } from '@omnixys/shared';
 
 @Resolver()
 @UseGuards(CookieAuthGuard, RoleGuard)

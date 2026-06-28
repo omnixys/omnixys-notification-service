@@ -3,13 +3,16 @@ import { WHATSAPP_PROVIDER } from '../modules/messages/providers/whatsapp/whatsa
 import { PrismaService } from '../prisma/prisma.service.js';
 import { Inject, Injectable } from '@nestjs/common';
 import {
+  WhatsappOutgoingDTO,
+  WhatsappOutgoingValueDTO,
+} from '@omnixys/contracts';
+import {
   KafkaEvent,
   KafkaEventHandler,
   KafkaProducerService,
   KafkaTopics,
 } from '@omnixys/kafka';
 import { OmnixysLogger } from '@omnixys/logger';
-import { WhatsappOutgoingDTO, WhatsappOutgoingValueDTO } from '@omnixys/shared';
 
 const MAX_RETRIES = 5;
 const MAX_BACKOFF_MS = 30_000;

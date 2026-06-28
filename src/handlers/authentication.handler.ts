@@ -18,6 +18,7 @@
 import { NotificationWriteService } from '../modules/notification/services/notification-write.service.js';
 import { Injectable } from '@nestjs/common';
 
+import { SendAuthLinkDTO } from '@omnixys/contracts';
 import {
   IKafkaEventContext,
   KafkaEvent,
@@ -26,7 +27,6 @@ import {
 } from '@omnixys/kafka';
 import { OmnixysLogger } from '@omnixys/logger';
 import { TraceRunner } from '@omnixys/observability';
-import { SendAuthLinkDTO } from '@omnixys/shared';
 
 /**
  * Kafka event handler responsible for useristrative commands such as

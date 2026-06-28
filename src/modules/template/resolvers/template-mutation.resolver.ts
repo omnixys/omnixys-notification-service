@@ -6,9 +6,9 @@ import { TemplateMapper } from '../models/mappers/template.mapper.js';
 import { TemplatePayload } from '../models/payloads/template.payload.js';
 import { TemplateWriteService } from '../services/template-write.service.js';
 import { UseGuards } from '@nestjs/common';
+import { RealmRoleType } from '@omnixys/contracts';
 import { OmnixysLogger } from '@omnixys/logger';
 import { CookieAuthGuard, RoleGuard, Roles } from '@omnixys/security';
-import { RealmRoleType } from '@omnixys/shared';
 
 @Resolver()
 @UseGuards(CookieAuthGuard, RoleGuard)

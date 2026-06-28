@@ -16,6 +16,7 @@
  */
 
 import { Injectable } from '@nestjs/common';
+import { EventCancelNotificationDTO } from '@omnixys/contracts';
 import {
   KafkaEvent,
   KafkaEventHandler,
@@ -25,7 +26,6 @@ import {
 } from '@omnixys/kafka';
 import { OmnixysLogger } from '@omnixys/logger';
 import { TraceRunner } from '@omnixys/observability';
-import { EventCancelNotificationDTO } from '@omnixys/shared';
 
 /**
  * Kafka event handler responsible for useristrative commands such as

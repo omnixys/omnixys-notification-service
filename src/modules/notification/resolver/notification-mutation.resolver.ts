@@ -6,11 +6,11 @@ import { NotificationWriteService } from '../services/notification-write.service
 import { UseGuards } from '@nestjs/common';
 import { Args, Mutation, Resolver } from '@nestjs/graphql';
 import { ClientIp, Device, Location, RequestCookies } from '@omnixys/context';
+import type { OmnixysCookieRequest } from '@omnixys/contracts';
+import { RealmRoleType } from '@omnixys/contracts';
 import { CreateUserInput } from '@omnixys/graphql';
 import { OmnixysLogger } from '@omnixys/logger';
 import { CookieAuthGuard, RoleGuard, Roles } from '@omnixys/security';
-import type { OmnixysCookieRequest } from '@omnixys/shared';
-import { RealmRoleType } from '@omnixys/shared';
 
 @Resolver()
 export class NotificationMutationResolver {

@@ -9,9 +9,9 @@ import { MessageDirection } from '../../common/models/enums/message-direction.en
 import { WhatsAppRawMessageDTO } from './entities/whatsapp-message.raw.dto.js';
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
+import { RealmRoleType } from '@omnixys/contracts';
 import { KafkaProducerService, KafkaTopics } from '@omnixys/kafka';
 import { CurrentUserData } from '@omnixys/security';
-import { RealmRoleType } from '@omnixys/shared';
 
 interface ChatIdentity {
   primaryId: string; // always used internally (lid preferred)

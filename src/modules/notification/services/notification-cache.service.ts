@@ -5,9 +5,6 @@ import {
 } from '../models/dto/signup-verification-cache.dto.js';
 import { Injectable } from '@nestjs/common';
 import { ValkeyKey, ValkeyService } from '@omnixys/cache';
-import { CreateUserInput } from '@omnixys/graphql';
-import { OmnixysLogger } from '@omnixys/logger';
-import { TraceRunner } from '@omnixys/observability';
 import {
   SignUpTokenPayload,
   GuestSignUpTokenPayload,
@@ -16,7 +13,10 @@ import {
   GuestSeatKey,
   CreatePendingUserDTO,
   GuestUserKey,
-} from '@omnixys/shared';
+} from '@omnixys/contracts';
+import { CreateUserInput } from '@omnixys/graphql';
+import { OmnixysLogger } from '@omnixys/logger';
+import { TraceRunner } from '@omnixys/observability';
 
 @Injectable()
 export class NotificationCacheService {
