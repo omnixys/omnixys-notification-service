@@ -3,6 +3,28 @@
 All notable changes in this project will be documented in this file.
 
 
+## [2.0.0](https://github.com/omnixys/notification-service/compare/v1.0.2...v2.0.0) (2026-06-28)
+
+### Dependencies
+
+* **Dependencies:** update Dependecies ([](https://github.com/omnixys/notification-service/commit/2a2dec0663106d1538beba14ff10dd6effd7d49b))
+
+### Log
+
+* **Log:** add logs ([](https://github.com/omnixys/notification-service/commit/5424f5272d24bf4cd68d8fee441db7f2607a6852))
+
+### Notification
+
+* **Notification:** emit typed domain errors ([](https://github.com/omnixys/notification-service/commit/250361da59418d442f3a8563ccf47bbc0dc985af))
+* **Notification:** harden delivery context and lifecycle ([](https://github.com/omnixys/notification-service/commit/616434d9ca4ef8580dc6830be983f18e515958d5))
+* **Notification:** eliminate WhatsApp provider bypass and retry loops ([](https://github.com/omnixys/notification-service/commit/b62e3993a951fef31380ab6149bdfc79641e5162))
+* **Notification:** preserve whatsapp web session and prefer web provider ([](https://github.com/omnixys/notification-service/commit/5317670986b8207001894764740a365b03cec2ff))
+* **Notification:** stabilize whatsapp web provider resolution ([](https://github.com/omnixys/notification-service/commit/1ee3621bf8563903ca9be57187e7b927a4c5da73))
+
+### Other
+
+* **Other:** Merge branch 'main' of https://github.com/omnixys/notification-service ([](https://github.com/omnixys/notification-service/commit/7123515ffd4d2598c70822e6ca190ed4a6dc8065))
+
 ## [1.0.2](https://github.com/omnixys/notification-service/compare/v1.0.1...v1.0.2) (2026-05-25)
 
 ### Docker
