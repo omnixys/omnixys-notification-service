@@ -3,6 +3,16 @@
 All notable changes in this project will be documented in this file.
 
 
+## [2.0.1](https://github.com/omnixys/notification-service/compare/v2.0.0...v2.0.1) (2026-06-29)
+
+### Kafka
+
+* **Kafka:** update kafka dependency ([](https://github.com/omnixys/notification-service/commit/71372d8c619a7bcc6bbd4c2ac3bcb476e3e0a782))
+
+### Other
+
+* **Other:** Merge branch 'main' of https://github.com/omnixys/notification-service ([](https://github.com/omnixys/notification-service/commit/3601c02f84edaf339da8b11cb9affa817312c834))
+
 ## [2.0.0](https://github.com/omnixys/notification-service/compare/v1.0.2...v2.0.0) (2026-06-28)
 
 ### Dependencies
