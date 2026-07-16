@@ -3,6 +3,12 @@
 All notable changes in this project will be documented in this file.
 
 
+## [3.0.0](https://github.com/omnixys/notification-service/compare/v2.1.0...v3.0.0) (2026-07-16)
+
+### New
+
+* **New:** new service ([](https://github.com/omnixys/notification-service/commit/c8f4e826eb1da169aeb385c11e1e87357d6bb20b))
+
 ## [2.1.0](https://github.com/omnixys/notification-service/compare/v2.0.1...v2.1.0) (2026-07-02)
 
 ### Deps
