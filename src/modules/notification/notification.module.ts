@@ -1,7 +1,7 @@
-import { ConversationModule } from '../conversation/conversation.module.js';
+import { MessagingModule } from '../messages/messaging.module.js';
+import { SupportCommonModule } from '../support/common/support-common.module.js';
 import { TemplateModule } from '../template/template.module.js';
 import { DebugResolver } from './resolver/debug.resolver.js';
-import { MessageResolver } from './resolver/message.resolver.js';
 import { NotificationMutationResolver } from './resolver/notification-mutation.resolver.js';
 import { NotificationQueryResolver } from './resolver/notification-query.resolver.js';
 import { NotificationCacheService } from './services/notification-cache.service.js';
@@ -12,13 +12,12 @@ import { NotificationRenderer } from './utils/notification.renderer.js';
 import { Module } from '@nestjs/common';
 
 @Module({
-  imports: [TemplateModule, ConversationModule],
+  imports: [TemplateModule, MessagingModule, SupportCommonModule],
   providers: [
     NotificationRenderer,
+    DebugResolver,
     NotificationQueryResolver,
     NotificationMutationResolver,
-    MessageResolver,
-    DebugResolver,
     NotificationReadService,
     NotificationWriteService,
     NotificationCacheService,

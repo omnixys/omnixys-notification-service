@@ -41,7 +41,8 @@ RUN --mount=type=secret,id=omnixys_token \
     TOKEN=$(cat /run/secrets/omnixys_token) && \
     echo "@omnixys:registry=https://npm.pkg.github.com" > .npmrc && \
     echo "//npm.pkg.github.com/:_authToken=${TOKEN}" >> .npmrc && \
-    pnpm install --frozen-lockfile --ignore-scripts
+    pnpm install --frozen-lockfile --ignore-scripts && \
+    rm -f .npmrc
 
 COPY --chown=node:node . .
 ENV CI=true
@@ -60,7 +61,8 @@ RUN --mount=type=secret,id=omnixys_token \
     TOKEN=$(cat /run/secrets/omnixys_token) && \
     echo "@omnixys:registry=https://npm.pkg.github.com" > .npmrc && \
     echo "//npm.pkg.github.com/:_authToken=${TOKEN}" >> .npmrc && \
-    pnpm install --frozen-lockfile --ignore-scripts
+    pnpm install --frozen-lockfile --ignore-scripts && \
+    rm -f .npmrc
 
 # ---------------------------------------------------------------------------------------
 # Stage 3: Final runtime image
@@ -102,7 +104,7 @@ ENV NODE_ENV=production TZ=UTC
 # dumb-init: lightweight init system for proper signal handling.
 # wget + ca-certificates: used for health checks and secure HTTPS.
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends dumb-init wget chromium ca-certificates && \
+    apt-get install -y --no-install-recommends dumb-init wget ca-certificates && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* && \
     mkdir -p /opt/app/log && chown -R node:node /opt/app
 
@@ -116,6 +118,8 @@ USER node
 COPY --from=dependencies --chown=node:node /home/node/node_modules ./node_modules
 COPY --from=dist --chown=node:node /home/node/dist ./dist
 COPY --chown=node:node package.json ./
+COPY --chown=node:node prisma.config.ts ./
+COPY --chown=node:node prisma ./prisma
 
 # ----- Expose application port (per Omnixys port conventions) -----
 EXPOSE 3000
@@ -127,4 +131,5 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
 
 # ----- Start command -----
 # dumb-init ensures proper signal forwarding and zombie process cleanup.
-ENTRYPOINT ["dumb-init", "node", "dist/main.js"]
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["sh", "-c", "pnpm exec prisma migrate deploy; exec node dist/main.js"]

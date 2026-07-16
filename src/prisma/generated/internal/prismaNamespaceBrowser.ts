@@ -50,14 +50,20 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
-  Tenant: 'Tenant',
   Template: 'Template',
   TemplateVersion: 'TemplateVersion',
   Notification: 'Notification',
-  WhatsAppChat: 'WhatsAppChat',
-  WhatsAppMessage: 'WhatsAppMessage',
-  WhatsAppAssignmentHistory: 'WhatsAppAssignmentHistory',
-  WhatsAppParticipant: 'WhatsAppParticipant'
+  ConversationMapping: 'ConversationMapping',
+  SupportConversation: 'SupportConversation',
+  SupportMessage: 'SupportMessage',
+  MessageDelivery: 'MessageDelivery',
+  SupportAssignmentHistory: 'SupportAssignmentHistory',
+  SupportQuickReply: 'SupportQuickReply',
+  InternalConversation: 'InternalConversation',
+  InternalMessage: 'InternalMessage',
+  InternalParticipant: 'InternalParticipant',
+  EventAccessProjection: 'EventAccessProjection',
+  OutboxMessage: 'OutboxMessage'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -74,15 +80,6 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 } as const)
 
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
-
-
-export const TenantScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  createdAt: 'createdAt'
-} as const
-
-export type TenantScalarFieldEnum = (typeof TenantScalarFieldEnum)[keyof typeof TenantScalarFieldEnum]
 
 
 export const TemplateScalarFieldEnum = {
@@ -124,6 +121,9 @@ export const NotificationScalarFieldEnum = {
   templateVersion: 'templateVersion',
   variables: 'variables',
   metadata: 'metadata',
+  title: 'title',
+  body: 'body',
+  contentFormat: 'contentFormat',
   channel: 'channel',
   priority: 'priority',
   category: 'category',
@@ -138,68 +138,199 @@ export const NotificationScalarFieldEnum = {
   updatedAt: 'updatedAt',
   createdBy: 'createdBy',
   provider: 'provider',
-  providerRef: 'providerRef'
+  providerRef: 'providerRef',
+  failureReason: 'failureReason'
 } as const
 
 export type NotificationScalarFieldEnum = (typeof NotificationScalarFieldEnum)[keyof typeof NotificationScalarFieldEnum]
 
 
-export const WhatsAppChatScalarFieldEnum = {
+export const ConversationMappingScalarFieldEnum = {
   id: 'id',
-  chatId: 'chatId',
-  name: 'name',
-  isGroup: 'isGroup',
-  phone: 'phone',
-  assignedTo: 'assignedTo',
-  status: 'status',
-  lastMessageAt: 'lastMessageAt',
-  lastMessagePreview: 'lastMessagePreview',
+  channel: 'channel',
+  externalId: 'externalId',
+  eventId: 'eventId',
+  conversationId: 'conversationId',
+  mappingType: 'mappingType',
+  metadata: 'metadata',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
-export type WhatsAppChatScalarFieldEnum = (typeof WhatsAppChatScalarFieldEnum)[keyof typeof WhatsAppChatScalarFieldEnum]
+export type ConversationMappingScalarFieldEnum = (typeof ConversationMappingScalarFieldEnum)[keyof typeof ConversationMappingScalarFieldEnum]
 
 
-export const WhatsAppMessageScalarFieldEnum = {
+export const SupportConversationScalarFieldEnum = {
   id: 'id',
-  chatRefId: 'chatRefId',
-  chatId: 'chatId',
+  eventId: 'eventId',
+  invitationId: 'invitationId',
+  guestUserId: 'guestUserId',
+  guestName: 'guestName',
+  guestContact: 'guestContact',
+  subject: 'subject',
+  status: 'status',
+  priority: 'priority',
+  assignedTo: 'assignedTo',
+  assignedToUser: 'assignedToUser',
+  channel: 'channel',
+  lastMessageAt: 'lastMessageAt',
+  lastMessagePreview: 'lastMessagePreview',
+  emailMessageId: 'emailMessageId',
+  emailInReplyTo: 'emailInReplyTo',
+  emailReferences: 'emailReferences',
+  tags: 'tags',
+  metadata: 'metadata',
+  unreadCount: 'unreadCount',
+  slaDeadline: 'slaDeadline',
+  escalatedAt: 'escalatedAt',
+  escalatedTo: 'escalatedTo',
+  internalNote: 'internalNote',
+  deletedAt: 'deletedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  closedAt: 'closedAt'
+} as const
+
+export type SupportConversationScalarFieldEnum = (typeof SupportConversationScalarFieldEnum)[keyof typeof SupportConversationScalarFieldEnum]
+
+
+export const SupportMessageScalarFieldEnum = {
+  id: 'id',
+  conversationId: 'conversationId',
   direction: 'direction',
-  from: 'from',
-  to: 'to',
+  channel: 'channel',
+  fromUserId: 'fromUserId',
+  fromGuest: 'fromGuest',
   body: 'body',
   mediaUrl: 'mediaUrl',
   mimeType: 'mimeType',
-  messageId: 'messageId',
   status: 'status',
+  externalId: 'externalId',
   error: 'error',
+  deliveredAt: 'deliveredAt',
+  readAt: 'readAt',
+  editedAt: 'editedAt',
+  editCount: 'editCount',
+  deletedAt: 'deletedAt',
   createdAt: 'createdAt'
 } as const
 
-export type WhatsAppMessageScalarFieldEnum = (typeof WhatsAppMessageScalarFieldEnum)[keyof typeof WhatsAppMessageScalarFieldEnum]
+export type SupportMessageScalarFieldEnum = (typeof SupportMessageScalarFieldEnum)[keyof typeof SupportMessageScalarFieldEnum]
 
 
-export const WhatsAppAssignmentHistoryScalarFieldEnum = {
+export const MessageDeliveryScalarFieldEnum = {
   id: 'id',
-  chatRefId: 'chatRefId',
+  messageId: 'messageId',
+  channel: 'channel',
+  status: 'status',
+  attempt: 'attempt',
+  deliveredAt: 'deliveredAt',
+  readAt: 'readAt',
+  error: 'error',
+  providerRef: 'providerRef',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MessageDeliveryScalarFieldEnum = (typeof MessageDeliveryScalarFieldEnum)[keyof typeof MessageDeliveryScalarFieldEnum]
+
+
+export const SupportAssignmentHistoryScalarFieldEnum = {
+  id: 'id',
+  conversationId: 'conversationId',
   assignedTo: 'assignedTo',
   assignedBy: 'assignedBy',
-  createdAt: 'createdAt'
+  assignedAt: 'assignedAt'
 } as const
 
-export type WhatsAppAssignmentHistoryScalarFieldEnum = (typeof WhatsAppAssignmentHistoryScalarFieldEnum)[keyof typeof WhatsAppAssignmentHistoryScalarFieldEnum]
+export type SupportAssignmentHistoryScalarFieldEnum = (typeof SupportAssignmentHistoryScalarFieldEnum)[keyof typeof SupportAssignmentHistoryScalarFieldEnum]
 
 
-export const WhatsAppParticipantScalarFieldEnum = {
+export const SupportQuickReplyScalarFieldEnum = {
   id: 'id',
-  chatRefId: 'chatRefId',
-  phone: 'phone',
-  name: 'name',
-  createdAt: 'createdAt'
+  key: 'key',
+  body: 'body',
+  channel: 'channel',
+  tags: 'tags',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
-export type WhatsAppParticipantScalarFieldEnum = (typeof WhatsAppParticipantScalarFieldEnum)[keyof typeof WhatsAppParticipantScalarFieldEnum]
+export type SupportQuickReplyScalarFieldEnum = (typeof SupportQuickReplyScalarFieldEnum)[keyof typeof SupportQuickReplyScalarFieldEnum]
+
+
+export const InternalConversationScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  title: 'title',
+  description: 'description',
+  type: 'type',
+  roleId: 'roleId',
+  participantHash: 'participantHash',
+  createdBy: 'createdBy',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  archivedAt: 'archivedAt'
+} as const
+
+export type InternalConversationScalarFieldEnum = (typeof InternalConversationScalarFieldEnum)[keyof typeof InternalConversationScalarFieldEnum]
+
+
+export const InternalMessageScalarFieldEnum = {
+  id: 'id',
+  conversationId: 'conversationId',
+  senderId: 'senderId',
+  body: 'body',
+  priority: 'priority',
+  createdAt: 'createdAt',
+  editedAt: 'editedAt'
+} as const
+
+export type InternalMessageScalarFieldEnum = (typeof InternalMessageScalarFieldEnum)[keyof typeof InternalMessageScalarFieldEnum]
+
+
+export const InternalParticipantScalarFieldEnum = {
+  id: 'id',
+  conversationId: 'conversationId',
+  userId: 'userId',
+  lastReadAt: 'lastReadAt',
+  joinedAt: 'joinedAt',
+  leftAt: 'leftAt'
+} as const
+
+export type InternalParticipantScalarFieldEnum = (typeof InternalParticipantScalarFieldEnum)[keyof typeof InternalParticipantScalarFieldEnum]
+
+
+export const EventAccessProjectionScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  userId: 'userId',
+  permissions: 'permissions',
+  roles: 'roles',
+  occurredAt: 'occurredAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EventAccessProjectionScalarFieldEnum = (typeof EventAccessProjectionScalarFieldEnum)[keyof typeof EventAccessProjectionScalarFieldEnum]
+
+
+export const OutboxMessageScalarFieldEnum = {
+  id: 'id',
+  topic: 'topic',
+  payload: 'payload',
+  key: 'key',
+  headers: 'headers',
+  status: 'status',
+  error: 'error',
+  attempt: 'attempt',
+  maxRetry: 'maxRetry',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  publishedAt: 'publishedAt'
+} as const
+
+export type OutboxMessageScalarFieldEnum = (typeof OutboxMessageScalarFieldEnum)[keyof typeof OutboxMessageScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -215,6 +346,14 @@ export const JsonNullValueInput = {
 } as const
 
 export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
 export const QueryMode = {

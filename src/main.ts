@@ -133,7 +133,7 @@ async function bootstrap(): Promise<void> {
    * Besonders wichtig für Auth- oder Login-Routen.
    */
   await app.register(rateLimit, {
-    max: 100, // max. Requests pro Minute
+    max: 300, // max. Requests pro Minute
     timeWindow: '1 minute',
   });
 

@@ -6,10 +6,21 @@ import {
   NotificationStateException,
   TemplateAlreadyExistsException,
 } from '../../dist/modules/notification/errors/notification.error.js';
-import { WhatsAppService } from '../../dist/modules/messages/services/whatsapp.service.js';
+import { NotificationMutationResolver } from '../../dist/modules/notification/resolver/notification-mutation.resolver.js';
+import { NotificationModule } from '../../dist/modules/notification/notification.module.js';
+import { NotificationCacheService } from '../../dist/modules/notification/services/notification-cache.service.js';
+import { NotificationEventRoleResolver } from '../../dist/modules/support/common/event-role-resolver.service.js';
+import { SupportCommonModule } from '../../dist/modules/support/common/support-common.module.js';
+import { MODULE_METADATA } from '@nestjs/common/constants.js';
+import { EventPermissionKey, guestAuthKeySchema } from '@omnixys/contracts';
 import { ContextAccessor } from '@omnixys/context';
 import assert from 'node:assert/strict';
 import test from 'node:test';
+
+test('notification module imports its event permission provider', () => {
+  const imports = Reflect.getMetadata(MODULE_METADATA.IMPORTS, NotificationModule) ?? [];
+  assert.ok(imports.includes(SupportCommonModule));
+});
 
 test('notification errors preserve canonical request metadata', () => {
   ContextAccessor.run(
@@ -51,26 +62,132 @@ test('notification subdomains use stable machine-readable codes', () => {
   );
 });
 
-test('WhatsApp provider failures are normalized without replacing structured errors', async () => {
-  const cause = new Error('provider secret');
-  const service = new WhatsAppService({
-    async send() {
-      throw cause;
+test('guest verification cache omits null optional emails', async () => {
+  const storedPayloads = new Map();
+  let keyCounter = 0;
+  const cache = {
+    async set(key, value) {
+      storedPayloads.set(key.prefix, value);
+      keyCounter += 1;
+      return `${key.prefix}:${keyCounter}`;
+    },
+  };
+  const service = new NotificationCacheService(
+    {
+      log() {
+        return { debug() {}, info() {}, warn() {}, error() {} };
+      },
+    },
+    cache,
+  );
+
+  await service.storeGuestVerificationPayload({
+    actorId: '00000000-0000-4000-8000-000000000001',
+    eventId: '00000000-0000-4000-8000-000000000002',
+    invitationId: '00000000-0000-4000-8000-000000000003',
+    firstName: 'Ada',
+    lastName: 'Lovelace',
+    email: null,
+    locale: 'en-US',
+    eventEndsAt: new Date('2030-01-01T12:00:00.000Z'),
+    plusOnes: [
+      {
+        invitationId: '00000000-0000-4000-8000-000000000004',
+        firstName: 'Grace',
+        lastName: 'Hopper',
+        email: null,
+      },
+    ],
+  });
+
+  const authPayload = JSON.parse(storedPayloads.get('verification:guest:auth'));
+  const userPayload = JSON.parse(storedPayloads.get('verification:guest:user'));
+
+  assert.doesNotThrow(() => guestAuthKeySchema.parse(authPayload));
+  assert.equal(Object.hasOwn(authPayload.invitees[0], 'email'), false);
+  assert.equal(Object.hasOwn(authPayload.invitees[1], 'email'), false);
+  assert.equal(Object.hasOwn(userPayload.users[0], 'email'), false);
+  assert.equal(Object.hasOwn(userPayload.users[1], 'email'), false);
+});
+
+test('notification event permission resolver reads effective access projection', async () => {
+  const resolver = new NotificationEventRoleResolver({
+    eventAccessProjection: {
+      async findUnique() {
+        return {
+          permissions: [EventPermissionKey.SendNotifications, 'unknown.permission'],
+        };
+      },
     },
   });
 
-  await assert.rejects(service.send({ to: '+49123', message: 'hello' }), (error) => {
-    assert.ok(error instanceof NotificationDeliveryException);
-    assert.equal(error.code, 'NOTIFICATION_DELIVERY_FAILED');
-    assert.equal(error.cause, cause);
-    return true;
-  });
+  assert.deepEqual(await resolver.getPermissionsForUser('user-1', 'event-1'), [
+    EventPermissionKey.SendNotifications,
+  ]);
+});
 
-  const structured = new NotificationInputException('phone-number-invalid');
-  const passthrough = new WhatsAppService({
-    async send() {
-      throw structured;
+test('notification event permission resolver treats missing projection as no access', async () => {
+  const resolver = new NotificationEventRoleResolver({
+    eventAccessProjection: {
+      async findUnique() {
+        return null;
+      },
     },
   });
-  await assert.rejects(passthrough.send({ to: '', message: 'hello' }), (error) => error === structured);
+
+  assert.deepEqual(await resolver.getPermissionsForUser('user-1', 'event-1'), []);
+});
+
+test('sendInvitations requires notifications.send on every distinct guest event', async () => {
+  let sent = false;
+  const checkedEvents = [];
+  const resolver = new NotificationMutationResolver(
+    {
+      log() {
+        return { debug() {}, info() {}, warn() {}, error() {} };
+      },
+    },
+    {
+      async sendBulkInvitations() {
+        sent = true;
+      },
+    },
+    {
+      async getPermissionsForUser(_userId, eventId) {
+        checkedEvents.push(eventId);
+        return eventId === 'event-a' ? [EventPermissionKey.SendNotifications] : [];
+      },
+    },
+  );
+
+  await assert.rejects(
+    resolver.sendInvitations(
+      {
+        guests: [
+          {
+            firstName: 'Ada',
+            lastName: 'Lovelace',
+            eventId: 'event-a',
+            eventName: 'A',
+            rsvpUrl: 'https://event-a.test',
+          },
+          {
+            firstName: 'Grace',
+            lastName: 'Hopper',
+            eventId: 'event-b',
+            eventName: 'B',
+            rsvpUrl: 'https://event-b.test',
+          },
+        ],
+      },
+      { id: 'user-1' },
+    ),
+    (error) => {
+      assert.equal(error.code, 'EVENT_ACCESS_DENIED');
+      return true;
+    },
+  );
+
+  assert.deepEqual(new Set(checkedEvents), new Set(['event-a', 'event-b']));
+  assert.equal(sent, false);
 });

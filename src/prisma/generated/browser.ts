@@ -17,11 +17,6 @@ export { Prisma }
 export * as $Enums from './enums.js'
 export * from './enums.js';
 /**
- * Model Tenant
- * 
- */
-export type Tenant = Prisma.TenantModel
-/**
  * Model Template
  * 
  */
@@ -37,22 +32,57 @@ export type TemplateVersion = Prisma.TemplateVersionModel
  */
 export type Notification = Prisma.NotificationModel
 /**
- * Model WhatsAppChat
+ * Model ConversationMapping
  * 
  */
-export type WhatsAppChat = Prisma.WhatsAppChatModel
+export type ConversationMapping = Prisma.ConversationMappingModel
 /**
- * Model WhatsAppMessage
+ * Model SupportConversation
  * 
  */
-export type WhatsAppMessage = Prisma.WhatsAppMessageModel
+export type SupportConversation = Prisma.SupportConversationModel
 /**
- * Model WhatsAppAssignmentHistory
+ * Model SupportMessage
  * 
  */
-export type WhatsAppAssignmentHistory = Prisma.WhatsAppAssignmentHistoryModel
+export type SupportMessage = Prisma.SupportMessageModel
 /**
- * Model WhatsAppParticipant
+ * Model MessageDelivery
  * 
  */
-export type WhatsAppParticipant = Prisma.WhatsAppParticipantModel
+export type MessageDelivery = Prisma.MessageDeliveryModel
+/**
+ * Model SupportAssignmentHistory
+ * 
+ */
+export type SupportAssignmentHistory = Prisma.SupportAssignmentHistoryModel
+/**
+ * Model SupportQuickReply
+ * 
+ */
+export type SupportQuickReply = Prisma.SupportQuickReplyModel
+/**
+ * Model InternalConversation
+ * 
+ */
+export type InternalConversation = Prisma.InternalConversationModel
+/**
+ * Model InternalMessage
+ * 
+ */
+export type InternalMessage = Prisma.InternalMessageModel
+/**
+ * Model InternalParticipant
+ * 
+ */
+export type InternalParticipant = Prisma.InternalParticipantModel
+/**
+ * Model EventAccessProjection
+ * 
+ */
+export type EventAccessProjection = Prisma.EventAccessProjectionModel
+/**
+ * Model OutboxMessage
+ * 
+ */
+export type OutboxMessage = Prisma.OutboxMessageModel

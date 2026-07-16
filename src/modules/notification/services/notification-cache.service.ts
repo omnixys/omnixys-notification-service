@@ -18,6 +18,10 @@ import { CreateUserInput } from '@omnixys/graphql';
 import { OmnixysLogger } from '@omnixys/logger';
 import { TraceRunner } from '@omnixys/observability';
 
+function normalizeOptionalEmail(value?: string | null): string | undefined {
+  return value ?? undefined;
+}
+
 @Injectable()
 export class NotificationCacheService {
   private readonly logger;
@@ -101,7 +105,7 @@ export class NotificationCacheService {
           invitationId: input.invitationId,
           firstName: input.firstName,
           lastName: input.lastName,
-          email: input.email,
+          email: normalizeOptionalEmail(input.email),
           phoneNumbers: input.phoneNumbers,
           isPrimary: true,
         },
@@ -109,7 +113,7 @@ export class NotificationCacheService {
           invitationId: p.invitationId,
           firstName: p.firstName,
           lastName: p.lastName,
-          email: p.email,
+          email: normalizeOptionalEmail(p.email),
           phoneNumbers: undefined,
           isPrimary: false,
         })),
@@ -123,7 +127,7 @@ export class NotificationCacheService {
         eventEndsAt: input.eventEndsAt,
         invitees: invitees.map((i) => ({
           invitationId: i.invitationId,
-          email: i.email,
+          email: normalizeOptionalEmail(i.email),
           firstName: i.firstName,
           lastName: i.lastName,
         })),
@@ -138,7 +142,7 @@ export class NotificationCacheService {
           invitationId: i.invitationId,
           firstName: i.firstName,
           lastName: i.lastName,
-          email: i.email,
+          email: normalizeOptionalEmail(i.email),
           phoneNumbers: i.phoneNumbers,
         })),
       };

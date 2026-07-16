@@ -7,12 +7,18 @@
  *
  * 🟢 You can import this file directly.
  */
-export type * from './models/Tenant.js'
 export type * from './models/Template.js'
 export type * from './models/TemplateVersion.js'
 export type * from './models/Notification.js'
-export type * from './models/WhatsAppChat.js'
-export type * from './models/WhatsAppMessage.js'
-export type * from './models/WhatsAppAssignmentHistory.js'
-export type * from './models/WhatsAppParticipant.js'
+export type * from './models/ConversationMapping.js'
+export type * from './models/SupportConversation.js'
+export type * from './models/SupportMessage.js'
+export type * from './models/MessageDelivery.js'
+export type * from './models/SupportAssignmentHistory.js'
+export type * from './models/SupportQuickReply.js'
+export type * from './models/InternalConversation.js'
+export type * from './models/InternalMessage.js'
+export type * from './models/InternalParticipant.js'
+export type * from './models/EventAccessProjection.js'
+export type * from './models/OutboxMessage.js'
 export type * from './commonInputTypes.js'

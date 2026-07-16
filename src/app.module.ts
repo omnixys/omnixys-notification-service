@@ -80,7 +80,7 @@ const {
 
       rateLimit: {
         enabled: true,
-        defaultLimit: 100,
+        defaultLimit: 300,
         defaultWindowMs: 60000,
         imports: [ValkeyAdapterModule],
       },

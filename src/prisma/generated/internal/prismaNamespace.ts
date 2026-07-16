@@ -383,14 +383,20 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 
 export const ModelName = {
-  Tenant: 'Tenant',
   Template: 'Template',
   TemplateVersion: 'TemplateVersion',
   Notification: 'Notification',
-  WhatsAppChat: 'WhatsAppChat',
-  WhatsAppMessage: 'WhatsAppMessage',
-  WhatsAppAssignmentHistory: 'WhatsAppAssignmentHistory',
-  WhatsAppParticipant: 'WhatsAppParticipant'
+  ConversationMapping: 'ConversationMapping',
+  SupportConversation: 'SupportConversation',
+  SupportMessage: 'SupportMessage',
+  MessageDelivery: 'MessageDelivery',
+  SupportAssignmentHistory: 'SupportAssignmentHistory',
+  SupportQuickReply: 'SupportQuickReply',
+  InternalConversation: 'InternalConversation',
+  InternalMessage: 'InternalMessage',
+  InternalParticipant: 'InternalParticipant',
+  EventAccessProjection: 'EventAccessProjection',
+  OutboxMessage: 'OutboxMessage'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -406,84 +412,10 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "tenant" | "template" | "templateVersion" | "notification" | "whatsAppChat" | "whatsAppMessage" | "whatsAppAssignmentHistory" | "whatsAppParticipant"
+    modelProps: "template" | "templateVersion" | "notification" | "conversationMapping" | "supportConversation" | "supportMessage" | "messageDelivery" | "supportAssignmentHistory" | "supportQuickReply" | "internalConversation" | "internalMessage" | "internalParticipant" | "eventAccessProjection" | "outboxMessage"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
-    Tenant: {
-      payload: Prisma.$TenantPayload<ExtArgs>
-      fields: Prisma.TenantFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.TenantFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$TenantPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.TenantFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$TenantPayload>
-        }
-        findFirst: {
-          args: Prisma.TenantFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$TenantPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.TenantFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$TenantPayload>
-        }
-        findMany: {
-          args: Prisma.TenantFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$TenantPayload>[]
-        }
-        create: {
-          args: Prisma.TenantCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$TenantPayload>
-        }
-        createMany: {
-          args: Prisma.TenantCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.TenantCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$TenantPayload>[]
-        }
-        delete: {
-          args: Prisma.TenantDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$TenantPayload>
-        }
-        update: {
-          args: Prisma.TenantUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$TenantPayload>
-        }
-        deleteMany: {
-          args: Prisma.TenantDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.TenantUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.TenantUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$TenantPayload>[]
-        }
-        upsert: {
-          args: Prisma.TenantUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$TenantPayload>
-        }
-        aggregate: {
-          args: Prisma.TenantAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateTenant>
-        }
-        groupBy: {
-          args: Prisma.TenantGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.TenantGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.TenantCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.TenantCountAggregateOutputType> | number
-        }
-      }
-    }
     Template: {
       payload: Prisma.$TemplatePayload<ExtArgs>
       fields: Prisma.TemplateFieldRefs
@@ -706,299 +638,817 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
-    WhatsAppChat: {
-      payload: Prisma.$WhatsAppChatPayload<ExtArgs>
-      fields: Prisma.WhatsAppChatFieldRefs
+    ConversationMapping: {
+      payload: Prisma.$ConversationMappingPayload<ExtArgs>
+      fields: Prisma.ConversationMappingFieldRefs
       operations: {
         findUnique: {
-          args: Prisma.WhatsAppChatFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppChatPayload> | null
+          args: Prisma.ConversationMappingFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConversationMappingPayload> | null
         }
         findUniqueOrThrow: {
-          args: Prisma.WhatsAppChatFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppChatPayload>
+          args: Prisma.ConversationMappingFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConversationMappingPayload>
         }
         findFirst: {
-          args: Prisma.WhatsAppChatFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppChatPayload> | null
+          args: Prisma.ConversationMappingFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConversationMappingPayload> | null
         }
         findFirstOrThrow: {
-          args: Prisma.WhatsAppChatFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppChatPayload>
+          args: Prisma.ConversationMappingFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConversationMappingPayload>
         }
         findMany: {
-          args: Prisma.WhatsAppChatFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppChatPayload>[]
+          args: Prisma.ConversationMappingFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConversationMappingPayload>[]
         }
         create: {
-          args: Prisma.WhatsAppChatCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppChatPayload>
+          args: Prisma.ConversationMappingCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConversationMappingPayload>
         }
         createMany: {
-          args: Prisma.WhatsAppChatCreateManyArgs<ExtArgs>
+          args: Prisma.ConversationMappingCreateManyArgs<ExtArgs>
           result: BatchPayload
         }
         createManyAndReturn: {
-          args: Prisma.WhatsAppChatCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppChatPayload>[]
+          args: Prisma.ConversationMappingCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConversationMappingPayload>[]
         }
         delete: {
-          args: Prisma.WhatsAppChatDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppChatPayload>
+          args: Prisma.ConversationMappingDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConversationMappingPayload>
         }
         update: {
-          args: Prisma.WhatsAppChatUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppChatPayload>
+          args: Prisma.ConversationMappingUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConversationMappingPayload>
         }
         deleteMany: {
-          args: Prisma.WhatsAppChatDeleteManyArgs<ExtArgs>
+          args: Prisma.ConversationMappingDeleteManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateMany: {
-          args: Prisma.WhatsAppChatUpdateManyArgs<ExtArgs>
+          args: Prisma.ConversationMappingUpdateManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateManyAndReturn: {
-          args: Prisma.WhatsAppChatUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppChatPayload>[]
+          args: Prisma.ConversationMappingUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConversationMappingPayload>[]
         }
         upsert: {
-          args: Prisma.WhatsAppChatUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppChatPayload>
+          args: Prisma.ConversationMappingUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConversationMappingPayload>
         }
         aggregate: {
-          args: Prisma.WhatsAppChatAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateWhatsAppChat>
+          args: Prisma.ConversationMappingAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateConversationMapping>
         }
         groupBy: {
-          args: Prisma.WhatsAppChatGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.WhatsAppChatGroupByOutputType>[]
+          args: Prisma.ConversationMappingGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ConversationMappingGroupByOutputType>[]
         }
         count: {
-          args: Prisma.WhatsAppChatCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.WhatsAppChatCountAggregateOutputType> | number
+          args: Prisma.ConversationMappingCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ConversationMappingCountAggregateOutputType> | number
         }
       }
     }
-    WhatsAppMessage: {
-      payload: Prisma.$WhatsAppMessagePayload<ExtArgs>
-      fields: Prisma.WhatsAppMessageFieldRefs
+    SupportConversation: {
+      payload: Prisma.$SupportConversationPayload<ExtArgs>
+      fields: Prisma.SupportConversationFieldRefs
       operations: {
         findUnique: {
-          args: Prisma.WhatsAppMessageFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppMessagePayload> | null
+          args: Prisma.SupportConversationFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportConversationPayload> | null
         }
         findUniqueOrThrow: {
-          args: Prisma.WhatsAppMessageFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppMessagePayload>
+          args: Prisma.SupportConversationFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportConversationPayload>
         }
         findFirst: {
-          args: Prisma.WhatsAppMessageFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppMessagePayload> | null
+          args: Prisma.SupportConversationFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportConversationPayload> | null
         }
         findFirstOrThrow: {
-          args: Prisma.WhatsAppMessageFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppMessagePayload>
+          args: Prisma.SupportConversationFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportConversationPayload>
         }
         findMany: {
-          args: Prisma.WhatsAppMessageFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppMessagePayload>[]
+          args: Prisma.SupportConversationFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportConversationPayload>[]
         }
         create: {
-          args: Prisma.WhatsAppMessageCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppMessagePayload>
+          args: Prisma.SupportConversationCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportConversationPayload>
         }
         createMany: {
-          args: Prisma.WhatsAppMessageCreateManyArgs<ExtArgs>
+          args: Prisma.SupportConversationCreateManyArgs<ExtArgs>
           result: BatchPayload
         }
         createManyAndReturn: {
-          args: Prisma.WhatsAppMessageCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppMessagePayload>[]
+          args: Prisma.SupportConversationCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportConversationPayload>[]
         }
         delete: {
-          args: Prisma.WhatsAppMessageDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppMessagePayload>
+          args: Prisma.SupportConversationDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportConversationPayload>
         }
         update: {
-          args: Prisma.WhatsAppMessageUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppMessagePayload>
+          args: Prisma.SupportConversationUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportConversationPayload>
         }
         deleteMany: {
-          args: Prisma.WhatsAppMessageDeleteManyArgs<ExtArgs>
+          args: Prisma.SupportConversationDeleteManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateMany: {
-          args: Prisma.WhatsAppMessageUpdateManyArgs<ExtArgs>
+          args: Prisma.SupportConversationUpdateManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateManyAndReturn: {
-          args: Prisma.WhatsAppMessageUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppMessagePayload>[]
+          args: Prisma.SupportConversationUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportConversationPayload>[]
         }
         upsert: {
-          args: Prisma.WhatsAppMessageUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppMessagePayload>
+          args: Prisma.SupportConversationUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportConversationPayload>
         }
         aggregate: {
-          args: Prisma.WhatsAppMessageAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateWhatsAppMessage>
+          args: Prisma.SupportConversationAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSupportConversation>
         }
         groupBy: {
-          args: Prisma.WhatsAppMessageGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.WhatsAppMessageGroupByOutputType>[]
+          args: Prisma.SupportConversationGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SupportConversationGroupByOutputType>[]
         }
         count: {
-          args: Prisma.WhatsAppMessageCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.WhatsAppMessageCountAggregateOutputType> | number
+          args: Prisma.SupportConversationCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SupportConversationCountAggregateOutputType> | number
         }
       }
     }
-    WhatsAppAssignmentHistory: {
-      payload: Prisma.$WhatsAppAssignmentHistoryPayload<ExtArgs>
-      fields: Prisma.WhatsAppAssignmentHistoryFieldRefs
+    SupportMessage: {
+      payload: Prisma.$SupportMessagePayload<ExtArgs>
+      fields: Prisma.SupportMessageFieldRefs
       operations: {
         findUnique: {
-          args: Prisma.WhatsAppAssignmentHistoryFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppAssignmentHistoryPayload> | null
+          args: Prisma.SupportMessageFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportMessagePayload> | null
         }
         findUniqueOrThrow: {
-          args: Prisma.WhatsAppAssignmentHistoryFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppAssignmentHistoryPayload>
+          args: Prisma.SupportMessageFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportMessagePayload>
         }
         findFirst: {
-          args: Prisma.WhatsAppAssignmentHistoryFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppAssignmentHistoryPayload> | null
+          args: Prisma.SupportMessageFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportMessagePayload> | null
         }
         findFirstOrThrow: {
-          args: Prisma.WhatsAppAssignmentHistoryFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppAssignmentHistoryPayload>
+          args: Prisma.SupportMessageFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportMessagePayload>
         }
         findMany: {
-          args: Prisma.WhatsAppAssignmentHistoryFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppAssignmentHistoryPayload>[]
+          args: Prisma.SupportMessageFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportMessagePayload>[]
         }
         create: {
-          args: Prisma.WhatsAppAssignmentHistoryCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppAssignmentHistoryPayload>
+          args: Prisma.SupportMessageCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportMessagePayload>
         }
         createMany: {
-          args: Prisma.WhatsAppAssignmentHistoryCreateManyArgs<ExtArgs>
+          args: Prisma.SupportMessageCreateManyArgs<ExtArgs>
           result: BatchPayload
         }
         createManyAndReturn: {
-          args: Prisma.WhatsAppAssignmentHistoryCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppAssignmentHistoryPayload>[]
+          args: Prisma.SupportMessageCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportMessagePayload>[]
         }
         delete: {
-          args: Prisma.WhatsAppAssignmentHistoryDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppAssignmentHistoryPayload>
+          args: Prisma.SupportMessageDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportMessagePayload>
         }
         update: {
-          args: Prisma.WhatsAppAssignmentHistoryUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppAssignmentHistoryPayload>
+          args: Prisma.SupportMessageUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportMessagePayload>
         }
         deleteMany: {
-          args: Prisma.WhatsAppAssignmentHistoryDeleteManyArgs<ExtArgs>
+          args: Prisma.SupportMessageDeleteManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateMany: {
-          args: Prisma.WhatsAppAssignmentHistoryUpdateManyArgs<ExtArgs>
+          args: Prisma.SupportMessageUpdateManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateManyAndReturn: {
-          args: Prisma.WhatsAppAssignmentHistoryUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppAssignmentHistoryPayload>[]
+          args: Prisma.SupportMessageUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportMessagePayload>[]
         }
         upsert: {
-          args: Prisma.WhatsAppAssignmentHistoryUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppAssignmentHistoryPayload>
+          args: Prisma.SupportMessageUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportMessagePayload>
         }
         aggregate: {
-          args: Prisma.WhatsAppAssignmentHistoryAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateWhatsAppAssignmentHistory>
+          args: Prisma.SupportMessageAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSupportMessage>
         }
         groupBy: {
-          args: Prisma.WhatsAppAssignmentHistoryGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.WhatsAppAssignmentHistoryGroupByOutputType>[]
+          args: Prisma.SupportMessageGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SupportMessageGroupByOutputType>[]
         }
         count: {
-          args: Prisma.WhatsAppAssignmentHistoryCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.WhatsAppAssignmentHistoryCountAggregateOutputType> | number
+          args: Prisma.SupportMessageCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SupportMessageCountAggregateOutputType> | number
         }
       }
     }
-    WhatsAppParticipant: {
-      payload: Prisma.$WhatsAppParticipantPayload<ExtArgs>
-      fields: Prisma.WhatsAppParticipantFieldRefs
+    MessageDelivery: {
+      payload: Prisma.$MessageDeliveryPayload<ExtArgs>
+      fields: Prisma.MessageDeliveryFieldRefs
       operations: {
         findUnique: {
-          args: Prisma.WhatsAppParticipantFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppParticipantPayload> | null
+          args: Prisma.MessageDeliveryFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessageDeliveryPayload> | null
         }
         findUniqueOrThrow: {
-          args: Prisma.WhatsAppParticipantFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppParticipantPayload>
+          args: Prisma.MessageDeliveryFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessageDeliveryPayload>
         }
         findFirst: {
-          args: Prisma.WhatsAppParticipantFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppParticipantPayload> | null
+          args: Prisma.MessageDeliveryFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessageDeliveryPayload> | null
         }
         findFirstOrThrow: {
-          args: Prisma.WhatsAppParticipantFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppParticipantPayload>
+          args: Prisma.MessageDeliveryFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessageDeliveryPayload>
         }
         findMany: {
-          args: Prisma.WhatsAppParticipantFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppParticipantPayload>[]
+          args: Prisma.MessageDeliveryFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessageDeliveryPayload>[]
         }
         create: {
-          args: Prisma.WhatsAppParticipantCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppParticipantPayload>
+          args: Prisma.MessageDeliveryCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessageDeliveryPayload>
         }
         createMany: {
-          args: Prisma.WhatsAppParticipantCreateManyArgs<ExtArgs>
+          args: Prisma.MessageDeliveryCreateManyArgs<ExtArgs>
           result: BatchPayload
         }
         createManyAndReturn: {
-          args: Prisma.WhatsAppParticipantCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppParticipantPayload>[]
+          args: Prisma.MessageDeliveryCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessageDeliveryPayload>[]
         }
         delete: {
-          args: Prisma.WhatsAppParticipantDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppParticipantPayload>
+          args: Prisma.MessageDeliveryDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessageDeliveryPayload>
         }
         update: {
-          args: Prisma.WhatsAppParticipantUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppParticipantPayload>
+          args: Prisma.MessageDeliveryUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessageDeliveryPayload>
         }
         deleteMany: {
-          args: Prisma.WhatsAppParticipantDeleteManyArgs<ExtArgs>
+          args: Prisma.MessageDeliveryDeleteManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateMany: {
-          args: Prisma.WhatsAppParticipantUpdateManyArgs<ExtArgs>
+          args: Prisma.MessageDeliveryUpdateManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateManyAndReturn: {
-          args: Prisma.WhatsAppParticipantUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppParticipantPayload>[]
+          args: Prisma.MessageDeliveryUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessageDeliveryPayload>[]
         }
         upsert: {
-          args: Prisma.WhatsAppParticipantUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppParticipantPayload>
+          args: Prisma.MessageDeliveryUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessageDeliveryPayload>
         }
         aggregate: {
-          args: Prisma.WhatsAppParticipantAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateWhatsAppParticipant>
+          args: Prisma.MessageDeliveryAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMessageDelivery>
         }
         groupBy: {
-          args: Prisma.WhatsAppParticipantGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.WhatsAppParticipantGroupByOutputType>[]
+          args: Prisma.MessageDeliveryGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MessageDeliveryGroupByOutputType>[]
         }
         count: {
-          args: Prisma.WhatsAppParticipantCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.WhatsAppParticipantCountAggregateOutputType> | number
+          args: Prisma.MessageDeliveryCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MessageDeliveryCountAggregateOutputType> | number
+        }
+      }
+    }
+    SupportAssignmentHistory: {
+      payload: Prisma.$SupportAssignmentHistoryPayload<ExtArgs>
+      fields: Prisma.SupportAssignmentHistoryFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SupportAssignmentHistoryFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportAssignmentHistoryPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SupportAssignmentHistoryFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportAssignmentHistoryPayload>
+        }
+        findFirst: {
+          args: Prisma.SupportAssignmentHistoryFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportAssignmentHistoryPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SupportAssignmentHistoryFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportAssignmentHistoryPayload>
+        }
+        findMany: {
+          args: Prisma.SupportAssignmentHistoryFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportAssignmentHistoryPayload>[]
+        }
+        create: {
+          args: Prisma.SupportAssignmentHistoryCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportAssignmentHistoryPayload>
+        }
+        createMany: {
+          args: Prisma.SupportAssignmentHistoryCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SupportAssignmentHistoryCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportAssignmentHistoryPayload>[]
+        }
+        delete: {
+          args: Prisma.SupportAssignmentHistoryDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportAssignmentHistoryPayload>
+        }
+        update: {
+          args: Prisma.SupportAssignmentHistoryUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportAssignmentHistoryPayload>
+        }
+        deleteMany: {
+          args: Prisma.SupportAssignmentHistoryDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SupportAssignmentHistoryUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SupportAssignmentHistoryUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportAssignmentHistoryPayload>[]
+        }
+        upsert: {
+          args: Prisma.SupportAssignmentHistoryUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportAssignmentHistoryPayload>
+        }
+        aggregate: {
+          args: Prisma.SupportAssignmentHistoryAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSupportAssignmentHistory>
+        }
+        groupBy: {
+          args: Prisma.SupportAssignmentHistoryGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SupportAssignmentHistoryGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SupportAssignmentHistoryCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SupportAssignmentHistoryCountAggregateOutputType> | number
+        }
+      }
+    }
+    SupportQuickReply: {
+      payload: Prisma.$SupportQuickReplyPayload<ExtArgs>
+      fields: Prisma.SupportQuickReplyFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SupportQuickReplyFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportQuickReplyPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SupportQuickReplyFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportQuickReplyPayload>
+        }
+        findFirst: {
+          args: Prisma.SupportQuickReplyFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportQuickReplyPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SupportQuickReplyFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportQuickReplyPayload>
+        }
+        findMany: {
+          args: Prisma.SupportQuickReplyFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportQuickReplyPayload>[]
+        }
+        create: {
+          args: Prisma.SupportQuickReplyCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportQuickReplyPayload>
+        }
+        createMany: {
+          args: Prisma.SupportQuickReplyCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SupportQuickReplyCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportQuickReplyPayload>[]
+        }
+        delete: {
+          args: Prisma.SupportQuickReplyDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportQuickReplyPayload>
+        }
+        update: {
+          args: Prisma.SupportQuickReplyUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportQuickReplyPayload>
+        }
+        deleteMany: {
+          args: Prisma.SupportQuickReplyDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SupportQuickReplyUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SupportQuickReplyUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportQuickReplyPayload>[]
+        }
+        upsert: {
+          args: Prisma.SupportQuickReplyUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportQuickReplyPayload>
+        }
+        aggregate: {
+          args: Prisma.SupportQuickReplyAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSupportQuickReply>
+        }
+        groupBy: {
+          args: Prisma.SupportQuickReplyGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SupportQuickReplyGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SupportQuickReplyCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SupportQuickReplyCountAggregateOutputType> | number
+        }
+      }
+    }
+    InternalConversation: {
+      payload: Prisma.$InternalConversationPayload<ExtArgs>
+      fields: Prisma.InternalConversationFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.InternalConversationFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InternalConversationPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.InternalConversationFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InternalConversationPayload>
+        }
+        findFirst: {
+          args: Prisma.InternalConversationFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InternalConversationPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.InternalConversationFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InternalConversationPayload>
+        }
+        findMany: {
+          args: Prisma.InternalConversationFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InternalConversationPayload>[]
+        }
+        create: {
+          args: Prisma.InternalConversationCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InternalConversationPayload>
+        }
+        createMany: {
+          args: Prisma.InternalConversationCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.InternalConversationCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InternalConversationPayload>[]
+        }
+        delete: {
+          args: Prisma.InternalConversationDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InternalConversationPayload>
+        }
+        update: {
+          args: Prisma.InternalConversationUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InternalConversationPayload>
+        }
+        deleteMany: {
+          args: Prisma.InternalConversationDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.InternalConversationUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.InternalConversationUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InternalConversationPayload>[]
+        }
+        upsert: {
+          args: Prisma.InternalConversationUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InternalConversationPayload>
+        }
+        aggregate: {
+          args: Prisma.InternalConversationAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateInternalConversation>
+        }
+        groupBy: {
+          args: Prisma.InternalConversationGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InternalConversationGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.InternalConversationCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InternalConversationCountAggregateOutputType> | number
+        }
+      }
+    }
+    InternalMessage: {
+      payload: Prisma.$InternalMessagePayload<ExtArgs>
+      fields: Prisma.InternalMessageFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.InternalMessageFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InternalMessagePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.InternalMessageFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InternalMessagePayload>
+        }
+        findFirst: {
+          args: Prisma.InternalMessageFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InternalMessagePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.InternalMessageFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InternalMessagePayload>
+        }
+        findMany: {
+          args: Prisma.InternalMessageFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InternalMessagePayload>[]
+        }
+        create: {
+          args: Prisma.InternalMessageCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InternalMessagePayload>
+        }
+        createMany: {
+          args: Prisma.InternalMessageCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.InternalMessageCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InternalMessagePayload>[]
+        }
+        delete: {
+          args: Prisma.InternalMessageDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InternalMessagePayload>
+        }
+        update: {
+          args: Prisma.InternalMessageUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InternalMessagePayload>
+        }
+        deleteMany: {
+          args: Prisma.InternalMessageDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.InternalMessageUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.InternalMessageUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InternalMessagePayload>[]
+        }
+        upsert: {
+          args: Prisma.InternalMessageUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InternalMessagePayload>
+        }
+        aggregate: {
+          args: Prisma.InternalMessageAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateInternalMessage>
+        }
+        groupBy: {
+          args: Prisma.InternalMessageGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InternalMessageGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.InternalMessageCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InternalMessageCountAggregateOutputType> | number
+        }
+      }
+    }
+    InternalParticipant: {
+      payload: Prisma.$InternalParticipantPayload<ExtArgs>
+      fields: Prisma.InternalParticipantFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.InternalParticipantFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InternalParticipantPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.InternalParticipantFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InternalParticipantPayload>
+        }
+        findFirst: {
+          args: Prisma.InternalParticipantFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InternalParticipantPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.InternalParticipantFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InternalParticipantPayload>
+        }
+        findMany: {
+          args: Prisma.InternalParticipantFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InternalParticipantPayload>[]
+        }
+        create: {
+          args: Prisma.InternalParticipantCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InternalParticipantPayload>
+        }
+        createMany: {
+          args: Prisma.InternalParticipantCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.InternalParticipantCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InternalParticipantPayload>[]
+        }
+        delete: {
+          args: Prisma.InternalParticipantDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InternalParticipantPayload>
+        }
+        update: {
+          args: Prisma.InternalParticipantUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InternalParticipantPayload>
+        }
+        deleteMany: {
+          args: Prisma.InternalParticipantDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.InternalParticipantUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.InternalParticipantUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InternalParticipantPayload>[]
+        }
+        upsert: {
+          args: Prisma.InternalParticipantUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InternalParticipantPayload>
+        }
+        aggregate: {
+          args: Prisma.InternalParticipantAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateInternalParticipant>
+        }
+        groupBy: {
+          args: Prisma.InternalParticipantGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InternalParticipantGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.InternalParticipantCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InternalParticipantCountAggregateOutputType> | number
+        }
+      }
+    }
+    EventAccessProjection: {
+      payload: Prisma.$EventAccessProjectionPayload<ExtArgs>
+      fields: Prisma.EventAccessProjectionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.EventAccessProjectionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventAccessProjectionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.EventAccessProjectionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventAccessProjectionPayload>
+        }
+        findFirst: {
+          args: Prisma.EventAccessProjectionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventAccessProjectionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.EventAccessProjectionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventAccessProjectionPayload>
+        }
+        findMany: {
+          args: Prisma.EventAccessProjectionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventAccessProjectionPayload>[]
+        }
+        create: {
+          args: Prisma.EventAccessProjectionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventAccessProjectionPayload>
+        }
+        createMany: {
+          args: Prisma.EventAccessProjectionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.EventAccessProjectionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventAccessProjectionPayload>[]
+        }
+        delete: {
+          args: Prisma.EventAccessProjectionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventAccessProjectionPayload>
+        }
+        update: {
+          args: Prisma.EventAccessProjectionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventAccessProjectionPayload>
+        }
+        deleteMany: {
+          args: Prisma.EventAccessProjectionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.EventAccessProjectionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.EventAccessProjectionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventAccessProjectionPayload>[]
+        }
+        upsert: {
+          args: Prisma.EventAccessProjectionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventAccessProjectionPayload>
+        }
+        aggregate: {
+          args: Prisma.EventAccessProjectionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateEventAccessProjection>
+        }
+        groupBy: {
+          args: Prisma.EventAccessProjectionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EventAccessProjectionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.EventAccessProjectionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EventAccessProjectionCountAggregateOutputType> | number
+        }
+      }
+    }
+    OutboxMessage: {
+      payload: Prisma.$OutboxMessagePayload<ExtArgs>
+      fields: Prisma.OutboxMessageFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.OutboxMessageFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxMessagePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.OutboxMessageFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxMessagePayload>
+        }
+        findFirst: {
+          args: Prisma.OutboxMessageFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxMessagePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.OutboxMessageFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxMessagePayload>
+        }
+        findMany: {
+          args: Prisma.OutboxMessageFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxMessagePayload>[]
+        }
+        create: {
+          args: Prisma.OutboxMessageCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxMessagePayload>
+        }
+        createMany: {
+          args: Prisma.OutboxMessageCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.OutboxMessageCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxMessagePayload>[]
+        }
+        delete: {
+          args: Prisma.OutboxMessageDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxMessagePayload>
+        }
+        update: {
+          args: Prisma.OutboxMessageUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxMessagePayload>
+        }
+        deleteMany: {
+          args: Prisma.OutboxMessageDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.OutboxMessageUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.OutboxMessageUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxMessagePayload>[]
+        }
+        upsert: {
+          args: Prisma.OutboxMessageUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxMessagePayload>
+        }
+        aggregate: {
+          args: Prisma.OutboxMessageAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateOutboxMessage>
+        }
+        groupBy: {
+          args: Prisma.OutboxMessageGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OutboxMessageGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.OutboxMessageCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OutboxMessageCountAggregateOutputType> | number
         }
       }
     }
@@ -1041,15 +1491,6 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
-export const TenantScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  createdAt: 'createdAt'
-} as const
-
-export type TenantScalarFieldEnum = (typeof TenantScalarFieldEnum)[keyof typeof TenantScalarFieldEnum]
-
-
 export const TemplateScalarFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
@@ -1089,6 +1530,9 @@ export const NotificationScalarFieldEnum = {
   templateVersion: 'templateVersion',
   variables: 'variables',
   metadata: 'metadata',
+  title: 'title',
+  body: 'body',
+  contentFormat: 'contentFormat',
   channel: 'channel',
   priority: 'priority',
   category: 'category',
@@ -1103,68 +1547,199 @@ export const NotificationScalarFieldEnum = {
   updatedAt: 'updatedAt',
   createdBy: 'createdBy',
   provider: 'provider',
-  providerRef: 'providerRef'
+  providerRef: 'providerRef',
+  failureReason: 'failureReason'
 } as const
 
 export type NotificationScalarFieldEnum = (typeof NotificationScalarFieldEnum)[keyof typeof NotificationScalarFieldEnum]
 
 
-export const WhatsAppChatScalarFieldEnum = {
+export const ConversationMappingScalarFieldEnum = {
   id: 'id',
-  chatId: 'chatId',
-  name: 'name',
-  isGroup: 'isGroup',
-  phone: 'phone',
-  assignedTo: 'assignedTo',
-  status: 'status',
-  lastMessageAt: 'lastMessageAt',
-  lastMessagePreview: 'lastMessagePreview',
+  channel: 'channel',
+  externalId: 'externalId',
+  eventId: 'eventId',
+  conversationId: 'conversationId',
+  mappingType: 'mappingType',
+  metadata: 'metadata',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
-export type WhatsAppChatScalarFieldEnum = (typeof WhatsAppChatScalarFieldEnum)[keyof typeof WhatsAppChatScalarFieldEnum]
+export type ConversationMappingScalarFieldEnum = (typeof ConversationMappingScalarFieldEnum)[keyof typeof ConversationMappingScalarFieldEnum]
 
 
-export const WhatsAppMessageScalarFieldEnum = {
+export const SupportConversationScalarFieldEnum = {
   id: 'id',
-  chatRefId: 'chatRefId',
-  chatId: 'chatId',
+  eventId: 'eventId',
+  invitationId: 'invitationId',
+  guestUserId: 'guestUserId',
+  guestName: 'guestName',
+  guestContact: 'guestContact',
+  subject: 'subject',
+  status: 'status',
+  priority: 'priority',
+  assignedTo: 'assignedTo',
+  assignedToUser: 'assignedToUser',
+  channel: 'channel',
+  lastMessageAt: 'lastMessageAt',
+  lastMessagePreview: 'lastMessagePreview',
+  emailMessageId: 'emailMessageId',
+  emailInReplyTo: 'emailInReplyTo',
+  emailReferences: 'emailReferences',
+  tags: 'tags',
+  metadata: 'metadata',
+  unreadCount: 'unreadCount',
+  slaDeadline: 'slaDeadline',
+  escalatedAt: 'escalatedAt',
+  escalatedTo: 'escalatedTo',
+  internalNote: 'internalNote',
+  deletedAt: 'deletedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  closedAt: 'closedAt'
+} as const
+
+export type SupportConversationScalarFieldEnum = (typeof SupportConversationScalarFieldEnum)[keyof typeof SupportConversationScalarFieldEnum]
+
+
+export const SupportMessageScalarFieldEnum = {
+  id: 'id',
+  conversationId: 'conversationId',
   direction: 'direction',
-  from: 'from',
-  to: 'to',
+  channel: 'channel',
+  fromUserId: 'fromUserId',
+  fromGuest: 'fromGuest',
   body: 'body',
   mediaUrl: 'mediaUrl',
   mimeType: 'mimeType',
-  messageId: 'messageId',
   status: 'status',
+  externalId: 'externalId',
   error: 'error',
+  deliveredAt: 'deliveredAt',
+  readAt: 'readAt',
+  editedAt: 'editedAt',
+  editCount: 'editCount',
+  deletedAt: 'deletedAt',
   createdAt: 'createdAt'
 } as const
 
-export type WhatsAppMessageScalarFieldEnum = (typeof WhatsAppMessageScalarFieldEnum)[keyof typeof WhatsAppMessageScalarFieldEnum]
+export type SupportMessageScalarFieldEnum = (typeof SupportMessageScalarFieldEnum)[keyof typeof SupportMessageScalarFieldEnum]
 
 
-export const WhatsAppAssignmentHistoryScalarFieldEnum = {
+export const MessageDeliveryScalarFieldEnum = {
   id: 'id',
-  chatRefId: 'chatRefId',
+  messageId: 'messageId',
+  channel: 'channel',
+  status: 'status',
+  attempt: 'attempt',
+  deliveredAt: 'deliveredAt',
+  readAt: 'readAt',
+  error: 'error',
+  providerRef: 'providerRef',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MessageDeliveryScalarFieldEnum = (typeof MessageDeliveryScalarFieldEnum)[keyof typeof MessageDeliveryScalarFieldEnum]
+
+
+export const SupportAssignmentHistoryScalarFieldEnum = {
+  id: 'id',
+  conversationId: 'conversationId',
   assignedTo: 'assignedTo',
   assignedBy: 'assignedBy',
-  createdAt: 'createdAt'
+  assignedAt: 'assignedAt'
 } as const
 
-export type WhatsAppAssignmentHistoryScalarFieldEnum = (typeof WhatsAppAssignmentHistoryScalarFieldEnum)[keyof typeof WhatsAppAssignmentHistoryScalarFieldEnum]
+export type SupportAssignmentHistoryScalarFieldEnum = (typeof SupportAssignmentHistoryScalarFieldEnum)[keyof typeof SupportAssignmentHistoryScalarFieldEnum]
 
 
-export const WhatsAppParticipantScalarFieldEnum = {
+export const SupportQuickReplyScalarFieldEnum = {
   id: 'id',
-  chatRefId: 'chatRefId',
-  phone: 'phone',
-  name: 'name',
-  createdAt: 'createdAt'
+  key: 'key',
+  body: 'body',
+  channel: 'channel',
+  tags: 'tags',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
-export type WhatsAppParticipantScalarFieldEnum = (typeof WhatsAppParticipantScalarFieldEnum)[keyof typeof WhatsAppParticipantScalarFieldEnum]
+export type SupportQuickReplyScalarFieldEnum = (typeof SupportQuickReplyScalarFieldEnum)[keyof typeof SupportQuickReplyScalarFieldEnum]
+
+
+export const InternalConversationScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  title: 'title',
+  description: 'description',
+  type: 'type',
+  roleId: 'roleId',
+  participantHash: 'participantHash',
+  createdBy: 'createdBy',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  archivedAt: 'archivedAt'
+} as const
+
+export type InternalConversationScalarFieldEnum = (typeof InternalConversationScalarFieldEnum)[keyof typeof InternalConversationScalarFieldEnum]
+
+
+export const InternalMessageScalarFieldEnum = {
+  id: 'id',
+  conversationId: 'conversationId',
+  senderId: 'senderId',
+  body: 'body',
+  priority: 'priority',
+  createdAt: 'createdAt',
+  editedAt: 'editedAt'
+} as const
+
+export type InternalMessageScalarFieldEnum = (typeof InternalMessageScalarFieldEnum)[keyof typeof InternalMessageScalarFieldEnum]
+
+
+export const InternalParticipantScalarFieldEnum = {
+  id: 'id',
+  conversationId: 'conversationId',
+  userId: 'userId',
+  lastReadAt: 'lastReadAt',
+  joinedAt: 'joinedAt',
+  leftAt: 'leftAt'
+} as const
+
+export type InternalParticipantScalarFieldEnum = (typeof InternalParticipantScalarFieldEnum)[keyof typeof InternalParticipantScalarFieldEnum]
+
+
+export const EventAccessProjectionScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  userId: 'userId',
+  permissions: 'permissions',
+  roles: 'roles',
+  occurredAt: 'occurredAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EventAccessProjectionScalarFieldEnum = (typeof EventAccessProjectionScalarFieldEnum)[keyof typeof EventAccessProjectionScalarFieldEnum]
+
+
+export const OutboxMessageScalarFieldEnum = {
+  id: 'id',
+  topic: 'topic',
+  payload: 'payload',
+  key: 'key',
+  headers: 'headers',
+  status: 'status',
+  error: 'error',
+  attempt: 'attempt',
+  maxRetry: 'maxRetry',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  publishedAt: 'publishedAt'
+} as const
+
+export type OutboxMessageScalarFieldEnum = (typeof OutboxMessageScalarFieldEnum)[keyof typeof OutboxMessageScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1180,6 +1755,14 @@ export const JsonNullValueInput = {
 } as const
 
 export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
 export const QueryMode = {
@@ -1228,20 +1811,6 @@ export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaMod
 
 
 /**
- * Reference to a field of type 'DateTime'
- */
-export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
-    
-
-
-/**
- * Reference to a field of type 'DateTime[]'
- */
-export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
-    
-
-
-/**
  * Reference to a field of type 'Channel'
  */
 export type EnumChannelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Channel'>
@@ -1252,6 +1821,20 @@ export type EnumChannelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaMo
  * Reference to a field of type 'Channel[]'
  */
 export type ListEnumChannelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Channel[]'>
+    
+
+
+/**
+ * Reference to a field of type 'DateTime'
+ */
+export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
+    
+
+
+/**
+ * Reference to a field of type 'DateTime[]'
+ */
+export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
     
 
 
@@ -1333,16 +1916,44 @@ export type ListEnumNotificationStatusFieldRefInput<$PrismaModel> = FieldRefInpu
 
 
 /**
- * Reference to a field of type 'ChatStatus'
+ * Reference to a field of type 'ConversationChannel'
  */
-export type EnumChatStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ChatStatus'>
+export type EnumConversationChannelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ConversationChannel'>
     
 
 
 /**
- * Reference to a field of type 'ChatStatus[]'
+ * Reference to a field of type 'ConversationChannel[]'
  */
-export type ListEnumChatStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ChatStatus[]'>
+export type ListEnumConversationChannelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ConversationChannel[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ConversationStatus'
+ */
+export type EnumConversationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ConversationStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'ConversationStatus[]'
+ */
+export type ListEnumConversationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ConversationStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ConversationPriority'
+ */
+export type EnumConversationPriorityFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ConversationPriority'>
+    
+
+
+/**
+ * Reference to a field of type 'ConversationPriority[]'
+ */
+export type ListEnumConversationPriorityFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ConversationPriority[]'>
     
 
 
@@ -1371,6 +1982,48 @@ export type EnumMessageStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Pr
  * Reference to a field of type 'MessageStatus[]'
  */
 export type ListEnumMessageStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MessageStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'InternalConversationType'
+ */
+export type EnumInternalConversationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InternalConversationType'>
+    
+
+
+/**
+ * Reference to a field of type 'InternalConversationType[]'
+ */
+export type ListEnumInternalConversationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InternalConversationType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'InternalMessagePriority'
+ */
+export type EnumInternalMessagePriorityFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InternalMessagePriority'>
+    
+
+
+/**
+ * Reference to a field of type 'InternalMessagePriority[]'
+ */
+export type ListEnumInternalMessagePriorityFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InternalMessagePriority[]'>
+    
+
+
+/**
+ * Reference to a field of type 'OutboxStatus'
+ */
+export type EnumOutboxStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OutboxStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'OutboxStatus[]'
+ */
+export type ListEnumOutboxStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OutboxStatus[]'>
     
 
 
@@ -1497,14 +2150,20 @@ export type PrismaClientOptions = ({
   queryPlanCacheMaxSize?: number
 }
 export type GlobalOmitConfig = {
-  tenant?: Prisma.TenantOmit
   template?: Prisma.TemplateOmit
   templateVersion?: Prisma.TemplateVersionOmit
   notification?: Prisma.NotificationOmit
-  whatsAppChat?: Prisma.WhatsAppChatOmit
-  whatsAppMessage?: Prisma.WhatsAppMessageOmit
-  whatsAppAssignmentHistory?: Prisma.WhatsAppAssignmentHistoryOmit
-  whatsAppParticipant?: Prisma.WhatsAppParticipantOmit
+  conversationMapping?: Prisma.ConversationMappingOmit
+  supportConversation?: Prisma.SupportConversationOmit
+  supportMessage?: Prisma.SupportMessageOmit
+  messageDelivery?: Prisma.MessageDeliveryOmit
+  supportAssignmentHistory?: Prisma.SupportAssignmentHistoryOmit
+  supportQuickReply?: Prisma.SupportQuickReplyOmit
+  internalConversation?: Prisma.InternalConversationOmit
+  internalMessage?: Prisma.InternalMessageOmit
+  internalParticipant?: Prisma.InternalParticipantOmit
+  eventAccessProjection?: Prisma.EventAccessProjectionOmit
+  outboxMessage?: Prisma.OutboxMessageOmit
 }
 
 /* Types for Logging */

@@ -1,47 +1,11 @@
-import type {
-  WhatsAppChat,
-  WhatsAppMessage,
-} from '../../../prisma/generated/client.js';
-import { ChatService } from '../../conversation/modules/chat/chat.service.js';
-import { Chat } from '../../conversation/modules/chat/entities/chat.entity.js';
-import { Message } from '../../conversation/modules/message/entities/message.entity.js';
-import { MessageService } from '../../conversation/modules/message/message.service.js';
 import { UseGuards } from '@nestjs/common';
-import {
-  Args,
-  Field,
-  InputType,
-  Mutation,
-  Query,
-  Resolver,
-} from '@nestjs/graphql';
-import { RealmRoleType } from '@omnixys/contracts';
+import { Args, Field, InputType, Mutation, Resolver } from '@nestjs/graphql';
 import { OmnixysLogger } from '@omnixys/logger';
 import {
   CookieAuthGuard,
   CurrentUser,
   CurrentUserData,
-  RoleGuard,
-  Roles,
 } from '@omnixys/security';
-
-@InputType()
-export class SendWhatsappMessageInput {
-  @Field()
-  phoneNumber!: string;
-
-  @Field()
-  message!: string;
-}
-
-@InputType()
-export class SendWhatsappMessageInput2 {
-  @Field()
-  chatId!: string;
-
-  @Field()
-  message!: string;
-}
 
 @InputType()
 export class SendInAppMessageInput {
@@ -73,79 +37,11 @@ export class SendEmail {
   body!: string;
 }
 
-@Resolver(() => Message)
+@Resolver()
 export class MessageResolver {
   readonly log;
-  constructor(
-    readonly omnixysLogger: OmnixysLogger,
-    private readonly messageService: MessageService,
-    private readonly chatService: ChatService,
-  ) {
+  constructor(readonly omnixysLogger: OmnixysLogger) {
     this.log = omnixysLogger.log(this.constructor.name);
-  }
-
-  @Query(() => [Message])
-  @UseGuards(CookieAuthGuard)
-  async getWhatsappMessages(
-    @Args('chatId') chatId: string,
-    @CurrentUser() user: CurrentUserData,
-  ): Promise<WhatsAppMessage[]> {
-    return this.messageService.getMessages(chatId, user);
-  }
-
-  @Mutation(() => Message)
-  @UseGuards(CookieAuthGuard)
-  async sendWhatsappMessage(
-    @Args('input') input: SendWhatsappMessageInput,
-    @CurrentUser() user: CurrentUserData,
-  ): Promise<WhatsAppMessage> {
-    return this.messageService.createOutgoing(
-      input.phoneNumber,
-      input.message,
-      user,
-    );
-  }
-
-  @Mutation(() => Message)
-  @UseGuards(CookieAuthGuard)
-  async sendWhatsappMessage2(
-    @Args('input') input: SendWhatsappMessageInput2,
-    @CurrentUser() user: CurrentUserData,
-  ): Promise<WhatsAppMessage | null> {
-    return this.messageService.createOutgoing2(
-      input.chatId,
-      input.message,
-      user,
-    );
-  }
-
-  @Mutation(() => Chat)
-  @UseGuards(CookieAuthGuard, RoleGuard)
-  @Roles(
-    RealmRoleType.ADMIN,
-    // RealmRoleType.SUPPORT
-  )
-  async claimWhatsappChat(
-    @Args('chatId') chatId: string,
-    @CurrentUser() user: CurrentUserData,
-  ): Promise<WhatsAppChat> {
-    return this.chatService.assignChat(chatId, user.id, user);
-  }
-
-  async assignWhatsappChat(
-    @Args('chatId') chatId: string,
-    @Args('userId') userId: string,
-    @CurrentUser() user: CurrentUserData,
-  ): Promise<WhatsAppChat> {
-    return this.chatService.assignChat(chatId, userId, user);
-  }
-
-  @Query(() => [Chat])
-  @UseGuards(CookieAuthGuard)
-  async getWhatsappChats(
-    @CurrentUser() user: CurrentUserData,
-  ): Promise<WhatsAppChat[]> {
-    return this.chatService.getChats(user);
   }
 
   @Mutation(() => Boolean)

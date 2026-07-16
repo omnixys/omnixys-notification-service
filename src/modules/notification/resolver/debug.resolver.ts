@@ -1,7 +1,6 @@
-import { WhatsAppWebProvider } from '../../messages/providers/whatsapp/whatsapp-web.provider.js';
 import { NotificationWriteService } from '../services/notification-write.service.js';
 import { UseGuards } from '@nestjs/common';
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Mutation, Resolver } from '@nestjs/graphql';
 import { RequestCookies } from '@omnixys/context';
 import { RealmRoleType } from '@omnixys/contracts';
 import type { OmnixysCookieRequest } from '@omnixys/contracts';
@@ -18,22 +17,8 @@ export class DebugResolver {
   constructor(
     loggerService: OmnixysLogger,
     private readonly notificationWriteService: NotificationWriteService,
-    private readonly whatsAppProvider: WhatsAppWebProvider,
   ) {
     this.logger = loggerService.log(this.constructor.name);
-  }
-
-  @Query(() => String, { nullable: true })
-  getQr(): string | null {
-    const url = this.whatsAppProvider.getQrCodeUrl();
-
-    this.logger.debug('QR requested: available=%s', Boolean(url));
-
-    return url;
-  }
-  @Query(() => String)
-  getWhatsappState(): string {
-    return this.whatsAppProvider.getState();
   }
 
   @Mutation(() => String, { name: 'DEBUG_createSignupVerification' })

@@ -38,6 +38,15 @@ export class NotificationPayload {
   @Field(() => JsonScalar)
   metadata!: Record<string, unknown>;
 
+  @Field({ nullable: true })
+  title?: string;
+
+  @Field({ nullable: true })
+  body?: string;
+
+  @Field({ nullable: true })
+  contentFormat?: string;
+
   @Field()
   sensitive!: boolean;
 
@@ -64,6 +73,9 @@ export class NotificationPayload {
 
   @Field({ nullable: true })
   providerRef?: string;
+
+  @Field({ nullable: true })
+  failureReason?: string;
 
   @Field(() => GraphQLISODateTime)
   createdAt!: Date;

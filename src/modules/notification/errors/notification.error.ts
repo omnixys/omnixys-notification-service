@@ -185,3 +185,92 @@ export class MessageInputException extends NotificationDomainException {
     });
   }
 }
+
+// Support Conversation exceptions
+export class ConversationNotFoundException extends NotificationDomainException {
+  constructor(conversationId?: string) {
+    super(
+      ErrorCode.CONVERSATION_NOT_FOUND,
+      'Support conversation was not found',
+      { conversationId },
+    );
+  }
+}
+
+export class ConversationAccessDeniedException extends NotificationDomainException {
+  constructor(conversationId?: string, reason = 'insufficient-permission') {
+    super(
+      ErrorCode.CONVERSATION_ACCESS_DENIED,
+      'Access denied to support conversation',
+      { conversationId, reason },
+    );
+  }
+}
+
+export class ConversationStateException extends NotificationDomainException {
+  constructor(conversationId: string, state: string) {
+    super(
+      ErrorCode.CONVERSATION_STATE_INVALID,
+      'Support conversation state does not allow this operation',
+      { conversationId, state },
+    );
+  }
+}
+
+export class ConversationAssignmentConflictException extends NotificationDomainException {
+  constructor(conversationId: string) {
+    super(
+      ErrorCode.CONVERSATION_ASSIGNMENT_CONFLICT,
+      'Conversation assignment is already in progress',
+      { conversationId },
+    );
+  }
+}
+
+export class ConversationClosedException extends NotificationDomainException {
+  constructor(conversationId?: string) {
+    super(ErrorCode.CONVERSATION_CLOSED, 'Support conversation is closed', {
+      conversationId,
+    });
+  }
+}
+
+export class ConversationChannelUnavailableException extends NotificationDomainException {
+  constructor(channel: string, reason = 'provider-unavailable') {
+    super(
+      ErrorCode.CONVERSATION_CHANNEL_UNAVAILABLE,
+      'Support conversation channel is unavailable',
+      { channel, reason },
+    );
+  }
+}
+
+export class ConversationDuplicateException extends NotificationDomainException {
+  constructor(conversationId?: string) {
+    super(
+      ErrorCode.CONVERSATION_DUPLICATE,
+      'A conversation with these parameters already exists',
+      { conversationId },
+    );
+  }
+}
+
+export class QuickReplyNotFoundException extends NotificationDomainException {
+  constructor(keyOrId?: string) {
+    super(ErrorCode.QUICK_REPLY_NOT_FOUND, 'Quick reply was not found', {
+      keyOrId,
+    });
+  }
+}
+
+export class QuickReplyDuplicateException extends NotificationDomainException {
+  constructor(key?: string) {
+    super(
+      ErrorCode.QUICK_REPLY_DUPLICATE,
+      'Quick reply with this key already exists',
+      {
+        key,
+      },
+    );
+  }
+}

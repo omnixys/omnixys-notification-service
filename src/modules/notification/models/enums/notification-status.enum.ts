@@ -4,6 +4,7 @@ export enum NotificationStatus {
   PENDING = 'PENDING',
   SENT = 'SENT',
   PROCESSING = 'PROCESSING',
+  DELIVERED = 'DELIVERED',
   READ = 'READ',
   FAILED = 'FAILED',
   EXPIRED = 'EXPIRED',

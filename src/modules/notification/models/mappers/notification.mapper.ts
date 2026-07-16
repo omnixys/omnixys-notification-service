@@ -22,6 +22,9 @@ export class NotificationMapper {
 
       variables: entity.variables as Record<string, unknown>,
       metadata: entity.metadata as Record<string, unknown>,
+      title: entity.title ?? undefined,
+      body: entity.body ?? undefined,
+      contentFormat: entity.contentFormat ?? undefined,
 
       sensitive: entity.sensitive,
 
@@ -34,6 +37,7 @@ export class NotificationMapper {
       createdBy: entity.createdBy ?? undefined,
       provider: entity.provider ?? undefined,
       providerRef: entity.providerRef ?? undefined,
+      failureReason: entity.failureReason ?? undefined,
 
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,

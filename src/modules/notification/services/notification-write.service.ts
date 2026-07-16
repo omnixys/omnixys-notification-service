@@ -6,8 +6,7 @@ import {
   Prisma,
 } from '../../../prisma/generated/client.js';
 import { PrismaService } from '../../../prisma/prisma.service.js';
-import { MailService } from '../../messages/services/mail.service.js';
-import { WhatsAppService } from '../../messages/services/whatsapp.service.js';
+import { DispatchService } from '../../messages/services/dispatch.service.js';
 import {
   NotificationChannelUnavailableException,
   NotificationDeliveryException,
@@ -24,6 +23,7 @@ import { formatRequestTime } from '../utils/date.util.js';
 import { NotificationCacheService } from './notification-cache.service.js';
 import { SendInvitationVariables, TemplateRenderService } from './template-renderer.service.js';
 import { Injectable } from '@nestjs/common';
+import { ValkeyPubSubService } from '@omnixys/cache';
 import { createTmpUsername, getPrimaryPhoneNumber } from '@omnixys/contracts';
 import type {
   CreatePendingUserDTO,
@@ -75,6 +75,10 @@ export interface CreateNotificationDTO {
   expiresAt?: Date;
 
   createdBy?: string;
+  title?: string;
+  body?: string;
+  contentFormat?: 'TEXT' | 'HTML' | 'MARKDOWN';
+  templateVersion?: number;
 }
 
 @Injectable()
@@ -84,10 +88,10 @@ export class NotificationWriteService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notificationCacheService: NotificationCacheService,
-    private readonly mailService: MailService,
-    private readonly whatsappService: WhatsAppService,
+    private readonly dispatchService: DispatchService,
     private readonly templateRenderService: TemplateRenderService,
     private readonly encryptService: EncryptionService,
+    private readonly valkeyPubSub: ValkeyPubSubService,
     loggerService: OmnixysLogger,
   ) {
     this.logger = loggerService.log(this.constructor.name);
@@ -124,6 +128,10 @@ export class NotificationWriteService {
 
         status: NotificationStatus.PENDING,
         createdBy: input.createdBy ?? null,
+        title: input.title ?? null,
+        body: input.body ?? null,
+        contentFormat: input.contentFormat ?? null,
+        templateVersion: input.templateVersion ?? null,
       },
     });
 
@@ -134,6 +142,61 @@ export class NotificationWriteService {
     );
 
     return notification;
+  }
+
+  async createAndDispatch(
+    input: CreateNotificationDTO & { locale?: string },
+  ): Promise<Notification> {
+    if (!input.templateId) {
+      throw new NotificationInputException('template-required');
+    }
+    if (input.channel === Channel.IN_APP && !input.recipientId) {
+      throw new NotificationInputException('recipient-id-missing');
+    }
+    if (input.channel !== Channel.IN_APP && !input.recipientAddress) {
+      throw new NotificationInputException('recipient-address-missing');
+    }
+
+    const rendered = await this.templateRenderService.renderFromId({
+      templateId: input.templateId,
+      channel: input.channel,
+      locale: input.locale,
+      variables: (input.variables ?? {}) as Record<string, unknown>,
+    });
+    const notification = await this.create({
+      ...input,
+      title: rendered.renderedTitle,
+      body: rendered.renderedBody,
+      contentFormat: input.channel === Channel.EMAIL ? 'HTML' : 'TEXT',
+      templateVersion: rendered.version,
+    });
+    try {
+      const providerRef = await this.dispatchNotification({
+        channel: input.channel,
+        notificationId: notification.id,
+        to: input.recipientAddress,
+        recipientId: input.recipientId,
+        subject: rendered.renderedTitle,
+        body: rendered.renderedBody,
+        flow: 'generic-notification',
+      });
+      if (input.channel !== Channel.IN_APP) {
+        return this.markAsSent(notification.id, {
+          provider: this.resolveProvider(input.channel),
+          providerRef,
+        });
+      }
+      return this.findOrThrow(notification.id);
+    } catch (error) {
+      await this.prisma.notification.update({
+        where: { id: notification.id },
+        data: {
+          status: NotificationStatus.FAILED,
+          failureReason: this.safeFailureReason(error),
+        },
+      });
+      throw error;
+    }
   }
 
   // ─────────────────────────────────────────────
@@ -152,6 +215,14 @@ export class NotificationWriteService {
         readAt: new Date(),
       },
     });
+  }
+
+  async markAsReadForUser(id: string, recipientId: string): Promise<Notification> {
+    const existing = await this.findOrThrow(id);
+    if (existing.recipientId !== recipientId) {
+      throw new NotificationNotFoundException(id);
+    }
+    return this.markAsRead(id);
   }
 
   // ─────────────────────────────────────────────
@@ -185,6 +256,14 @@ export class NotificationWriteService {
         status: NotificationStatus.ARCHIVED,
       },
     });
+  }
+
+  async archiveForUser(id: string, recipientId: string): Promise<Notification> {
+    const existing = await this.findOrThrow(id);
+    if (existing.recipientId !== recipientId) {
+      throw new NotificationNotFoundException(id);
+    }
+    return this.archive(id);
   }
 
   async unarchive(id: string): Promise<Notification> {
@@ -329,7 +408,6 @@ export class NotificationWriteService {
       where: { id },
       data: {
         status: NotificationStatus.SENT,
-        deliveredAt: new Date(),
         provider: options?.provider ?? existing.provider ?? null,
         providerRef: options?.providerRef ?? existing.providerRef ?? null,
       },
@@ -424,26 +502,23 @@ export class NotificationWriteService {
         createdBy: 'notification-service',
       });
 
-      // 4️⃣ Send Mail
-      await this.mailService.send({
+      // 4️⃣ Dispatch
+      await this.dispatchNotification({
+        channel: Channel.EMAIL,
+        notificationId: notification.id,
         to: createUserInput.personalInfo.email,
         subject: renderedTitle ?? '',
-        html: renderedBody,
-        format: 'HTML',
-        from: FROM_NO_REPLY,
-        metadata: {
-          notificationId: notification.id,
-          flow: 'signup-verification',
-        },
+        body: renderedBody,
+        flow: 'signup-verification',
       });
       this.logger.debug(
-        'createSignupVerification mail sending completed: notificationId=%s',
+        'createSignupVerification dispatch completed: notificationId=%s',
         notification.id,
       );
 
       // 5️⃣ Mark as sent
       await this.markAsSent(notification.id, {
-        provider: 'resend',
+        provider: this.resolveProvider(Channel.EMAIL),
       });
 
       this.logger.info(
@@ -635,23 +710,20 @@ export class NotificationWriteService {
         createdBy: 'notification-service',
       });
 
-      // 4️⃣ Send Mail
-      await this.mailService.send({
+      // 4️⃣ Dispatch
+      await this.dispatchNotification({
+        channel: Channel.EMAIL,
+        notificationId: notification.id,
         to: email,
         subject: renderedTitle ?? '',
-        html: renderedBody,
-        format: 'HTML',
-        from: FROM_NO_REPLY,
-        metadata: {
-          notificationId: notification.id,
-          flow: 'signup-verification',
-        },
+        body: renderedBody,
+        flow: 'create-magic-link',
       });
-      this.logger.debug('sendMagicLink mail sending completed: notificationId=%s', notification.id);
+      this.logger.debug('sendMagicLink dispatch completed: notificationId=%s', notification.id);
 
       // 5️⃣ Mark as sent
       await this.markAsSent(notification.id, {
-        provider: 'resend',
+        provider: this.resolveProvider(Channel.EMAIL),
       });
 
       this.logger.info(
@@ -730,27 +802,20 @@ export class NotificationWriteService {
         createdBy: 'notification-service',
       });
 
-      // 4️⃣ Send Mail
-      await this.mailService.send({
+      // 4️⃣ Dispatch
+      await this.dispatchNotification({
+        channel: Channel.EMAIL,
+        notificationId: notification.id,
         to: email,
         subject: renderedTitle ?? '',
-        html: renderedBody,
-        format: 'HTML',
-        from: FROM_NO_REPLY,
-        replyTo: FROM_SUPPORT,
-        metadata: {
-          notificationId: notification.id,
-          flow: 'create-passwort-reset-link',
-        },
+        body: renderedBody,
+        flow: 'create-passwort-reset-link',
       });
-      this.logger.debug(
-        'sendRequestReset mail sending completed: notificationId=%s',
-        notification.id,
-      );
+      this.logger.debug('sendRequestReset dispatch completed: notificationId=%s', notification.id);
 
       // 5️⃣ Mark as sent
       await this.markAsSent(notification.id, {
-        provider: 'resend',
+        provider: this.resolveProvider(Channel.EMAIL),
       });
 
       this.logger.info(
@@ -893,7 +958,7 @@ export class NotificationWriteService {
           tenantId: 'omnixys',
           recipientUsername: `${guest.firstName}.${guest.lastName}`,
           recipientAddress: guest.email ?? phoneNumber ?? 'unknown',
-          channel: Channel.EMAIL,
+          channel,
           priority: Priority.NORMAL,
           templateId,
           variables: variables as unknown as InputJsonValue,
@@ -956,12 +1021,13 @@ export class NotificationWriteService {
   private async dispatchNotification(input: {
     channel: Channel;
     to?: string;
+    recipientId?: string;
     subject?: string;
     body: string;
     notificationId: string;
     flow?: string;
-  }): Promise<void> {
-    const { channel, notificationId, to, body, flow } = input;
+  }): Promise<string | undefined> {
+    const { channel, notificationId, to, body } = input;
 
     this.logger.debug(
       'dispatchNotification started: notificationId=%s channel=%s',
@@ -969,9 +1035,19 @@ export class NotificationWriteService {
       channel,
     );
 
+    await this.prisma.notification.update({
+      where: { id: notificationId },
+      data: {
+        title: input.subject ?? null,
+        body,
+        contentFormat: channel === Channel.EMAIL ? 'HTML' : 'TEXT',
+        status: NotificationStatus.PROCESSING,
+      },
+    });
+
     try {
       switch (channel) {
-        case Channel.EMAIL:
+        case Channel.EMAIL: {
           if (!to) {
             throw new NotificationInputException('email-address-missing', {
               notificationId,
@@ -985,32 +1061,35 @@ export class NotificationWriteService {
             });
           }
 
-          this.logger.debug(
-            'dispatchNotification provider invocation started: notificationId=%s provider=%s',
-            notificationId,
-            'resend',
-          );
-          await this.mailService.send({
-            to,
+          const emailResult = await this.dispatchService.dispatch({
+            id: notificationId,
+            channel: 'EMAIL',
+            recipientId: input.recipientId ?? to,
+            recipientAddress: to,
+            body,
+            contentType: 'HTML',
+            senderId: FROM_NO_REPLY,
+            senderAddress: FROM_NO_REPLY,
             subject: input.subject,
-            html: body,
-            format: 'HTML',
-            from: FROM_NO_REPLY,
             metadata: {
-              notificationId,
-              channel: 'email',
-              flow: flow ?? 'Unknown Flow',
+              conversationId: input.flow,
             },
           });
+
+          if (!emailResult.success) {
+            throw new NotificationDeliveryException('EMAIL', emailResult.error);
+          }
+
           this.logger.info(
             'dispatchNotification completed: notificationId=%s channel=%s provider=%s',
             notificationId,
             channel,
-            'resend',
+            'gateway',
           );
-          return;
+          return emailResult.providerMessageId;
+        }
 
-        case Channel.WHATSAPP:
+        case Channel.WHATSAPP: {
           if (!to) {
             throw new NotificationInputException('phone-number-missing', {
               notificationId,
@@ -1018,35 +1097,54 @@ export class NotificationWriteService {
             });
           }
 
-          this.logger.debug(
-            'dispatchNotification provider invocation started: notificationId=%s provider=%s',
-            notificationId,
-            'whatsapp-api',
-          );
-          await this.whatsappService.send({
-            to,
-            message: body,
-            metadata: {
-              notificationId,
-              channel: 'whatsapp',
-              flow: flow ?? 'Unknown Flow',
-            },
+          const dispatchResult = await this.dispatchService.dispatch({
+            id: notificationId,
+            channel: 'WHATSAPP',
+            recipientId: input.recipientId ?? to,
+            recipientAddress: to,
+            body,
+            contentType: 'TEXT',
           });
+
+          if (!dispatchResult.success) {
+            throw new NotificationDeliveryException('WHATSAPP', dispatchResult.error);
+          }
+
           this.logger.info(
             'dispatchNotification completed: notificationId=%s channel=%s provider=%s',
             notificationId,
             channel,
-            'whatsapp-api',
+            'gateway',
           );
-          return;
+          return dispatchResult.providerMessageId;
+        }
 
         case Channel.IN_APP:
-        case Channel.PUSH:
-        case Channel.SMS:
-          throw new NotificationInputException('channel-unsupported', {
-            notificationId,
-            channel,
+          if (!input.recipientId) {
+            throw new NotificationInputException('recipient-id-missing', {
+              notificationId,
+              channel,
+            });
+          }
+          await this.prisma.notification.update({
+            where: { id: notificationId },
+            data: {
+              status: NotificationStatus.DELIVERED,
+              deliveredAt: new Date(),
+            },
           });
+          await this.valkeyPubSub.publish(`notification.user.${input.recipientId}`, {
+            notificationReceived: {
+              id: notificationId,
+              recipientId: input.recipientId,
+              title: input.subject,
+              body,
+              channel,
+              status: NotificationStatus.DELIVERED,
+              createdAt: new Date().toISOString(),
+            },
+          });
+          return undefined;
       }
     } catch (error) {
       if (
@@ -1058,7 +1156,10 @@ export class NotificationWriteService {
         await this.prisma.notification
           .update({
             where: { id: notificationId },
-            data: { status: NotificationStatus.FAILED },
+            data: {
+              status: NotificationStatus.FAILED,
+              failureReason: this.safeFailureReason(error),
+            },
           })
           .catch((updateError) => {
             this.logger.error(
@@ -1075,13 +1176,23 @@ export class NotificationWriteService {
   private resolveProvider(channel: Channel): string {
     switch (channel) {
       case Channel.EMAIL:
-        return 'resend';
       case Channel.WHATSAPP:
-        return 'whatsapp-api';
+        return 'gateway';
       case Channel.IN_APP:
-      case Channel.PUSH:
-      case Channel.SMS:
-        return 'unknown';
+        return 'in-app';
     }
+  }
+
+  private safeFailureReason(error: unknown): string {
+    if (error instanceof NotificationInputException) {
+      return 'INVALID_NOTIFICATION_INPUT';
+    }
+    if (error instanceof NotificationChannelUnavailableException) {
+      return 'CHANNEL_UNAVAILABLE';
+    }
+    if (error instanceof NotificationStateException) {
+      return 'INVALID_NOTIFICATION_STATE';
+    }
+    return 'DELIVERY_FAILED';
   }
 }

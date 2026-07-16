@@ -52,32 +52,6 @@ enum NotificationStatus {
   @@map("notification_status")
 }
 
-enum DeliveryAttemptStatus {
-  SUCCESS
-  FAILED
-
-  @@map("delivery_attempt_status")
-}
-
-enum WebhookEventType {
-  DELIVERED
-  BOUNCED
-  OPENED
-  CLICKED
-  REJECTED
-}
-
-model Tenant {
-  id        String   @id @default(uuid())
-  name      String
-  createdAt DateTime @default(now())
-
-  templates     Template[]
-  notifications Notification[]
-
-  @@map("tenant")
-}
-
 //
 // ──────────────────────────────────────────────────────────
 // TEMPLATE
@@ -86,7 +60,6 @@ model Tenant {
 model Template {
   id       String  @id @default(uuid()) @map("id")
   tenantId String? @map("tenant_id")
-  tenant   Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   key     String  @map("key")
   channel Channel
@@ -134,7 +107,6 @@ model Notification {
   id String @id @default(uuid()) @map("id")
 
   tenantId String?
-  tenant   Tenant? @relation(fields: [tenantId], references: [id])
 
   // ── Recipient ───────────────────────────────────────────
   recipientUsername String  @map("recipient_username")
@@ -148,6 +120,9 @@ model Notification {
 
   variables Json @default("{}") @map("variables")
   metadata  Json @default("{}")
+  title         String?
+  body          String?
+  contentFormat ContentFormat? @map("content_format")
 
   channel  Channel  @map("channel")
   priority Priority @default(NORMAL) @map("priority")
@@ -172,6 +147,7 @@ model Notification {
 
   provider    String?
   providerRef String?
+  failureReason String? @map("failure_reason")
 
   @@index([status, createdAt])
   @@index([tenantId, status])
@@ -183,12 +159,6 @@ model Notification {
 ////////////////////////////////
 // C O N V E R S A T I O N /////
 ////////////////////////////////
-
-enum ChatStatus {
-  OPEN
-  ASSIGNED
-  CLOSED
-}
 
 enum MessageStatus {
   SENT
@@ -203,86 +173,351 @@ enum MessageDirection {
   OUTBOUND
 }
 
-model WhatsAppChat {
-  id      String  @id @default(uuid())
-  chatId  String  @unique
-  name    String?
-  isGroup Boolean @default(false)
-  phone   String?
+////////////////////////////////
+// S U P P O R T   C H A T ///
+////////////////////////////////
 
-  assignedTo String? // userId (Keycloak)
-  status     ChatStatus @default(OPEN)
+enum ConversationChannel {
+  WHATSAPP
+  EMAIL
+  WEBCHAT
+  SMS
 
-  lastMessageAt      DateTime?
-  lastMessagePreview String?
+  @@map("conversation_channel")
+}
 
-  messages     WhatsAppMessage[]
-  assignments  WhatsAppAssignmentHistory[]
-  participants WhatsAppParticipant[]
+enum ConversationStatus {
+  OPEN
+  ASSIGNED
+  PENDING
+  RESOLVED
+  CLOSED
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  @@map("conversation_status")
+}
 
+enum ConversationPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+
+  @@map("conversation_priority")
+}
+
+model ConversationMapping {
+  id String @id @default(uuid())
+
+  channel        ConversationChannel  @map("channel")
+  externalId     String               @map("external_id") // phone number (with @c.us), email address, etc.
+  eventId        String?              @map("event_id")
+  conversationId String?              @map("conversation_id")
+  conversation   SupportConversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+
+  mappingType String @default("AUTO") @map("mapping_type") // AUTO, MANUAL, FALLBACK
+  metadata    Json?  @default("{}") @map("metadata")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([channel, externalId, eventId], name: "uq_conversation_mapping")
+  @@index([channel, externalId])
+  @@index([conversationId])
+  @@index([eventId])
+  @@map("conversation_mapping")
+}
+
+model SupportConversation {
+  id String @id @default(uuid())
+
+  eventId      String  @map("event_id")
+  invitationId String? @map("invitation_id")
+
+  guestUserId  String? @map("guest_user_id")
+  guestName    String  @map("guest_name")
+  guestContact String? @map("guest_contact")
+
+  subject  String?
+  status   ConversationStatus   @default(OPEN) @map("status")
+  priority ConversationPriority @default(NORMAL) @map("priority")
+
+  assignedTo     String? @map("assigned_to")
+  assignedToUser String? @map("assigned_to_user")
+
+  channel ConversationChannel @map("channel")
+
+  lastMessageAt      DateTime? @map("last_message_at")
+  lastMessagePreview String?   @map("last_message_preview")
+
+  // Email threading
+  emailMessageId  String? @map("email_message_id")
+  emailInReplyTo  String? @map("email_in_reply_to")
+  emailReferences String? @map("email_references")
+
+  // Tags & metadata
+  tags     String[] @default([]) @map("tags")
+  metadata Json?    @default("{}") @map("metadata")
+
+  // Unread tracking
+  unreadCount Int @default(0) @map("unread_count")
+
+  // SLA / escalation
+  slaDeadline DateTime? @map("sla_deadline")
+  escalatedAt DateTime? @map("escalated_at")
+  escalatedTo String?   @map("escalated_to")
+
+  // Internal
+  internalNote String? @map("internal_note")
+
+  // Soft delete
+  deletedAt DateTime? @map("deleted_at")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  closedAt  DateTime? @map("closed_at")
+
+  mappings    ConversationMapping[]
+  messages    SupportMessage[]
+  assignments SupportAssignmentHistory[]
+
+  @@index([eventId])
+  @@index([guestUserId])
   @@index([assignedTo])
   @@index([status])
-  @@index([updatedAt])
+  @@index([eventId, status])
   @@index([assignedTo, status])
+  @@index([createdAt])
+  @@index([emailMessageId])
+  @@index([deletedAt])
+  @@map("support_conversation")
 }
 
-model WhatsAppMessage {
+model SupportMessage {
   id String @id @default(uuid())
 
-  chatRefId String
-  chat      WhatsAppChat @relation(fields: [chatRefId], references: [id], onDelete: Cascade)
+  conversationId String
+  conversation   SupportConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
-  chatId String
+  direction MessageDirection    @map("direction")
+  channel   ConversationChannel @map("channel")
 
-  direction MessageDirection
-
-  from String
-  to   String
+  fromUserId String? @map("from_user_id")
+  fromGuest  Boolean @default(false) @map("from_guest")
 
   body     String?
-  mediaUrl String?
-  mimeType String?
+  mediaUrl String? @map("media_url")
+  mimeType String? @map("mime_type")
 
-  messageId String? @unique
+  status     MessageStatus @default(SENT) @map("status")
+  externalId String?       @map("external_id")
+  error      String?
 
-  status MessageStatus @default(SENT)
-  error  String?
+  // Delivery tracking
+  deliveredAt DateTime? @map("delivered_at")
+  readAt      DateTime? @map("read_at")
 
-  createdAt DateTime @default(now())
+  // Edits
+  editedAt  DateTime? @map("edited_at")
+  editCount Int       @default(0) @map("edit_count")
 
-  @@index([chatRefId])
-  @@index([chatId])
+  // Soft delete
+  deletedAt DateTime? @map("deleted_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  deliveries MessageDelivery[]
+
+  @@index([conversationId])
   @@index([createdAt])
+  @@index([externalId])
+  @@index([deletedAt])
+  @@map("support_message")
+}
+
+model MessageDelivery {
+  id String @id @default(uuid())
+
+  messageId String
+  message   SupportMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  channel     ConversationChannel @map("channel")
+  status      MessageStatus       @default(SENT) @map("status")
+  attempt     Int                 @default(0) @map("attempt")
+  deliveredAt DateTime?           @map("delivered_at")
+  readAt      DateTime?           @map("read_at")
+  error       String?
+  providerRef String?             @map("provider_ref")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([messageId])
   @@index([status])
+  @@index([channel, status])
+  @@map("message_delivery")
 }
 
-model WhatsAppAssignmentHistory {
+model SupportAssignmentHistory {
   id String @id @default(uuid())
 
-  chatRefId String
-  chat      WhatsAppChat @relation(fields: [chatRefId], references: [id], onDelete: Cascade)
+  conversationId String
+  conversation   SupportConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
-  assignedTo String
-  assignedBy String
+  assignedTo String @map("assigned_to")
+  assignedBy String @map("assigned_by")
 
-  createdAt DateTime @default(now())
+  assignedAt DateTime @default(now()) @map("assigned_at")
 
-  @@index([chatRefId])
+  @@index([conversationId])
+  @@map("support_assignment_history")
 }
 
-model WhatsAppParticipant {
+model SupportQuickReply {
   id String @id @default(uuid())
 
-  chatRefId String
-  chat      WhatsAppChat @relation(fields: [chatRefId], references: [id], onDelete: Cascade)
+  key     String               @unique
+  body    String
+  channel ConversationChannel?
 
-  phone String
-  name  String?
+  tags String[]
 
-  createdAt DateTime @default(now())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@unique([chatRefId, phone])
+  @@map("support_quick_reply")
+}
+
+////////////////////////////////
+// I N T E R N A L   C H A T //
+////////////////////////////////
+
+enum InternalConversationType {
+  BROADCAST
+  DIRECT
+  ROLE_CHANNEL
+
+  @@map("internal_conversation_type")
+}
+
+enum InternalMessagePriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+
+  @@map("internal_message_priority")
+}
+
+model InternalConversation {
+  id String @id @default(uuid())
+
+  eventId String @map("event_id")
+
+  title           String                   @map("title")
+  description     String?                  @map("description")
+  type            InternalConversationType @default(DIRECT) @map("type")
+  roleId          String?                  @map("role_id") // For ROLE_CHANNEL type
+  participantHash String?                  @map("participant_hash")
+
+  createdBy String  @map("created_by")
+  isActive  Boolean @default(true) @map("is_active")
+
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  archivedAt DateTime? @map("archived_at")
+
+  messages     InternalMessage[]
+  participants InternalParticipant[]
+
+  @@unique([eventId, type, participantHash], name: "uq_internal_conversation")
+  @@index([eventId])
+  @@index([type])
+  @@index([eventId, type])
+  @@index([roleId])
+  @@map("internal_conversation")
+}
+
+model InternalMessage {
+  id String @id @default(uuid())
+
+  conversationId String
+  conversation   InternalConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  senderId String @map("sender_id")
+
+  body     String                  @map("body")
+  priority InternalMessagePriority @default(NORMAL) @map("priority")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  editedAt  DateTime? @map("edited_at")
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([createdAt])
+  @@map("internal_message")
+}
+
+model InternalParticipant {
+  id String @id @default(uuid())
+
+  conversationId String
+  conversation   InternalConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  userId String @map("user_id")
+
+  lastReadAt DateTime? @map("last_read_at")
+  joinedAt   DateTime  @default(now()) @map("joined_at")
+  leftAt     DateTime? @map("left_at")
+
+  @@unique([conversationId, userId], name: "uq_internal_participant")
+  @@index([userId])
+  @@map("internal_participant")
+}
+
+model EventAccessProjection {
+  id          String    @id @default(uuid()) @map("id")
+  eventId     String    @map("event_id")
+  userId      String    @map("user_id")
+  permissions String[]  @default([]) @map("permissions")
+  roles       Json?     @map("roles")
+  occurredAt  DateTime? @map("occurred_at")
+  updatedAt   DateTime? @updatedAt @map("updated_at")
+
+  @@unique([eventId, userId], name: "uq_event_access_projection")
+  @@index([eventId], name: "idx_event_access_projection_event")
+  @@map("event_access_projection")
+}
+
+////////////////////////////////
+// O U T B O X ////////////////
+////////////////////////////////
+
+enum OutboxStatus {
+  PENDING
+  PUBLISHED
+  FAILED
+
+  @@map("outbox_status")
+}
+
+model OutboxMessage {
+  id String @id @default(uuid())
+
+  topic   String  @map("topic")
+  payload Json    @map("payload")
+  key     String? @map("key")
+  headers Json?   @default("{}") @map("headers")
+
+  status   OutboxStatus @default(PENDING) @map("status")
+  error    String?
+  attempt  Int          @default(0) @map("attempt")
+  maxRetry Int          @default(5) @map("max_retry")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  publishedAt DateTime? @map("published_at")
+
+  @@index([status, createdAt])
+  @@index([status, attempt])
+  @@map("outbox_message")
 }

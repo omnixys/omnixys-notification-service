@@ -52,34 +52,6 @@ export const NotificationStatus = {
 export type NotificationStatus = (typeof NotificationStatus)[keyof typeof NotificationStatus]
 
 
-export const DeliveryAttemptStatus = {
-  SUCCESS: 'SUCCESS',
-  FAILED: 'FAILED'
-} as const
-
-export type DeliveryAttemptStatus = (typeof DeliveryAttemptStatus)[keyof typeof DeliveryAttemptStatus]
-
-
-export const WebhookEventType = {
-  DELIVERED: 'DELIVERED',
-  BOUNCED: 'BOUNCED',
-  OPENED: 'OPENED',
-  CLICKED: 'CLICKED',
-  REJECTED: 'REJECTED'
-} as const
-
-export type WebhookEventType = (typeof WebhookEventType)[keyof typeof WebhookEventType]
-
-
-export const ChatStatus = {
-  OPEN: 'OPEN',
-  ASSIGNED: 'ASSIGNED',
-  CLOSED: 'CLOSED'
-} as const
-
-export type ChatStatus = (typeof ChatStatus)[keyof typeof ChatStatus]
-
-
 export const MessageStatus = {
   SENT: 'SENT',
   DELIVERED: 'DELIVERED',
@@ -97,3 +69,62 @@ export const MessageDirection = {
 } as const
 
 export type MessageDirection = (typeof MessageDirection)[keyof typeof MessageDirection]
+
+
+export const ConversationChannel = {
+  WHATSAPP: 'WHATSAPP',
+  EMAIL: 'EMAIL',
+  WEBCHAT: 'WEBCHAT',
+  SMS: 'SMS'
+} as const
+
+export type ConversationChannel = (typeof ConversationChannel)[keyof typeof ConversationChannel]
+
+
+export const ConversationStatus = {
+  OPEN: 'OPEN',
+  ASSIGNED: 'ASSIGNED',
+  PENDING: 'PENDING',
+  RESOLVED: 'RESOLVED',
+  CLOSED: 'CLOSED'
+} as const
+
+export type ConversationStatus = (typeof ConversationStatus)[keyof typeof ConversationStatus]
+
+
+export const ConversationPriority = {
+  LOW: 'LOW',
+  NORMAL: 'NORMAL',
+  HIGH: 'HIGH',
+  URGENT: 'URGENT'
+} as const
+
+export type ConversationPriority = (typeof ConversationPriority)[keyof typeof ConversationPriority]
+
+
+export const InternalConversationType = {
+  BROADCAST: 'BROADCAST',
+  DIRECT: 'DIRECT',
+  ROLE_CHANNEL: 'ROLE_CHANNEL'
+} as const
+
+export type InternalConversationType = (typeof InternalConversationType)[keyof typeof InternalConversationType]
+
+
+export const InternalMessagePriority = {
+  LOW: 'LOW',
+  NORMAL: 'NORMAL',
+  HIGH: 'HIGH',
+  URGENT: 'URGENT'
+} as const
+
+export type InternalMessagePriority = (typeof InternalMessagePriority)[keyof typeof InternalMessagePriority]
+
+
+export const OutboxStatus = {
+  PENDING: 'PENDING',
+  PUBLISHED: 'PUBLISHED',
+  FAILED: 'FAILED'
+} as const
+
+export type OutboxStatus = (typeof OutboxStatus)[keyof typeof OutboxStatus]

@@ -29,6 +29,9 @@ export class CreateNotificationInput {
   @Field({ nullable: true })
   templateId?: string;
 
+  @Field({ nullable: true })
+  locale?: string;
+
   @Field(() => JsonScalar, { nullable: true })
   variables?: any;
 

@@ -124,8 +124,6 @@ export const env = {
 
   ENCRYPTION_KEY: getEnv('ENCRYPTION_KEY', '', { required: true }),
 
-  RESEND_API_KEY: getEnv('RESEND_API_KEY', '', { required: true }),
-
   APP_BASE_URL: getEnv('APP_BASE_URL', 'http://localhost:3000', {
     required: true,
   }),
@@ -141,10 +139,14 @@ export const env = {
     'Omnixys Security <security@omnixys.com>',
   ),
 
-  CHROME_PATH: getEnv('CHROME_PATH', '', { required: true }),
   COOKIE_SECRET: getEnv('COOKIE_SECRET', 'omnixys-development-secret', {
     required: true,
   }),
+
+  GATEWAY_BASE_URL: getEnv('GATEWAY_BASE_URL', 'http://omnixys-gateway:8002'),
+  GATEWAY_API_KEY: getEnv('GATEWAY_API_KEY', '', { required: true }),
+  USE_GATEWAY: getEnv('USE_GATEWAY', 'true', { transform: toBool }),
+  GATEWAY_REQUIRED: getEnv('GATEWAY_REQUIRED', 'true', { transform: toBool }),
 } as const;
 
 // /**

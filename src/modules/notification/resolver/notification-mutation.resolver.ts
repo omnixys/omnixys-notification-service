@@ -7,10 +7,18 @@ import { UseGuards } from '@nestjs/common';
 import { Args, Mutation, Resolver } from '@nestjs/graphql';
 import { ClientIp, Device, Location, RequestCookies } from '@omnixys/context';
 import type { OmnixysCookieRequest } from '@omnixys/contracts';
-import { RealmRoleType } from '@omnixys/contracts';
+import { EventPermissionKey, RealmRoleType } from '@omnixys/contracts';
 import { CreateUserInput } from '@omnixys/graphql';
 import { OmnixysLogger } from '@omnixys/logger';
-import { CookieAuthGuard, RoleGuard, Roles } from '@omnixys/security';
+import {
+  CookieAuthGuard,
+  CurrentUser,
+  CurrentUserData,
+  EventAccessDeniedException,
+  EventPermissionResolver,
+  RoleGuard,
+  Roles,
+} from '@omnixys/security';
 
 @Resolver()
 export class NotificationMutationResolver {
@@ -19,6 +27,7 @@ export class NotificationMutationResolver {
   constructor(
     loggerService: OmnixysLogger,
     private readonly notificationWriteService: NotificationWriteService,
+    private readonly eventPermissionResolver: EventPermissionResolver,
   ) {
     this.logger = loggerService.log(this.constructor.name);
   }
@@ -38,10 +47,36 @@ export class NotificationMutationResolver {
       input.recipientUsername,
     );
 
-    const entity = await this.notificationWriteService.create({
+    const entity = await this.notificationWriteService.createAndDispatch({
       ...input,
     });
 
+    return NotificationMapper.toPayload(entity);
+  }
+
+  @Mutation(() => NotificationPayload)
+  @UseGuards(CookieAuthGuard)
+  async markMyNotificationAsRead(
+    @Args('id') id: string,
+    @CurrentUser() currentUser: CurrentUserData,
+  ): Promise<NotificationPayload> {
+    const entity = await this.notificationWriteService.markAsReadForUser(
+      id,
+      currentUser.id,
+    );
+    return NotificationMapper.toPayload(entity);
+  }
+
+  @Mutation(() => NotificationPayload)
+  @UseGuards(CookieAuthGuard)
+  async archiveMyNotification(
+    @Args('id') id: string,
+    @CurrentUser() currentUser: CurrentUserData,
+  ): Promise<NotificationPayload> {
+    const entity = await this.notificationWriteService.archiveForUser(
+      id,
+      currentUser.id,
+    );
     return NotificationMapper.toPayload(entity);
   }
 
@@ -152,14 +187,44 @@ export class NotificationMutationResolver {
   }
 
   @Mutation(() => Boolean)
-  @UseGuards(CookieAuthGuard)
+  @UseGuards(CookieAuthGuard, RoleGuard)
+  @Roles(RealmRoleType.USER)
   async sendInvitations(
     @Args('input') input: SendInvitationsInput,
+    @CurrentUser() currentUser: CurrentUserData,
   ): Promise<boolean> {
     this.logger.info('sendInvitations called: guests=%s', input.guests.length);
 
+    await this.assertCanSendInvitations(input, currentUser);
     await this.notificationWriteService.sendBulkInvitations(input);
 
     return true;
+  }
+
+  private async assertCanSendInvitations(
+    input: SendInvitationsInput,
+    currentUser: CurrentUserData,
+  ): Promise<void> {
+    const eventIds = [...new Set(input.guests.map((guest) => guest.eventId))];
+
+    await Promise.all(
+      eventIds.map(async (eventId) => {
+        const permissions =
+          await this.eventPermissionResolver.getPermissionsForUser(
+            currentUser.id,
+            eventId,
+          );
+
+        if (!permissions.includes(EventPermissionKey.SendNotifications)) {
+          throw new EventAccessDeniedException({
+            eventId,
+            userId: currentUser.id,
+            reason: 'event-permission-mismatch',
+            actualPermissions: permissions,
+            requiredPermissions: [EventPermissionKey.SendNotifications],
+          });
+        }
+      }),
+    );
   }
 }

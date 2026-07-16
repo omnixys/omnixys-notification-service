@@ -15,8 +15,14 @@
  * For more information, visit <https://www.gnu.org/licenses/>.
  */
 
+import { Prisma } from '../prisma/generated/client.js';
+import { PrismaService } from '../prisma/prisma.service.js';
 import { Injectable } from '@nestjs/common';
-import { EventCancelNotificationDTO } from '@omnixys/contracts';
+import {
+  EventAccessDTO,
+  EventCancelNotificationDTO,
+  EventIdsDTO,
+} from '@omnixys/contracts';
 import {
   KafkaEvent,
   KafkaEventHandler,
@@ -48,9 +54,53 @@ export class EventHandler {
    */
   constructor(
     private readonly omnixysLogger: OmnixysLogger,
+    private readonly prisma: PrismaService,
     // private readonly notificationWriteService: NotificationWriteService,
   ) {
     this.logger = this.omnixysLogger.log(this.constructor.name);
+  }
+
+  @KafkaEvent(KafkaTopics.event.userAccessChanged)
+  async handleUserAccessChanged(
+    payload: EventAccessDTO,
+    _context: IKafkaEventContext,
+  ): Promise<void> {
+    return TraceRunner.run('[HANDLER] event.userAccessChanged', async () => {
+      const { eventId, userId, permissions, roles, occurredAt } = payload;
+      const occurredAtDate = new Date(occurredAt);
+
+      const existing = await this.prisma.eventAccessProjection.findUnique({
+        where: { uq_event_access_projection: { eventId, userId } },
+        select: { occurredAt: true },
+      });
+
+      if (
+        existing?.occurredAt &&
+        occurredAtDate.getTime() < existing.occurredAt.getTime()
+      ) {
+        this.logger.debug('Skipping stale event.userAccessChanged', {
+          eventId,
+          userId,
+        });
+        return;
+      }
+
+      await this.prisma.eventAccessProjection.upsert({
+        where: { uq_event_access_projection: { eventId, userId } },
+        create: {
+          eventId,
+          userId,
+          permissions,
+          roles: roles as unknown as Prisma.InputJsonValue,
+          occurredAt: occurredAtDate,
+        },
+        update: {
+          permissions,
+          roles: roles as unknown as Prisma.InputJsonValue,
+          occurredAt: occurredAtDate,
+        },
+      });
+    });
   }
 
   @KafkaEvent(KafkaTopics.notification.eventCancelled)
@@ -74,6 +124,18 @@ export class EventHandler {
       );
 
       // await this.notificationWriteService.deleteByEventIds(payload.eventIds);
+    });
+  }
+
+  @KafkaEvent(KafkaTopics.event.deleted)
+  async handleEventDeleted(
+    payload: EventIdsDTO,
+    _context: IKafkaEventContext,
+  ): Promise<void> {
+    return TraceRunner.run('[HANDLER] event.deleted', async () => {
+      await this.prisma.eventAccessProjection.deleteMany({
+        where: { eventId: { in: payload.eventIds } },
+      });
     });
   }
 }

@@ -1,5 +1,5 @@
 import { TemplateStateException } from '../errors/notification.error.js';
-import { Channel } from '../models/enums/channel.enum.js';
+import { Channel, toPrismaModelChannel } from '../models/enums/channel.enum.js';
 
 import { TemplateReadService } from '../../template/services/template-read.service.js';
 import { AccountCreatedVariables } from '../models/variables/account-create-notification.variables..js';
@@ -128,5 +128,43 @@ export class TemplateRenderService {
       );
       throw error;
     }
+  }
+
+  async renderFromId(input: {
+    templateId: string;
+    channel: Channel;
+    locale?: string;
+    variables?: Record<string, unknown>;
+  }): Promise<RenderResult> {
+    const template = await this.templateReadService.findById(input.templateId);
+    if (template.channel !== toPrismaModelChannel(input.channel)) {
+      throw new TemplateStateException('template-channel-mismatch', {
+        templateId: input.templateId,
+        expectedChannel: input.channel,
+        actualChannel: template.channel,
+      });
+    }
+    const locale = input.locale ?? 'de-DE';
+    const version = template.versions
+      .filter((candidate) => candidate.isActive && candidate.locale === locale)
+      .sort((left, right) => right.version - left.version)[0];
+    if (!version) {
+      throw new TemplateStateException('active-version-missing', {
+        templateId: input.templateId,
+        locale,
+      });
+    }
+    const variables = input.variables ?? {};
+    this.renderer.validate((version.variables as VariableSchema) ?? {}, variables);
+    const rendered = this.renderer.render(
+      { title: version.subject ?? undefined, body: version.body },
+      variables,
+    );
+    return {
+      templateId: template.id,
+      version: version.version,
+      renderedTitle: rendered.title,
+      renderedBody: rendered.body,
+    };
   }
 }

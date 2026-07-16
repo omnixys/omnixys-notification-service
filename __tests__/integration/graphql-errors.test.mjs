@@ -30,7 +30,7 @@ test('GraphQL exposes safe delivery details without the provider cause', () => {
   );
 
   assert.equal(mapped.extensions.code, 'NOTIFICATION_DELIVERY_FAILED');
-  assert.deepEqual(mapped.extensions.details, {
+  assert.deepEqual(mapped.extensions.metadata, {
     channel: 'EMAIL',
     notificationId: 'notification-1',
   });
