@@ -109,10 +109,6 @@ const {
       serviceName: SERVICE,
       registerGlobalInterceptor: true,
 
-      kafka: {
-        enabled: true,
-        topic: 'logstream.input',
-      },
       batch: {
         enabled: true,
         maxSize: 50,
