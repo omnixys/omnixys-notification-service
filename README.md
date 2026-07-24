@@ -19,3 +19,8 @@ left intact for a later destructive cleanup.
 
 Production requires `GATEWAY_BASE_URL` and `GATEWAY_API_KEY` in addition to the
 normal database, Valkey, Keycloak and encryption settings.
+
+The gateway server protects its internal routes with `INTERNAL_API_KEY`.
+Notification's `GATEWAY_API_KEY` (and other clients' respective gateway API-key
+settings) must contain the same secret. Provider credentials such as
+`RESEND_API_KEY` belong only to the Communication Gateway.

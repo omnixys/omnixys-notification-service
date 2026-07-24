@@ -1,6 +1,7 @@
 import type { GatewaySendInput } from './gateway-client.service.js';
 import { GatewayClientService } from './gateway-client.service.js';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { OmnixysLogger, type ScopedLogger } from '@omnixys/logger';
 
 export interface DispatchInput {
   id: string;
@@ -27,9 +28,14 @@ export interface DispatchResult {
 
 @Injectable()
 export class DispatchService {
-  private readonly logger = new Logger(DispatchService.name);
+  private readonly logger: ScopedLogger;
 
-  constructor(private readonly gateway: GatewayClientService) {}
+  constructor(
+    private readonly gateway: GatewayClientService,
+    omnixysLogger: OmnixysLogger,
+  ) {
+    this.logger = omnixysLogger.log(DispatchService.name);
+  }
 
   async dispatch(input: DispatchInput): Promise<DispatchResult> {
     this.logger.debug(

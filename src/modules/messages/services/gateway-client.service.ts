@@ -1,6 +1,21 @@
 import { env } from '../../../config/env.js';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { OmnixysLogger, type ScopedLogger } from '@omnixys/logger';
 import axios from 'axios';
+
+function gatewayErrorCode(data: unknown): string | undefined {
+  if (!data || typeof data !== 'object') {
+    return undefined;
+  }
+
+  const detail = Reflect.get(data, 'detail');
+  if (!detail || typeof detail !== 'object') {
+    return undefined;
+  }
+
+  const code = Reflect.get(detail, 'code');
+  return typeof code === 'string' && code.length > 0 ? code : undefined;
+}
 
 export interface GatewaySendInput {
   id: string;
@@ -27,10 +42,11 @@ export interface GatewaySendResult {
 
 @Injectable()
 export class GatewayClientService {
-  private readonly logger = new Logger(GatewayClientService.name);
+  private readonly logger: ScopedLogger;
   private readonly baseUrl: string;
 
-  constructor() {
+  constructor(omnixysLogger: OmnixysLogger) {
+    this.logger = omnixysLogger.log(GatewayClientService.name);
     this.baseUrl = env.GATEWAY_BASE_URL;
   }
 
@@ -49,19 +65,26 @@ export class GatewayClientService {
       return response.data as GatewaySendResult;
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
+        if (
+          error.code === 'ECONNREFUSED' ||
+          error.code === 'ETIMEDOUT' ||
+          error.code === 'ECONNABORTED'
+        ) {
           this.logger.error(`Gateway unreachable: ${url}`);
           return { success: false, status: 'FAILED', error: 'GATEWAY_TIMEOUT' };
         }
+        const providerCode = gatewayErrorCode(error.response?.data);
+        this.logger.error(
+          `Gateway request failed: status=${error.response?.status ?? 'unknown'} code=${providerCode ?? 'GATEWAY_ERROR'}`,
+        );
         return {
           success: false,
           status: 'FAILED',
-          error: `GATEWAY_ERROR: ${error.message}`,
+          error: providerCode ?? 'GATEWAY_ERROR',
         };
       }
-      const message = error instanceof Error ? error.message : String(error);
-      this.logger.error(`Gateway send failed: ${message}`);
-      return { success: false, status: 'FAILED', error: message };
+      this.logger.error('Unexpected gateway client failure');
+      return { success: false, status: 'FAILED', error: 'GATEWAY_ERROR' };
     }
   }
 }

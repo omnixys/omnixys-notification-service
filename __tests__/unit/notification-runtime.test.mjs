@@ -11,11 +11,73 @@ import { NotificationModule } from '../../dist/modules/notification/notification
 import { NotificationCacheService } from '../../dist/modules/notification/services/notification-cache.service.js';
 import { NotificationEventRoleResolver } from '../../dist/modules/support/common/event-role-resolver.service.js';
 import { SupportCommonModule } from '../../dist/modules/support/common/support-common.module.js';
+import { GatewayClientService } from '../../dist/modules/messages/services/gateway-client.service.js';
 import { MODULE_METADATA } from '@nestjs/common/constants.js';
 import { EventPermissionKey, guestAuthKeySchema } from '@omnixys/contracts';
 import { ContextAccessor } from '@omnixys/context';
+import axios from 'axios';
 import assert from 'node:assert/strict';
-import test from 'node:test';
+import test, { mock } from 'node:test';
+
+test('gateway client preserves the safe provider failure code', async () => {
+  mock.method(axios, 'post', async () => {
+    throw new axios.AxiosError(
+      'Request failed with status code 502',
+      'ERR_BAD_RESPONSE',
+      undefined,
+      undefined,
+      {
+        status: 502,
+        statusText: 'Bad Gateway',
+        headers: {},
+        config: { headers: {} },
+        data: { detail: { code: 'RESEND_AUTH_FAILED' } },
+      },
+    );
+  });
+
+  const result = await new GatewayClientService().send({
+    id: 'notification-3',
+    channel: 'EMAIL',
+    recipientAddress: 'person@example.com',
+    body: 'Hello',
+  });
+
+  assert.deepEqual(result, {
+    success: false,
+    status: 'FAILED',
+    error: 'RESEND_AUTH_FAILED',
+  });
+  mock.restoreAll();
+});
+
+test('gateway client uses a generic code for malformed gateway failures', async () => {
+  mock.method(axios, 'post', async () => {
+    throw new axios.AxiosError(
+      'Request failed with status code 502',
+      'ERR_BAD_RESPONSE',
+      undefined,
+      undefined,
+      {
+        status: 502,
+        statusText: 'Bad Gateway',
+        headers: {},
+        config: { headers: {} },
+        data: { detail: {} },
+      },
+    );
+  });
+
+  const result = await new GatewayClientService().send({
+    id: 'notification-4',
+    channel: 'EMAIL',
+    recipientAddress: 'person@example.com',
+    body: 'Hello',
+  });
+
+  assert.equal(result.error, 'GATEWAY_ERROR');
+  mock.restoreAll();
+});
 
 test('notification module imports its event permission provider', () => {
   const imports = Reflect.getMetadata(MODULE_METADATA.IMPORTS, NotificationModule) ?? [];

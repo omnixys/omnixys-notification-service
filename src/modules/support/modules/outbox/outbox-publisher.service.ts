@@ -1,17 +1,21 @@
 import { PrismaService } from '../../../../prisma/prisma.service.js';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { KafkaProducerService } from '@omnixys/kafka';
+import { OmnixysLogger, type ScopedLogger } from '@omnixys/logger';
 
 @Injectable()
 export class OutboxPublisherService {
-  private readonly logger = new Logger(OutboxPublisherService.name);
+  private readonly logger: ScopedLogger;
   private isRunning = false;
   private pollTimer?: ReturnType<typeof setInterval>;
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly kafka: KafkaProducerService,
-  ) {}
+    omnixysLogger: OmnixysLogger,
+  ) {
+    this.logger = omnixysLogger.log(OutboxPublisherService.name);
+  }
 
   start(pollIntervalMs = 1000): void {
     if (this.isRunning) {
@@ -19,7 +23,7 @@ export class OutboxPublisherService {
     }
 
     this.isRunning = true;
-    this.logger.log(`OutboxPublisher started (poll every ${pollIntervalMs}ms)`);
+    this.logger.info(`OutboxPublisher started (poll every ${pollIntervalMs}ms)`);
     this.pollTimer = setInterval(() => this.poll(), pollIntervalMs);
   }
 
@@ -31,7 +35,7 @@ export class OutboxPublisherService {
       this.pollTimer = undefined;
     }
 
-    this.logger.log('OutboxPublisher stopped');
+    this.logger.info('OutboxPublisher stopped');
   }
 
   private async poll(): Promise<void> {

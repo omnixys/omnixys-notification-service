@@ -6,7 +6,7 @@ import {
 } from '../../../../modules/notification/errors/notification.error.js';
 import type { SupportMessage } from '../../../../prisma/generated/client.js';
 import { PrismaService } from '../../../../prisma/prisma.service.js';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ValkeyPubSubService } from '@omnixys/cache';
 import { EventPermissionKey } from '@omnixys/contracts';
 import type {
@@ -16,12 +16,13 @@ import type {
   ConversationChannelMessageDTO,
 } from '@omnixys/contracts';
 import { KafkaProducerService, KafkaTopics } from '@omnixys/kafka';
+import { OmnixysLogger, type ScopedLogger } from '@omnixys/logger';
 import { EventPermissionResolver } from '@omnixys/security';
 import type { CurrentUserData } from '@omnixys/security';
 
 @Injectable()
 export class MessageService {
-  private readonly logger = new Logger(MessageService.name);
+  private readonly logger: ScopedLogger;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -29,7 +30,10 @@ export class MessageService {
     private readonly kafka: KafkaProducerService,
     private readonly valkeyPubSub: ValkeyPubSubService,
     private readonly permissionResolver: EventPermissionResolver,
-  ) {}
+    omnixysLogger: OmnixysLogger,
+  ) {
+    this.logger = omnixysLogger.log(MessageService.name);
+  }
 
   async getMessages(
     conversationId: string,
