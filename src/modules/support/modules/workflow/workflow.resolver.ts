@@ -3,6 +3,7 @@ import { SupportConversation } from '../conversation/entities/support-conversati
 import { WorkflowService } from './workflow.service.js';
 import { UseGuards } from '@nestjs/common';
 import { Args, Mutation, Resolver } from '@nestjs/graphql';
+import { getLogger } from '@omnixys/logger';
 import {
   CookieAuthGuard,
   CurrentUser,
@@ -11,6 +12,8 @@ import {
 
 @Resolver()
 export class WorkflowResolver {
+  readonly #logger = getLogger(WorkflowResolver.name);
+
   constructor(private readonly workflowService: WorkflowService) {}
 
   @Mutation(() => SupportConversation)

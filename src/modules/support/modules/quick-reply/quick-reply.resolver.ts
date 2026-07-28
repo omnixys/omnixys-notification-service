@@ -4,12 +4,15 @@ import { QuickReplyService } from './quick-reply.service.js';
 import { UseGuards } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { RealmRoleType } from '@omnixys/contracts';
+import { getLogger } from '@omnixys/logger';
 import { CookieAuthGuard, RoleGuard, Roles } from '@omnixys/security';
 
 @Resolver()
 @UseGuards(CookieAuthGuard, RoleGuard)
 @Roles(RealmRoleType.ADMIN)
 export class QuickReplyResolver {
+  readonly #logger = getLogger(QuickReplyResolver.name);
+
   constructor(private readonly quickReplyService: QuickReplyService) {}
 
   @Query(() => [QuickReply])

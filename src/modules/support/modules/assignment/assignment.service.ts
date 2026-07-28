@@ -7,11 +7,13 @@ import type {
 import { PrismaService } from '../../../../prisma/prisma.service.js';
 import { Injectable } from '@nestjs/common';
 import { EventPermissionKey } from '@omnixys/contracts';
+import { getLogger } from '@omnixys/logger';
 import { EventPermissionResolver } from '@omnixys/security';
 import type { CurrentUserData } from '@omnixys/security';
 
 @Injectable()
 export class AssignmentService {
+  readonly #logger = getLogger(AssignmentService.name);
   constructor(
     private readonly prisma: PrismaService,
     private readonly permissionResolver: EventPermissionResolver,

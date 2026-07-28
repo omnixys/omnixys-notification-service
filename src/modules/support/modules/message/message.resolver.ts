@@ -3,6 +3,7 @@ import { SupportMessage } from './entities/support-message.entity.js';
 import { MessageService } from './message.service.js';
 import { UseGuards } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { getLogger } from '@omnixys/logger';
 import {
   CookieAuthGuard,
   CurrentUser,
@@ -11,6 +12,8 @@ import {
 
 @Resolver()
 export class MessageResolver {
+  readonly #logger = getLogger(MessageResolver.name);
+
   constructor(private readonly messageService: MessageService) {}
 
   @Query(() => [SupportMessage])

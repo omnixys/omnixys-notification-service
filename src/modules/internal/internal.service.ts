@@ -16,11 +16,13 @@ import type {
   InternalReadReceiptDTO,
 } from '@omnixys/contracts';
 import { KafkaProducerService, KafkaTopics } from '@omnixys/kafka';
+import { getLogger } from '@omnixys/logger';
 import { EventPermissionResolver } from '@omnixys/security';
 import type { CurrentUserData } from '@omnixys/security';
 
 @Injectable()
 export class InternalService {
+  readonly #logger = getLogger(InternalService.name);
   constructor(
     private readonly prisma: PrismaService,
     private readonly kafka: KafkaProducerService,
@@ -190,6 +192,8 @@ export class InternalService {
       },
     });
 
+    this.#logger.debug('internal_conversation_created', { conversationId: conversation.id, eventId, type: data.type, createdBy: user.id });
+
     return conversation;
   }
 
@@ -244,6 +248,8 @@ export class InternalService {
         tenantId: 'omnixys',
       },
     });
+
+    this.#logger.debug('internal_message_sent', { conversationId, senderId: user.id, priority: data.priority });
 
     return message;
   }

@@ -8,6 +8,7 @@ import {
 } from './entities/support-conversation.entity.js';
 import { UseGuards } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { getLogger } from '@omnixys/logger';
 import {
   CookieAuthGuard,
   CurrentUser,
@@ -16,6 +17,8 @@ import {
 
 @Resolver()
 export class ConversationResolver {
+  readonly #logger = getLogger(ConversationResolver.name);
+
   constructor(private readonly conversationService: ConversationService) {}
 
   @Query(() => SupportConversation)
@@ -75,6 +78,7 @@ export class ConversationResolver {
     @Args('guestContact', { nullable: true }) guestContact?: string,
     @Args('subject', { nullable: true }) subject?: string,
   ): Promise<PrismaSupportConversation> {
+    this.#logger.debug('create_support_conversation', { eventId, guestName, channel, userId: user.id });
     return this.conversationService.create(eventId, {
       invitationId,
       guestUserId: user.id,

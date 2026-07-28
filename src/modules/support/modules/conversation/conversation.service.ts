@@ -8,11 +8,13 @@ import { PrismaService } from '../../../../prisma/prisma.service.js';
 import { Injectable } from '@nestjs/common';
 import { ValkeyPubSubService } from '@omnixys/cache';
 import { EventPermissionKey } from '@omnixys/contracts';
+import { getLogger } from '@omnixys/logger';
 import { EventPermissionResolver } from '@omnixys/security';
 import type { CurrentUserData } from '@omnixys/security';
 
 @Injectable()
 export class ConversationService {
+  readonly #logger = getLogger(ConversationService.name);
   constructor(
     private readonly prisma: PrismaService,
     private readonly valkeyPubSub: ValkeyPubSubService,
@@ -77,6 +79,7 @@ export class ConversationService {
       : null;
 
     if (existingByGuestAndEvent) {
+      this.#logger.debug('support_conversation_duplicate_by_guest', { eventId, guestUserId: data.guestUserId, existingId: existingByGuestAndEvent.id });
       throw new ConversationDuplicateException(existingByGuestAndEvent.id);
     }
 
@@ -91,6 +94,7 @@ export class ConversationService {
       : null;
 
     if (existingByInvitation) {
+      this.#logger.debug('support_conversation_duplicate_by_invitation', { eventId, invitationId: data.invitationId, existingId: existingByInvitation.id });
       throw new ConversationDuplicateException(existingByInvitation.id);
     }
 
@@ -109,6 +113,8 @@ export class ConversationService {
         lastMessageAt: new Date(),
       },
     });
+
+    this.#logger.debug('support_conversation_created', { conversationId: conversation.id, eventId, channel: data.channel, guestName: data.guestName });
 
     await this.prisma.supportMessage.create({
       data: {

@@ -4,6 +4,7 @@ import type {
 } from '../../../../prisma/generated/client.js';
 import { PrismaService } from '../../../../prisma/prisma.service.js';
 import { Injectable } from '@nestjs/common';
+import { getLogger } from '@omnixys/logger';
 
 export interface MappingResult {
   conversationId: string | null;
@@ -13,6 +14,8 @@ export interface MappingResult {
 
 @Injectable()
 export class MappingService {
+  readonly #logger = getLogger(MappingService.name);
+
   constructor(private readonly prisma: PrismaService) {}
 
   async resolveMapping(
@@ -35,6 +38,7 @@ export class MappingService {
           where: { id: mapping.conversationId },
         });
         if (conv && !conv.deletedAt) {
+          this.#logger.debug('mapping_resolved_by_event', { channel, externalId, eventId, conversationId: conv.id });
           return { conversationId: conv.id, eventId: conv.eventId, created: false };
         }
       }
@@ -53,10 +57,12 @@ export class MappingService {
         where: { id: fallbackMapping.conversationId },
       });
       if (conv && !conv.deletedAt) {
+        this.#logger.debug('mapping_resolved_fallback', { channel, externalId, conversationId: conv.id });
         return { conversationId: conv.id, eventId: conv.eventId, created: false };
       }
     }
 
+    this.#logger.debug('mapping_not_found', { channel, externalId, eventId });
     return { conversationId: null, eventId: null, created: false };
   }
 

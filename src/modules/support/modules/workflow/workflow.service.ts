@@ -15,10 +15,12 @@ import {
   type ConversationChatClosedDTO,
 } from '@omnixys/contracts';
 import { KafkaProducerService, KafkaTopics } from '@omnixys/kafka';
+import { getLogger } from '@omnixys/logger';
 import { EventPermissionResolver, type CurrentUserData } from '@omnixys/security';
 
 @Injectable()
 export class WorkflowService {
+  readonly #logger = getLogger(WorkflowService.name);
   constructor(
     private readonly prisma: PrismaService,
     private readonly kafka: KafkaProducerService,
@@ -35,6 +37,7 @@ export class WorkflowService {
     const token = await this.lock.acquireLock(lockKey, 3000);
 
     if (!token) {
+      this.#logger.warn('conversation_assign_lock_conflict', { conversationId });
       throw new ConversationAssignmentConflictException(conversationId);
     }
 
@@ -54,6 +57,7 @@ export class WorkflowService {
       }
 
       if (conversation.assignedTo && conversation.assignedTo !== userId) {
+        this.#logger.warn('conversation_already_assigned', { conversationId, assignedTo: conversation.assignedTo, requestedBy: actor.id });
         throw new ConversationStateException(
           conversationId,
           `already-assigned-to-${conversation.assignedTo}`,
@@ -76,6 +80,8 @@ export class WorkflowService {
           assignedBy: actor.id,
         },
       });
+
+      this.#logger.debug('conversation_assigned', { conversationId, assignedTo: userId, assignedBy: actor.id });
 
       await this.kafka.send({
         topic: KafkaTopics.conversation.chatAssigned,
@@ -127,6 +133,8 @@ export class WorkflowService {
       },
     });
 
+    this.#logger.debug('conversation_closed', { conversationId, closedBy: actor.id });
+
     await this.kafka.send({
       topic: KafkaTopics.conversation.chatClosed,
       payload: {
@@ -162,6 +170,7 @@ export class WorkflowService {
     await this.assertManageSupport(conversation.eventId, actor, conversationId);
 
     if (conversation.status !== 'CLOSED') {
+      this.#logger.warn('conversation_reopen_not_closed', { conversationId, currentStatus: conversation.status });
       throw new ConversationStateException(conversationId, conversation.status);
     }
 
@@ -172,6 +181,8 @@ export class WorkflowService {
         closedAt: null,
       },
     });
+
+    this.#logger.debug('conversation_reopened', { conversationId, reopenedBy: actor.id });
 
     return updated;
   }

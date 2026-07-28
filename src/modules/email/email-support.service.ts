@@ -6,9 +6,11 @@ import type {
   SupportMessageReceivedDTO,
 } from '@omnixys/contracts';
 import { KafkaProducerService, KafkaTopics } from '@omnixys/kafka';
+import { getLogger } from '@omnixys/logger';
 
 @Injectable()
 export class EmailSupportService {
+  readonly #logger = getLogger(EmailSupportService.name);
   constructor(
     private readonly prisma: PrismaService,
     private readonly kafka: KafkaProducerService,
@@ -28,10 +30,12 @@ export class EmailSupportService {
     const matched = await this.matchConversation(messageId, inReplyTo, references, fromEmail);
 
     if (matched) {
+      this.#logger.debug('email_thread_matched', { conversationId: matched, fromEmail, messageId });
       await this.addMessageToConversation(matched, payload, 'INBOUND');
       return;
     }
 
+    this.#logger.debug('email_no_thread_match', { fromEmail, messageId, subject });
     const eventId = await this.resolveEventContext(payload);
     const conversationId = await this.findOrCreateConversation(
       eventId,
@@ -154,6 +158,7 @@ export class EmailSupportService {
     if (!eventId) {
       // No event — store in a fallback conversation or log
       // For now, skip creating a conversation
+      this.#logger.warn('email_no_event_context', { fromEmail, subject });
       throw new Error(`No event context for email from ${fromEmail}`);
     }
 

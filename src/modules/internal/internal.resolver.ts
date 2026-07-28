@@ -13,6 +13,7 @@ import {
 import { InternalService } from './internal.service.js';
 import { UseGuards } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { getLogger } from '@omnixys/logger';
 import {
   CookieAuthGuard,
   CurrentUser,
@@ -21,6 +22,8 @@ import {
 
 @Resolver()
 export class InternalResolver {
+  readonly #logger = getLogger(InternalResolver.name);
+
   constructor(private readonly internalService: InternalService) {}
 
   @Query(() => [InternalConversation])
