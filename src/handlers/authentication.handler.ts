@@ -60,20 +60,13 @@ export class AuthenticationHandler {
     _context: IKafkaEventContext,
   ): Promise<void> {
     return TraceRunner.run('[HANDLER] Send Request Reset', async () => {
-      this.logger.debug(
-        'sendRequestReset message received: username=%s locale=%s',
-        payload.username,
-        payload.locale,
-      );
-      this.logger.debug(
-        'sendRequestReset processing started: username=%s',
-        payload.username,
-      );
-      void this.service.sendRequestReset(payload);
-      this.logger.debug(
-        'sendRequestReset processing dispatched: username=%s',
-        payload.username,
-      );
+      this.logger.info('send_request_reset_received', { username: payload.username, locale: payload.locale });
+      try {
+        await this.service.sendRequestReset(payload);
+        this.logger.info('send_request_reset_dispatched', { username: payload.username });
+      } catch (error) {
+        this.logger.exception(error, 'send_request_reset_failed', { username: payload.username });
+      }
     });
   }
 
@@ -83,20 +76,13 @@ export class AuthenticationHandler {
     _context: IKafkaEventContext,
   ): Promise<void> {
     return TraceRunner.run('[HANDLER] Send Magic Link', async () => {
-      this.logger.debug(
-        'sendMagicLink message received: username=%s locale=%s',
-        payload.username,
-        payload.locale,
-      );
-      this.logger.debug(
-        'sendMagicLink processing started: username=%s',
-        payload.username,
-      );
-      void this.service.sendMagicLink(payload);
-      this.logger.debug(
-        'sendMagicLink processing dispatched: username=%s',
-        payload.username,
-      );
+      this.logger.info('send_magic_link_received', { username: payload.username, locale: payload.locale });
+      try {
+        await this.service.sendMagicLink(payload);
+        this.logger.info('send_magic_link_dispatched', { username: payload.username });
+      } catch (error) {
+        this.logger.exception(error, 'send_magic_link_failed', { username: payload.username });
+      }
     });
   }
 
