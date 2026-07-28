@@ -3,6 +3,20 @@
 All notable changes in this project will be documented in this file.
 
 
+## [3.1.0](https://github.com/omnixys/notification-service/compare/v3.0.0...v3.1.0) (2026-07-24)
+
+### Deps
+
+* **Deps:** remove obsolete/redundant dependencies ([](https://github.com/omnixys/notification-service/commit/0fdf543ced511fe02c8b25be548234480ab0c31b))
+
+### Log
+
+* **Log:** remove logstream dep ([](https://github.com/omnixys/notification-service/commit/cf782338e1bbc38bcf0d3103d7169b2db615b68f))
+
+### Logger
+
+* **Logger:** remove Kafka log transport config ([](https://github.com/omnixys/notification-service/commit/07697494c3bb620845a7e7605b2ec7c8ce80fba9))
+
 ## [3.0.0](https://github.com/omnixys/notification-service/compare/v2.1.0...v3.0.0) (2026-07-16)
 
 ### New
