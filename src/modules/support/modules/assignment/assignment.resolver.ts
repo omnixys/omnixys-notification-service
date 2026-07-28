@@ -3,7 +3,6 @@ import { SupportConversation } from '../conversation/entities/support-conversati
 import { AssignmentService } from './assignment.service.js';
 import { UseGuards } from '@nestjs/common';
 import { Args, Query, Resolver } from '@nestjs/graphql';
-import { getLogger } from '@omnixys/logger';
 import {
   CookieAuthGuard,
   CurrentUser,
@@ -12,8 +11,6 @@ import {
 
 @Resolver()
 export class AssignmentResolver {
-  readonly #logger = getLogger(AssignmentResolver.name);
-
   constructor(private readonly assignmentService: AssignmentService) {}
 
   @Query(() => [SupportConversation])

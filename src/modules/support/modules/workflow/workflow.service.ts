@@ -37,7 +37,7 @@ export class WorkflowService {
     const token = await this.lock.acquireLock(lockKey, 3000);
 
     if (!token) {
-      this.#logger.warn('conversation_assign_lock_conflict', { conversationId });
+      this.#logger.warn({ conversationId }, 'conversation_assign_lock_conflict');
       throw new ConversationAssignmentConflictException(conversationId);
     }
 
@@ -57,7 +57,14 @@ export class WorkflowService {
       }
 
       if (conversation.assignedTo && conversation.assignedTo !== userId) {
-        this.#logger.warn('conversation_already_assigned', { conversationId, assignedTo: conversation.assignedTo, requestedBy: actor.id });
+        this.#logger.warn(
+          {
+            conversationId,
+            assignedTo: conversation.assignedTo,
+            requestedBy: actor.id,
+          },
+          'conversation_already_assigned',
+        );
         throw new ConversationStateException(
           conversationId,
           `already-assigned-to-${conversation.assignedTo}`,
@@ -81,7 +88,14 @@ export class WorkflowService {
         },
       });
 
-      this.#logger.debug('conversation_assigned', { conversationId, assignedTo: userId, assignedBy: actor.id });
+      this.#logger.debug(
+        {
+          conversationId,
+          assignedTo: userId,
+          assignedBy: actor.id,
+        },
+        'conversation_assigned',
+      );
 
       await this.kafka.send({
         topic: KafkaTopics.conversation.chatAssigned,
@@ -133,7 +147,7 @@ export class WorkflowService {
       },
     });
 
-    this.#logger.debug('conversation_closed', { conversationId, closedBy: actor.id });
+    this.#logger.debug({ conversationId, closedBy: actor.id }, 'conversation_closed');
 
     await this.kafka.send({
       topic: KafkaTopics.conversation.chatClosed,
@@ -170,7 +184,13 @@ export class WorkflowService {
     await this.assertManageSupport(conversation.eventId, actor, conversationId);
 
     if (conversation.status !== 'CLOSED') {
-      this.#logger.warn('conversation_reopen_not_closed', { conversationId, currentStatus: conversation.status });
+      this.#logger.warn(
+        {
+          conversationId,
+          currentStatus: conversation.status,
+        },
+        'conversation_reopen_not_closed',
+      );
       throw new ConversationStateException(conversationId, conversation.status);
     }
 
@@ -182,7 +202,7 @@ export class WorkflowService {
       },
     });
 
-    this.#logger.debug('conversation_reopened', { conversationId, reopenedBy: actor.id });
+    this.#logger.debug({ conversationId, reopenedBy: actor.id }, 'conversation_reopened');
 
     return updated;
   }

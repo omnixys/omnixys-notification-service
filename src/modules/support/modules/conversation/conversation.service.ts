@@ -79,7 +79,14 @@ export class ConversationService {
       : null;
 
     if (existingByGuestAndEvent) {
-      this.#logger.debug('support_conversation_duplicate_by_guest', { eventId, guestUserId: data.guestUserId, existingId: existingByGuestAndEvent.id });
+      this.#logger.debug(
+        {
+          eventId,
+          guestUserId: data.guestUserId,
+          existingId: existingByGuestAndEvent.id,
+        },
+        'support_conversation_duplicate_by_guest',
+      );
       throw new ConversationDuplicateException(existingByGuestAndEvent.id);
     }
 
@@ -94,7 +101,14 @@ export class ConversationService {
       : null;
 
     if (existingByInvitation) {
-      this.#logger.debug('support_conversation_duplicate_by_invitation', { eventId, invitationId: data.invitationId, existingId: existingByInvitation.id });
+      this.#logger.debug(
+        {
+          eventId,
+          invitationId: data.invitationId,
+          existingId: existingByInvitation.id,
+        },
+        'support_conversation_duplicate_by_invitation',
+      );
       throw new ConversationDuplicateException(existingByInvitation.id);
     }
 
@@ -114,7 +128,15 @@ export class ConversationService {
       },
     });
 
-    this.#logger.debug('support_conversation_created', { conversationId: conversation.id, eventId, channel: data.channel, guestName: data.guestName });
+    this.#logger.debug(
+      {
+        conversationId: conversation.id,
+        eventId,
+        channel: data.channel,
+        guestName: data.guestName,
+      },
+      'support_conversation_created',
+    );
 
     await this.prisma.supportMessage.create({
       data: {

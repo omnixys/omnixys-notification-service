@@ -192,7 +192,15 @@ export class InternalService {
       },
     });
 
-    this.#logger.debug('internal_conversation_created', { conversationId: conversation.id, eventId, type: data.type, createdBy: user.id });
+    this.#logger.debug(
+      {
+        conversationId: conversation.id,
+        eventId,
+        type: data.type,
+        createdBy: user.id,
+      },
+      'internal_conversation_created',
+    );
 
     return conversation;
   }
@@ -249,7 +257,14 @@ export class InternalService {
       },
     });
 
-    this.#logger.debug('internal_message_sent', { conversationId, senderId: user.id, priority: data.priority });
+    this.#logger.debug(
+      {
+        conversationId,
+        senderId: user.id,
+        priority: data.priority,
+      },
+      'internal_message_sent',
+    );
 
     return message;
   }

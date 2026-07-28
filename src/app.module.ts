@@ -126,8 +126,4 @@ const {
   controllers: [],
   providers: [BannerService],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(RequestLoggerMiddleware).forRoutes('*');
-  }
-}
+export class AppModule {}

@@ -133,7 +133,9 @@ export class EventHandler {
     _context: IKafkaEventContext,
   ): Promise<void> {
     return TraceRunner.run('[HANDLER] event.deleted', async () => {
-      this.logger.info('event_deleted_received', { eventIds: payload.eventIds });
+      this.logger.info('event_deleted_received', {
+        eventIds: payload.eventIds,
+      });
       try {
         const result = await this.prisma.eventAccessProjection.deleteMany({
           where: { eventId: { in: payload.eventIds } },
@@ -143,7 +145,10 @@ export class EventHandler {
           count: result.count,
         });
       } catch (error) {
-        this.logger.exception(error, 'event_deleted_failed', { eventIds: payload.eventIds });
+        this.logger.error('event_deleted_failed', {
+          eventIds: payload.eventIds,
+          error,
+        });
       }
     });
   }

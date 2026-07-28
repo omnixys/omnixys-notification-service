@@ -78,7 +78,15 @@ export class ConversationResolver {
     @Args('guestContact', { nullable: true }) guestContact?: string,
     @Args('subject', { nullable: true }) subject?: string,
   ): Promise<PrismaSupportConversation> {
-    this.#logger.debug('create_support_conversation', { eventId, guestName, channel, userId: user.id });
+    this.#logger.debug(
+      {
+        eventId,
+        guestName,
+        channel,
+        userId: user.id,
+      },
+      'create_support_conversation',
+    );
     return this.conversationService.create(eventId, {
       invitationId,
       guestUserId: user.id,

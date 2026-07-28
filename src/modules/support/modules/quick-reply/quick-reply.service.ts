@@ -8,11 +8,8 @@ import type {
 } from '../../../../prisma/generated/client.js';
 import { PrismaService } from '../../../../prisma/prisma.service.js';
 import { Injectable } from '@nestjs/common';
-import { getLogger } from '@omnixys/logger';
-
 @Injectable()
 export class QuickReplyService {
-  readonly #logger = getLogger(QuickReplyService.name);
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll(): Promise<SupportQuickReply[]> {

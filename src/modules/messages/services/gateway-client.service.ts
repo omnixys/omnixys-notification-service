@@ -8,7 +8,7 @@ function gatewayErrorCode(data: unknown): string | undefined {
     return undefined;
   }
 
-  const detail = Reflect.get(data, 'detail');
+  const detail = Reflect.get(data, 'detail') as Record<string, unknown> | undefined;
   if (!detail || typeof detail !== 'object') {
     return undefined;
   }

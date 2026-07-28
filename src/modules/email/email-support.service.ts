@@ -30,12 +30,12 @@ export class EmailSupportService {
     const matched = await this.matchConversation(messageId, inReplyTo, references, fromEmail);
 
     if (matched) {
-      this.#logger.debug('email_thread_matched', { conversationId: matched, fromEmail, messageId });
+      this.#logger.debug({ conversationId: matched, fromEmail, messageId }, 'email_thread_matched');
       await this.addMessageToConversation(matched, payload, 'INBOUND');
       return;
     }
 
-    this.#logger.debug('email_no_thread_match', { fromEmail, messageId, subject });
+    this.#logger.debug({ fromEmail, messageId, subject }, 'email_no_thread_match');
     const eventId = await this.resolveEventContext(payload);
     const conversationId = await this.findOrCreateConversation(
       eventId,
@@ -158,7 +158,7 @@ export class EmailSupportService {
     if (!eventId) {
       // No event — store in a fallback conversation or log
       // For now, skip creating a conversation
-      this.#logger.warn('email_no_event_context', { fromEmail, subject });
+      this.#logger.warn({ fromEmail, subject }, 'email_no_event_context');
       throw new Error(`No event context for email from ${fromEmail}`);
     }
 

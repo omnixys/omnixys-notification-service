@@ -38,7 +38,15 @@ export class MappingService {
           where: { id: mapping.conversationId },
         });
         if (conv && !conv.deletedAt) {
-          this.#logger.debug('mapping_resolved_by_event', { channel, externalId, eventId, conversationId: conv.id });
+          this.#logger.debug(
+            {
+              channel,
+              externalId,
+              eventId,
+              conversationId: conv.id,
+            },
+            'mapping_resolved_by_event',
+          );
           return { conversationId: conv.id, eventId: conv.eventId, created: false };
         }
       }
@@ -57,12 +65,19 @@ export class MappingService {
         where: { id: fallbackMapping.conversationId },
       });
       if (conv && !conv.deletedAt) {
-        this.#logger.debug('mapping_resolved_fallback', { channel, externalId, conversationId: conv.id });
+        this.#logger.debug(
+          {
+            channel,
+            externalId,
+            conversationId: conv.id,
+          },
+          'mapping_resolved_fallback',
+        );
         return { conversationId: conv.id, eventId: conv.eventId, created: false };
       }
     }
 
-    this.#logger.debug('mapping_not_found', { channel, externalId, eventId });
+    this.#logger.debug({ channel, externalId, eventId }, 'mapping_not_found');
     return { conversationId: null, eventId: null, created: false };
   }
 

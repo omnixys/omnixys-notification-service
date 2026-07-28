@@ -60,12 +60,20 @@ export class AuthenticationHandler {
     _context: IKafkaEventContext,
   ): Promise<void> {
     return TraceRunner.run('[HANDLER] Send Request Reset', async () => {
-      this.logger.info('send_request_reset_received', { username: payload.username, locale: payload.locale });
+      this.logger.info('send_request_reset_received', {
+        username: payload.username,
+        locale: payload.locale,
+      });
       try {
         await this.service.sendRequestReset(payload);
-        this.logger.info('send_request_reset_dispatched', { username: payload.username });
+        this.logger.info('send_request_reset_dispatched', {
+          username: payload.username,
+        });
       } catch (error) {
-        this.logger.exception(error, 'send_request_reset_failed', { username: payload.username });
+        this.logger.error('send_request_reset_failed', {
+          username: payload.username,
+          error,
+        });
       }
     });
   }
@@ -76,12 +84,20 @@ export class AuthenticationHandler {
     _context: IKafkaEventContext,
   ): Promise<void> {
     return TraceRunner.run('[HANDLER] Send Magic Link', async () => {
-      this.logger.info('send_magic_link_received', { username: payload.username, locale: payload.locale });
+      this.logger.info('send_magic_link_received', {
+        username: payload.username,
+        locale: payload.locale,
+      });
       try {
         await this.service.sendMagicLink(payload);
-        this.logger.info('send_magic_link_dispatched', { username: payload.username });
+        this.logger.info('send_magic_link_dispatched', {
+          username: payload.username,
+        });
       } catch (error) {
-        this.logger.exception(error, 'send_magic_link_failed', { username: payload.username });
+        this.logger.error('send_magic_link_failed', {
+          username: payload.username,
+          error,
+        });
       }
     });
   }
