@@ -3,6 +3,22 @@
 All notable changes in this project will be documented in this file.
 
 
+## [3.2.0](https://github.com/omnixys/notification-service/compare/v3.1.0...v3.2.0) (2026-07-28)
+
+### Notification
+
+* **Notification:** add structured logging to support module services and resolvers ([](https://github.com/omnixys/notification-service/commit/58ab8f715ea766d5c7d1291ffc79426ddf0f7c29))
+* **Notification:** enable RequestLoggerMiddleware, fix fire-and-forget handlers with try/catch ([](https://github.com/omnixys/notification-service/commit/a658ad46c533338afa92d0f513edceb73eaf93e8))
+
+### Other
+
+* **Other:** resolve all lint and build errors ([](https://github.com/omnixys/notification-service/commit/723531cb4793bc42ee482da743e76c957feb13ac)), closes [#logger](https://github.com/omnixys/notification-service/issues/logger)
+* **Other:** Merge branch 'main' of https://github.com/omnixys/notification-service ([](https://github.com/omnixys/notification-service/commit/ab5e82edf1c736ecd4ced5df8e4d619f1af6cb90))
+
+### Prisma
+
+* **Prisma:** add generated prisma files ([](https://github.com/omnixys/notification-service/commit/7b0803d47973368e606df4dcd1cb7a932a2fc003))
+
 ## [3.1.0](https://github.com/omnixys/notification-service/compare/v3.0.0...v3.1.0) (2026-07-24)
 
 ### Deps
