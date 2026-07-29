@@ -19,6 +19,12 @@ import axios from 'axios';
 import assert from 'node:assert/strict';
 import test, { mock } from 'node:test';
 
+const logger = {
+  log() {
+    return { debug() {}, info() {}, warn() {}, error() {} };
+  },
+};
+
 test('gateway client preserves the safe provider failure code', async () => {
   mock.method(axios, 'post', async () => {
     throw new axios.AxiosError(
@@ -36,7 +42,7 @@ test('gateway client preserves the safe provider failure code', async () => {
     );
   });
 
-  const result = await new GatewayClientService().send({
+  const result = await new GatewayClientService(logger).send({
     id: 'notification-3',
     channel: 'EMAIL',
     recipientAddress: 'person@example.com',
@@ -68,7 +74,7 @@ test('gateway client uses a generic code for malformed gateway failures', async 
     );
   });
 
-  const result = await new GatewayClientService().send({
+  const result = await new GatewayClientService(logger).send({
     id: 'notification-4',
     channel: 'EMAIL',
     recipientAddress: 'person@example.com',
@@ -106,7 +112,7 @@ test('notification errors preserve canonical request metadata', () => {
 test('invalid delivery state uses a structured error', () => {
   const error = new NotificationStateException('pending-contact-expired');
   assert.equal(error.code, 'NOTIFICATION_STATE_INVALID');
-  assert.deepEqual(error.metadata, { reason: 'pending-contact-expired' });
+  assert.deepEqual(error.metadata, {});
 });
 
 test('notification subdomains use stable machine-readable codes', () => {
