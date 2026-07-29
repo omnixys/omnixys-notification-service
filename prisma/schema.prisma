@@ -118,8 +118,8 @@ model Notification {
   template        Template? @relation(fields: [templateId], references: [id], onDelete: SetNull)
   templateVersion Int?
 
-  variables Json @default("{}") @map("variables")
-  metadata  Json @default("{}")
+  variables     Json           @default("{}") @map("variables")
+  metadata      Json           @default("{}")
   title         String?
   body          String?
   contentFormat ContentFormat? @map("content_format")
@@ -145,8 +145,8 @@ model Notification {
   updatedAt DateTime @updatedAt @map("updated_at")
   createdBy String?  @map("created_by")
 
-  provider    String?
-  providerRef String?
+  provider      String?
+  providerRef   String?
   failureReason String? @map("failure_reason")
 
   @@index([status, createdAt])
@@ -508,16 +508,20 @@ model OutboxMessage {
   key     String? @map("key")
   headers Json?   @default("{}") @map("headers")
 
-  status   OutboxStatus @default(PENDING) @map("status")
-  error    String?
-  attempt  Int          @default(0) @map("attempt")
-  maxRetry Int          @default(5) @map("max_retry")
+  status         OutboxStatus @default(PENDING) @map("status")
+  error          String?
+  attempt        Int          @default(0) @map("attempt")
+  maxRetry       Int          @default(5) @map("max_retry")
+  nextAttemptAt  DateTime     @default(now()) @map("next_attempt_at")
+  lockedAt       DateTime?    @map("locked_at")
+  lockedBy       String?      @map("locked_by")
+  deadLetteredAt DateTime?    @map("dead_lettered_at")
 
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
   publishedAt DateTime? @map("published_at")
 
-  @@index([status, createdAt])
+  @@index([status, nextAttemptAt, createdAt])
   @@index([status, attempt])
   @@map("outbox_message")
 }

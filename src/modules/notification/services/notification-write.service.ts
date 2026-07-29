@@ -7,6 +7,7 @@ import {
 } from '../../../prisma/generated/client.js';
 import { PrismaService } from '../../../prisma/prisma.service.js';
 import { DispatchService } from '../../messages/services/dispatch.service.js';
+import { AnalyticsOutboxService } from '../../support/modules/outbox/analytics-outbox.service.js';
 import {
   NotificationChannelUnavailableException,
   NotificationDeliveryException,
@@ -93,6 +94,7 @@ export class NotificationWriteService {
     private readonly encryptService: EncryptionService,
     private readonly valkeyPubSub: ValkeyPubSubService,
     loggerService: OmnixysLogger,
+    private readonly analyticsOutbox: AnalyticsOutboxService,
   ) {
     this.logger = loggerService.log(this.constructor.name);
   }
@@ -1126,12 +1128,28 @@ export class NotificationWriteService {
               channel,
             });
           }
-          await this.prisma.notification.update({
-            where: { id: notificationId },
-            data: {
-              status: NotificationStatus.DELIVERED,
-              deliveredAt: new Date(),
-            },
+          await this.prisma.$transaction(async (tx) => {
+            await tx.notification.update({
+              where: { id: notificationId },
+              data: {
+                status: NotificationStatus.DELIVERED,
+                deliveredAt: new Date(),
+              },
+            });
+            await this.analyticsOutbox.enqueue(
+              tx,
+              'notification.delivered.v1',
+              {
+                eventName: 'NotificationDelivered',
+                aggregateId: notificationId,
+                aggregateType: 'Notification',
+                properties: {
+                  notificationId,
+                  channel,
+                  status: NotificationStatus.DELIVERED,
+                },
+              },
+            );
           });
           await this.valkeyPubSub.publish(`notification.user.${input.recipientId}`, {
             notificationReceived: {
@@ -1153,13 +1171,29 @@ export class NotificationWriteService {
         error instanceof NotificationStateException ||
         error instanceof NotificationChannelUnavailableException
       ) {
-        await this.prisma.notification
-          .update({
-            where: { id: notificationId },
-            data: {
-              status: NotificationStatus.FAILED,
-              failureReason: this.safeFailureReason(error),
-            },
+        await this.prisma
+          .$transaction(async (tx) => {
+            await tx.notification.update({
+              where: { id: notificationId },
+              data: {
+                status: NotificationStatus.FAILED,
+                failureReason: this.safeFailureReason(error),
+              },
+            });
+            await this.analyticsOutbox.enqueue(
+              tx,
+              'notification.failed.v1',
+              {
+                eventName: 'NotificationFailed',
+                aggregateId: notificationId,
+                aggregateType: 'Notification',
+                properties: {
+                  notificationId,
+                  channel,
+                  status: NotificationStatus.FAILED,
+                },
+              },
+            );
           })
           .catch((updateError) => {
             this.logger.error(

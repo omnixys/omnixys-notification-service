@@ -1,4 +1,5 @@
 import { PrismaService } from '../prisma/prisma.service.js';
+import { AnalyticsOutboxService } from '../modules/support/modules/outbox/analytics-outbox.service.js';
 import { Injectable } from '@nestjs/common';
 import type { DeliveryStatusDTO } from '@omnixys/contracts';
 import { KafkaEvent, KafkaEventHandler, KafkaTopics } from '@omnixys/kafka';
@@ -20,6 +21,7 @@ export class DeliveryStatusHandler {
   constructor(
     private readonly prisma: PrismaService,
     readonly omnixysLogger: OmnixysLogger,
+    private readonly analyticsOutbox: AnalyticsOutboxService,
   ) {
     this.log = omnixysLogger.log(this.constructor.name);
   }
@@ -85,7 +87,29 @@ export class DeliveryStatusHandler {
               : undefined,
         readAt: status === 'READ' ? new Date() : undefined,
       };
-      await this.prisma.notification.update({ where: { id: messageId }, data });
+      await this.prisma.$transaction(async (tx) => {
+        await tx.notification.update({ where: { id: messageId }, data });
+        if (status === 'DELIVERED' || status === 'FAILED') {
+          await this.analyticsOutbox.enqueue(
+            tx,
+            status === 'DELIVERED'
+              ? 'notification.delivered.v1'
+              : 'notification.failed.v1',
+            {
+              eventName:
+                status === 'DELIVERED'
+                  ? 'NotificationDelivered'
+                  : 'NotificationFailed',
+              aggregateId: messageId,
+              aggregateType: 'Notification',
+              properties: {
+                notificationId: messageId,
+                status,
+              },
+            },
+          );
+        }
+      });
       return;
     }
 
