@@ -1,3 +1,4 @@
+import { env } from '../../../../config/env.js';
 import {
   ConversationAssignmentConflictException,
   ConversationAccessDeniedException,
@@ -8,15 +9,15 @@ import {
 import type { SupportConversation } from '../../../../prisma/generated/client.js';
 import { PrismaService } from '../../../../prisma/prisma.service.js';
 import { Injectable } from '@nestjs/common';
-import { ValkeyLockService } from '@omnixys/cache';
+import { ValkeyLockService } from '@omnixys/cache-ts';
 import {
   EventPermissionKey,
   type ConversationChatAssignedDTO,
   type ConversationChatClosedDTO,
-} from '@omnixys/contracts';
-import { KafkaProducerService, KafkaTopics } from '@omnixys/kafka';
-import { getLogger } from '@omnixys/logger';
-import { EventPermissionResolver, type CurrentUserData } from '@omnixys/security';
+} from '@omnixys/contracts-ts';
+import { KafkaProducerService, KafkaTopics } from '@omnixys/kafka-ts';
+import { getLogger } from '@omnixys/logger-ts';
+import { EventPermissionResolver, type CurrentUserData } from '@omnixys/security-ts';
 
 @Injectable()
 export class WorkflowService {
@@ -111,7 +112,7 @@ export class WorkflowService {
           operation: 'Conversation Assigned',
           version: '1',
           actorId: actor.id,
-          tenantId: 'omnixys',
+          tenantId: env.DEFAULT_TENANT_ID,
         },
       });
 
@@ -162,7 +163,7 @@ export class WorkflowService {
         operation: 'Conversation Closed',
         version: '1',
         actorId: actor.id,
-        tenantId: 'omnixys',
+        tenantId: env.DEFAULT_TENANT_ID,
       },
     });
 

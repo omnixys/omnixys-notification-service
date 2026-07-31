@@ -1,3 +1,4 @@
+import { env } from '../../../../config/env.js';
 import { DispatchService } from '../../../../modules/messages/services/dispatch.service.js';
 import {
   ConversationAccessDeniedException,
@@ -7,18 +8,18 @@ import {
 import type { SupportMessage } from '../../../../prisma/generated/client.js';
 import { PrismaService } from '../../../../prisma/prisma.service.js';
 import { Injectable } from '@nestjs/common';
-import { ValkeyPubSubService } from '@omnixys/cache';
-import { EventPermissionKey } from '@omnixys/contracts';
+import { ValkeyPubSubService } from '@omnixys/cache-ts';
+import { EventPermissionKey } from '@omnixys/contracts-ts';
 import type {
   ConversationChannel,
   SupportMessageReceivedDTO,
   EmailOutboundDTO,
   ConversationChannelMessageDTO,
-} from '@omnixys/contracts';
-import { KafkaProducerService, KafkaTopics } from '@omnixys/kafka';
-import { OmnixysLogger, type ScopedLogger } from '@omnixys/logger';
-import { EventPermissionResolver } from '@omnixys/security';
-import type { CurrentUserData } from '@omnixys/security';
+} from '@omnixys/contracts-ts';
+import { KafkaProducerService, KafkaTopics } from '@omnixys/kafka-ts';
+import { OmnixysLogger, type ScopedLogger } from '@omnixys/logger-ts';
+import { EventPermissionResolver } from '@omnixys/security-ts';
+import type { CurrentUserData } from '@omnixys/security-ts';
 
 @Injectable()
 export class MessageService {
@@ -155,7 +156,7 @@ export class MessageService {
         operation: fromGuest ? 'Guest Replied' : 'Agent Replied',
         version: '1',
         actorId: user.id,
-        tenantId: 'omnixys',
+        tenantId: env.DEFAULT_TENANT_ID,
       },
     });
 
@@ -181,7 +182,7 @@ export class MessageService {
           operation: 'Outbound Email Message',
           version: '1',
           actorId: user.id,
-          tenantId: 'omnixys',
+          tenantId: env.DEFAULT_TENANT_ID,
         },
       });
     } else if (conversation.channel !== 'EMAIL' && !fromGuest) {
@@ -234,7 +235,7 @@ export class MessageService {
           operation: 'Outbound Channel Message',
           version: '1',
           actorId: user.id,
-          tenantId: 'omnixys',
+          tenantId: env.DEFAULT_TENANT_ID,
         },
       });
     }

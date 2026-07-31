@@ -1,12 +1,13 @@
+import { env } from '../../config/env.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { Injectable } from '@nestjs/common';
 import type {
   EmailOutboundDTO,
   EmailReceivedDTO,
   SupportMessageReceivedDTO,
-} from '@omnixys/contracts';
-import { KafkaProducerService, KafkaTopics } from '@omnixys/kafka';
-import { getLogger } from '@omnixys/logger';
+} from '@omnixys/contracts-ts';
+import { KafkaProducerService, KafkaTopics } from '@omnixys/kafka-ts';
+import { getLogger } from '@omnixys/logger-ts';
 
 @Injectable()
 export class EmailSupportService {
@@ -285,7 +286,7 @@ export class EmailSupportService {
         operation: 'Email Inbound Processed',
         version: '1',
         actorId: 'system',
-        tenantId: 'omnixys',
+        tenantId: env.DEFAULT_TENANT_ID,
       },
     });
   }
@@ -336,7 +337,7 @@ export class EmailSupportService {
         operation: 'Email Outbound Requested',
         version: '1',
         actorId: user.id,
-        tenantId: 'omnixys',
+        tenantId: env.DEFAULT_TENANT_ID,
       },
     });
 

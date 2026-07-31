@@ -1,3 +1,4 @@
+import { env } from '../../config/env.js';
 import type {
   InternalConversation,
   InternalMessage,
@@ -9,16 +10,16 @@ import {
   ConversationNotFoundException,
 } from '../notification/errors/notification.error.js';
 import { Injectable } from '@nestjs/common';
-import { EventPermissionKey } from '@omnixys/contracts';
+import { EventPermissionKey } from '@omnixys/contracts-ts';
 import type {
   InternalConversationCreatedDTO,
   InternalMessageSentDTO,
   InternalReadReceiptDTO,
-} from '@omnixys/contracts';
-import { KafkaProducerService, KafkaTopics } from '@omnixys/kafka';
-import { getLogger } from '@omnixys/logger';
-import { EventPermissionResolver } from '@omnixys/security';
-import type { CurrentUserData } from '@omnixys/security';
+} from '@omnixys/contracts-ts';
+import { KafkaProducerService, KafkaTopics } from '@omnixys/kafka-ts';
+import { getLogger } from '@omnixys/logger-ts';
+import { EventPermissionResolver } from '@omnixys/security-ts';
+import type { CurrentUserData } from '@omnixys/security-ts';
 
 @Injectable()
 export class InternalService {
@@ -188,7 +189,7 @@ export class InternalService {
         operation: 'Internal Conversation Created',
         version: '1',
         actorId: user.id,
-        tenantId: 'omnixys',
+        tenantId: env.DEFAULT_TENANT_ID,
       },
     });
 
@@ -253,7 +254,7 @@ export class InternalService {
         operation: 'Internal Message Sent',
         version: '1',
         actorId: user.id,
-        tenantId: 'omnixys',
+        tenantId: env.DEFAULT_TENANT_ID,
       },
     });
 
@@ -304,7 +305,7 @@ export class InternalService {
         operation: 'Internal Read Receipt',
         version: '1',
         actorId: user.id,
-        tenantId: 'omnixys',
+        tenantId: env.DEFAULT_TENANT_ID,
       },
     });
 

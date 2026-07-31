@@ -24,19 +24,19 @@ import { formatRequestTime } from '../utils/date.util.js';
 import { NotificationCacheService } from './notification-cache.service.js';
 import { SendInvitationVariables, TemplateRenderService } from './template-renderer.service.js';
 import { Injectable } from '@nestjs/common';
-import { ValkeyPubSubService } from '@omnixys/cache';
-import { createTmpUsername, getPrimaryPhoneNumber } from '@omnixys/contracts';
+import { ValkeyPubSubService } from '@omnixys/cache-ts';
+import { createTmpUsername, getPrimaryPhoneNumber } from '@omnixys/contracts-ts';
 import type {
   CreatePendingUserDTO,
   GuestSignUpTokenPayload,
   Locale,
   SendAuthLinkDTO,
   SignUpTokenPayload,
-} from '@omnixys/contracts';
-import { CreateUserInput } from '@omnixys/graphql';
-import { OmnixysLogger } from '@omnixys/logger';
-import { TraceRunner } from '@omnixys/observability';
-import { EncryptionService } from '@omnixys/security';
+} from '@omnixys/contracts-ts';
+import { CreateUserInput } from '@omnixys/graphql-ts';
+import { OmnixysLogger } from '@omnixys/logger-ts';
+import { TraceRunner } from '@omnixys/observability-ts';
+import { EncryptionService } from '@omnixys/security-ts';
 import { InputJsonValue } from '@prisma/client/runtime/client';
 
 const {
@@ -483,7 +483,7 @@ export class NotificationWriteService {
 
       // 3️⃣ Persist Notification FIRST
       const notification = await this.create({
-        tenantId: 'omnixys',
+        tenantId: env.DEFAULT_TENANT_ID,
         recipientUsername: createUserInput.username,
         recipientAddress: createUserInput.personalInfo.email,
         channel: Channel.EMAIL,
@@ -601,7 +601,7 @@ export class NotificationWriteService {
         });
 
       const notification = await this.create({
-        tenantId: 'omnixys',
+        tenantId: env.DEFAULT_TENANT_ID,
         recipientUsername: createTmpUsername(input.lastName, input.firstName),
         recipientAddress: input.email ?? phoneNumber ?? 'unknown',
         channel,
@@ -688,7 +688,7 @@ export class NotificationWriteService {
         });
 
       const notification = await this.create({
-        tenantId: 'omnixys',
+        tenantId: env.DEFAULT_TENANT_ID,
         recipientUsername: username,
         recipientAddress: email,
         channel: Channel.EMAIL,
@@ -780,7 +780,7 @@ export class NotificationWriteService {
         });
 
       const notification = await this.create({
-        tenantId: 'omnixys',
+        tenantId: env.DEFAULT_TENANT_ID,
         recipientUsername: username,
         recipientAddress: email,
         channel: Channel.EMAIL,
@@ -875,7 +875,7 @@ export class NotificationWriteService {
        * 4️⃣ Persist Notification
        */
       const notification = await this.create({
-        tenantId: 'omnixys',
+        tenantId: env.DEFAULT_TENANT_ID,
         recipientUsername: username,
         recipientAddress: email ?? phoneNumber ?? 'unknown',
         channel,
@@ -957,7 +957,7 @@ export class NotificationWriteService {
           });
 
         const notification = await this.create({
-          tenantId: 'omnixys',
+          tenantId: env.DEFAULT_TENANT_ID,
           recipientUsername: `${guest.firstName}.${guest.lastName}`,
           recipientAddress: guest.email ?? phoneNumber ?? 'unknown',
           channel,
@@ -1136,20 +1136,16 @@ export class NotificationWriteService {
                 deliveredAt: new Date(),
               },
             });
-            await this.analyticsOutbox.enqueue(
-              tx,
-              'notification.delivered.v1',
-              {
-                eventName: 'NotificationDelivered',
-                aggregateId: notificationId,
-                aggregateType: 'Notification',
-                properties: {
-                  notificationId,
-                  channel,
-                  status: NotificationStatus.DELIVERED,
-                },
+            await this.analyticsOutbox.enqueue(tx, 'notification.delivered.v1', {
+              eventName: 'NotificationDelivered',
+              aggregateId: notificationId,
+              aggregateType: 'Notification',
+              properties: {
+                notificationId,
+                channel,
+                status: NotificationStatus.DELIVERED,
               },
-            );
+            });
           });
           await this.valkeyPubSub.publish(`notification.user.${input.recipientId}`, {
             notificationReceived: {
@@ -1180,20 +1176,16 @@ export class NotificationWriteService {
                 failureReason: this.safeFailureReason(error),
               },
             });
-            await this.analyticsOutbox.enqueue(
-              tx,
-              'notification.failed.v1',
-              {
-                eventName: 'NotificationFailed',
-                aggregateId: notificationId,
-                aggregateType: 'Notification',
-                properties: {
-                  notificationId,
-                  channel,
-                  status: NotificationStatus.FAILED,
-                },
+            await this.analyticsOutbox.enqueue(tx, 'notification.failed.v1', {
+              eventName: 'NotificationFailed',
+              aggregateId: notificationId,
+              aggregateType: 'Notification',
+              properties: {
+                notificationId,
+                channel,
+                status: NotificationStatus.FAILED,
               },
-            );
+            });
           })
           .catch((updateError) => {
             this.logger.error(
