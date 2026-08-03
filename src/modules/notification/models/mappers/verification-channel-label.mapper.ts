@@ -1,5 +1,5 @@
 import type { Channel } from '../../../../prisma/generated/client.js';
-import type { Locale } from '@omnixys/contracts';
+import type { Locale } from '@omnixys/contracts-ts';
 
 const VERIFICATION_CHANNEL_LABELS: Partial<
   Record<Channel, Record<Locale, string>>

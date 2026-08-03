@@ -5,11 +5,16 @@ import { NotificationPayload } from '../models/payloads/notification.payload.js'
 import { NotificationWriteService } from '../services/notification-write.service.js';
 import { UseGuards } from '@nestjs/common';
 import { Args, Mutation, Resolver } from '@nestjs/graphql';
-import { ClientIp, Device, Location, RequestCookies } from '@omnixys/context';
-import type { OmnixysCookieRequest } from '@omnixys/contracts';
-import { EventPermissionKey, RealmRoleType } from '@omnixys/contracts';
-import { CreateUserInput } from '@omnixys/graphql';
-import { OmnixysLogger } from '@omnixys/logger';
+import {
+  ClientIp,
+  Device,
+  Location,
+  RequestCookies,
+} from '@omnixys/context-ts';
+import type { OmnixysCookieRequest } from '@omnixys/contracts-ts';
+import { EventPermissionKey, RealmRoleType } from '@omnixys/contracts-ts';
+import { CreateUserInput } from '@omnixys/graphql-ts';
+import { OmnixysLogger } from '@omnixys/logger-ts';
 import {
   CookieAuthGuard,
   CurrentUser,
@@ -18,7 +23,7 @@ import {
   EventPermissionResolver,
   RoleGuard,
   Roles,
-} from '@omnixys/security';
+} from '@omnixys/security-ts';
 
 @Resolver()
 export class NotificationMutationResolver {

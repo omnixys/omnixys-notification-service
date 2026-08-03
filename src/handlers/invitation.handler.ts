@@ -16,9 +16,12 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { ValkeyKey, ValkeyService } from '@omnixys/cache';
-import { FrameworkException } from '@omnixys/contracts';
-import { CreatePendingUserDTO, GuestNotificationDTO } from '@omnixys/contracts';
+import { ValkeyKey, ValkeyService } from '@omnixys/cache-ts';
+import { FrameworkException } from '@omnixys/contracts-ts';
+import {
+  CreatePendingUserDTO,
+  GuestNotificationDTO,
+} from '@omnixys/contracts-ts';
 
 import { NotificationWriteService } from '../modules/notification/services/notification-write.service.js';
 import {
@@ -27,9 +30,9 @@ import {
   KafkaEvent,
   KafkaEventHandler,
   KafkaTopics,
-} from '@omnixys/kafka';
-import { OmnixysLogger } from '@omnixys/logger';
-import { TraceRunner } from '@omnixys/observability';
+} from '@omnixys/kafka-ts';
+import { OmnixysLogger } from '@omnixys/logger-ts';
+import { TraceRunner } from '@omnixys/observability-ts';
 
 const PERMANENT_ERROR_CODES = new Set([
   'NOTIFICATION_INPUT_INVALID',

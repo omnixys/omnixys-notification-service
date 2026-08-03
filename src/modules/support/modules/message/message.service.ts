@@ -21,6 +21,8 @@ import { OmnixysLogger, type ScopedLogger } from '@omnixys/logger-ts';
 import { EventPermissionResolver } from '@omnixys/security-ts';
 import type { CurrentUserData } from '@omnixys/security-ts';
 
+const { DEFAULT_TENANT_ID } = env;
+
 @Injectable()
 export class MessageService {
   private readonly logger: ScopedLogger;
@@ -156,7 +158,7 @@ export class MessageService {
         operation: fromGuest ? 'Guest Replied' : 'Agent Replied',
         version: '1',
         actorId: user.id,
-        tenantId: env.DEFAULT_TENANT_ID,
+        tenantId: DEFAULT_TENANT_ID,
       },
     });
 
@@ -182,7 +184,7 @@ export class MessageService {
           operation: 'Outbound Email Message',
           version: '1',
           actorId: user.id,
-          tenantId: env.DEFAULT_TENANT_ID,
+          tenantId: DEFAULT_TENANT_ID,
         },
       });
     } else if (conversation.channel !== 'EMAIL' && !fromGuest) {
@@ -235,7 +237,7 @@ export class MessageService {
           operation: 'Outbound Channel Message',
           version: '1',
           actorId: user.id,
-          tenantId: env.DEFAULT_TENANT_ID,
+          tenantId: DEFAULT_TENANT_ID,
         },
       });
     }

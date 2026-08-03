@@ -1,12 +1,12 @@
 import { EmailSupportService } from './email-support.service.js';
 import { Injectable } from '@nestjs/common';
-import type { EmailReceivedDTO } from '@omnixys/contracts';
+import type { EmailReceivedDTO } from '@omnixys/contracts-ts';
 import {
   KafkaHandler,
   KafkaTopics,
   type KafkaEventContext,
-} from '@omnixys/kafka';
-import { OmnixysLogger } from '@omnixys/logger';
+} from '@omnixys/kafka-ts';
+import { OmnixysLogger } from '@omnixys/logger-ts';
 
 @Injectable()
 export class EmailHandler {

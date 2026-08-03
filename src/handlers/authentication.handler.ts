@@ -18,15 +18,15 @@
 import { NotificationWriteService } from '../modules/notification/services/notification-write.service.js';
 import { Injectable } from '@nestjs/common';
 
-import { SendAuthLinkDTO } from '@omnixys/contracts';
+import { SendAuthLinkDTO } from '@omnixys/contracts-ts';
 import {
   IKafkaEventContext,
   KafkaEvent,
   KafkaEventHandler,
   KafkaTopics,
-} from '@omnixys/kafka';
-import { OmnixysLogger } from '@omnixys/logger';
-import { TraceRunner } from '@omnixys/observability';
+} from '@omnixys/kafka-ts';
+import { OmnixysLogger } from '@omnixys/logger-ts';
+import { TraceRunner } from '@omnixys/observability-ts';
 
 /**
  * Kafka event handler responsible for useristrative commands such as

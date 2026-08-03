@@ -3,7 +3,7 @@
 import type {
   AddSecurityQuestionInput,
   UserAddressInput,
-} from '@omnixys/graphql';
+} from '@omnixys/graphql-ts';
 
 export interface SignupVerificationCacheDTO<TCreateUserInput> {
   input: TCreateUserInput;

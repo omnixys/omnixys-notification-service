@@ -47,6 +47,7 @@ const {
   RESET_PATH,
   FROM_SUPPORT,
   FROM_NO_REPLY,
+  DEFAULT_TENANT_ID,
 } = env;
 
 interface NotifyUserCreationEvent {
@@ -483,7 +484,7 @@ export class NotificationWriteService {
 
       // 3️⃣ Persist Notification FIRST
       const notification = await this.create({
-        tenantId: env.DEFAULT_TENANT_ID,
+        tenantId: DEFAULT_TENANT_ID,
         recipientUsername: createUserInput.username,
         recipientAddress: createUserInput.personalInfo.email,
         channel: Channel.EMAIL,
@@ -601,7 +602,7 @@ export class NotificationWriteService {
         });
 
       const notification = await this.create({
-        tenantId: env.DEFAULT_TENANT_ID,
+        tenantId: DEFAULT_TENANT_ID,
         recipientUsername: createTmpUsername(input.lastName, input.firstName),
         recipientAddress: input.email ?? phoneNumber ?? 'unknown',
         channel,
@@ -688,7 +689,7 @@ export class NotificationWriteService {
         });
 
       const notification = await this.create({
-        tenantId: env.DEFAULT_TENANT_ID,
+        tenantId: DEFAULT_TENANT_ID,
         recipientUsername: username,
         recipientAddress: email,
         channel: Channel.EMAIL,
@@ -780,7 +781,7 @@ export class NotificationWriteService {
         });
 
       const notification = await this.create({
-        tenantId: env.DEFAULT_TENANT_ID,
+        tenantId: DEFAULT_TENANT_ID,
         recipientUsername: username,
         recipientAddress: email,
         channel: Channel.EMAIL,
@@ -875,7 +876,7 @@ export class NotificationWriteService {
        * 4️⃣ Persist Notification
        */
       const notification = await this.create({
-        tenantId: env.DEFAULT_TENANT_ID,
+        tenantId: DEFAULT_TENANT_ID,
         recipientUsername: username,
         recipientAddress: email ?? phoneNumber ?? 'unknown',
         channel,
@@ -957,7 +958,7 @@ export class NotificationWriteService {
           });
 
         const notification = await this.create({
-          tenantId: env.DEFAULT_TENANT_ID,
+          tenantId: DEFAULT_TENANT_ID,
           recipientUsername: `${guest.firstName}.${guest.lastName}`,
           recipientAddress: guest.email ?? phoneNumber ?? 'unknown',
           channel,
@@ -1028,6 +1029,7 @@ export class NotificationWriteService {
     body: string;
     notificationId: string;
     flow?: string;
+    tenantId?: string;
   }): Promise<string | undefined> {
     const { channel, notificationId, to, body } = input;
 
@@ -1075,6 +1077,7 @@ export class NotificationWriteService {
             subject: input.subject,
             metadata: {
               conversationId: input.flow,
+              tenantId: input.tenantId ?? DEFAULT_TENANT_ID,
             },
           });
 
@@ -1106,6 +1109,9 @@ export class NotificationWriteService {
             recipientAddress: to,
             body,
             contentType: 'TEXT',
+            metadata: {
+              tenantId: input.tenantId ?? DEFAULT_TENANT_ID,
+            },
           });
 
           if (!dispatchResult.success) {

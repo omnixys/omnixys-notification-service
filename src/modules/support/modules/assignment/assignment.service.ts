@@ -6,9 +6,9 @@ import type {
 } from '../../../../prisma/generated/client.js';
 import { PrismaService } from '../../../../prisma/prisma.service.js';
 import { Injectable } from '@nestjs/common';
-import { EventPermissionKey } from '@omnixys/contracts';
-import { EventPermissionResolver } from '@omnixys/security';
-import type { CurrentUserData } from '@omnixys/security';
+import { EventPermissionKey } from '@omnixys/contracts-ts';
+import { EventPermissionResolver } from '@omnixys/security-ts';
+import type { CurrentUserData } from '@omnixys/security-ts';
 
 @Injectable()
 export class AssignmentService {

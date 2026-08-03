@@ -9,6 +9,8 @@ import type {
 import { KafkaProducerService, KafkaTopics } from '@omnixys/kafka-ts';
 import { getLogger } from '@omnixys/logger-ts';
 
+const { DEFAULT_TENANT_ID } = env;
+
 @Injectable()
 export class EmailSupportService {
   readonly #logger = getLogger(EmailSupportService.name);
@@ -286,7 +288,7 @@ export class EmailSupportService {
         operation: 'Email Inbound Processed',
         version: '1',
         actorId: 'system',
-        tenantId: env.DEFAULT_TENANT_ID,
+        tenantId: DEFAULT_TENANT_ID,
       },
     });
   }
@@ -337,7 +339,7 @@ export class EmailSupportService {
         operation: 'Email Outbound Requested',
         version: '1',
         actorId: user.id,
-        tenantId: env.DEFAULT_TENANT_ID,
+        tenantId: DEFAULT_TENANT_ID,
       },
     });
 

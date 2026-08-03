@@ -1,9 +1,9 @@
-import { PrismaService } from '../prisma/prisma.service.js';
 import { AnalyticsOutboxService } from '../modules/support/modules/outbox/analytics-outbox.service.js';
+import { PrismaService } from '../prisma/prisma.service.js';
 import { Injectable } from '@nestjs/common';
-import type { DeliveryStatusDTO } from '@omnixys/contracts';
-import { KafkaEvent, KafkaEventHandler, KafkaTopics } from '@omnixys/kafka';
-import { OmnixysLogger } from '@omnixys/logger';
+import type { DeliveryStatusDTO } from '@omnixys/contracts-ts';
+import { KafkaEvent, KafkaEventHandler, KafkaTopics } from '@omnixys/kafka-ts';
+import { OmnixysLogger } from '@omnixys/logger-ts';
 
 const VALID_TRANSITIONS: Record<string, string[]> = {
   QUEUED: ['SENT', 'FAILED'],

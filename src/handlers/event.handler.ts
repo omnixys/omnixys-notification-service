@@ -22,16 +22,16 @@ import {
   EventAccessDTO,
   EventCancelNotificationDTO,
   EventIdsDTO,
-} from '@omnixys/contracts';
+} from '@omnixys/contracts-ts';
 import {
   KafkaEvent,
   KafkaEventHandler,
   KafkaTopics,
   IKafkaEventContext,
   KAFKA_HEADERS,
-} from '@omnixys/kafka';
-import { OmnixysLogger } from '@omnixys/logger';
-import { TraceRunner } from '@omnixys/observability';
+} from '@omnixys/kafka-ts';
+import { OmnixysLogger } from '@omnixys/logger-ts';
+import { TraceRunner } from '@omnixys/observability-ts';
 
 /**
  * Kafka event handler responsible for useristrative commands such as

@@ -5,8 +5,8 @@ import { NotificationMapper } from '../models/mappers/notification.mapper.js';
 import { NotificationPayload } from '../models/payloads/notification.payload.js';
 import { NotificationReadService } from '../services/notification-read.service.js';
 import { UseGuards } from '@nestjs/common';
-import { RealmRoleType } from '@omnixys/contracts';
-import { OmnixysLogger } from '@omnixys/logger';
+import { RealmRoleType } from '@omnixys/contracts-ts';
+import { OmnixysLogger } from '@omnixys/logger-ts';
 import {
   AuthenticationRequiredException,
   CookieAuthGuard,
@@ -14,7 +14,7 @@ import {
   CurrentUserData,
   RoleGuard,
   Roles,
-} from '@omnixys/security';
+} from '@omnixys/security-ts';
 
 @Resolver()
 export class NotificationQueryResolver {

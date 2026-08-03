@@ -1,7 +1,7 @@
 import type { GatewaySendInput } from './gateway-client.service.js';
 import { GatewayClientService } from './gateway-client.service.js';
 import { Injectable } from '@nestjs/common';
-import { OmnixysLogger, type ScopedLogger } from '@omnixys/logger';
+import { OmnixysLogger, type ScopedLogger } from '@omnixys/logger-ts';
 
 export interface DispatchInput {
   id: string;

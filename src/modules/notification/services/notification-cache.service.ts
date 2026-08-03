@@ -4,7 +4,7 @@ import {
   SignupUserCacheDTO,
 } from '../models/dto/signup-verification-cache.dto.js';
 import { Injectable } from '@nestjs/common';
-import { ValkeyKey, ValkeyService } from '@omnixys/cache';
+import { ValkeyKey, ValkeyService } from '@omnixys/cache-ts';
 import {
   SignUpTokenPayload,
   GuestSignUpTokenPayload,
@@ -13,10 +13,10 @@ import {
   GuestSeatKey,
   CreatePendingUserDTO,
   GuestUserKey,
-} from '@omnixys/contracts';
-import { CreateUserInput } from '@omnixys/graphql';
-import { OmnixysLogger } from '@omnixys/logger';
-import { TraceRunner } from '@omnixys/observability';
+} from '@omnixys/contracts-ts';
+import { CreateUserInput } from '@omnixys/graphql-ts';
+import { OmnixysLogger } from '@omnixys/logger-ts';
+import { TraceRunner } from '@omnixys/observability-ts';
 
 function normalizeOptionalEmail(value?: string | null): string | undefined {
   return value ?? undefined;

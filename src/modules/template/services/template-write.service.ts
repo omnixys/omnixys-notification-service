@@ -12,7 +12,7 @@ import { toPrismaModelChannel } from '../../notification/models/enums/channel.en
 import { CreateTemplateInput } from '../models/inputs/create-template.input.js';
 import { UpdateTemplateInput } from '../models/inputs/update-template.input.js';
 import { Injectable } from '@nestjs/common';
-import { OmnixysLogger } from '@omnixys/logger';
+import { OmnixysLogger } from '@omnixys/logger-ts';
 
 @Injectable()
 export class TemplateWriteService {

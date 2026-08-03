@@ -1,7 +1,9 @@
 import { env } from '../../../config/env.js';
 import { Injectable } from '@nestjs/common';
-import { OmnixysLogger, type ScopedLogger } from '@omnixys/logger';
+import { OmnixysLogger, type ScopedLogger } from '@omnixys/logger-ts';
 import axios from 'axios';
+
+const { GATEWAY_BASE_URL, GATEWAY_API_KEY } = env;
 
 function gatewayErrorCode(data: unknown): string | undefined {
   if (!data || typeof data !== 'object') {
@@ -47,7 +49,7 @@ export class GatewayClientService {
 
   constructor(omnixysLogger: OmnixysLogger) {
     this.logger = omnixysLogger.log(GatewayClientService.name);
-    this.baseUrl = env.GATEWAY_BASE_URL;
+    this.baseUrl = GATEWAY_BASE_URL;
   }
 
   async send(input: GatewaySendInput): Promise<GatewaySendResult> {
@@ -58,7 +60,8 @@ export class GatewayClientService {
         timeout: 15_000,
         headers: {
           'Content-Type': 'application/json',
-          'x-internal-api-key': env.GATEWAY_API_KEY,
+          'x-internal-api-key': GATEWAY_API_KEY,
+          ...(input.metadata?.tenantId ? { 'x-tenant-id': input.metadata.tenantId } : {}),
         },
       });
 

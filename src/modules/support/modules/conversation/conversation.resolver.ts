@@ -8,12 +8,12 @@ import {
 } from './entities/support-conversation.entity.js';
 import { UseGuards } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { getLogger } from '@omnixys/logger';
+import { getLogger } from '@omnixys/logger-ts';
 import {
   CookieAuthGuard,
   CurrentUser,
   CurrentUserData,
-} from '@omnixys/security';
+} from '@omnixys/security-ts';
 
 @Resolver()
 export class ConversationResolver {

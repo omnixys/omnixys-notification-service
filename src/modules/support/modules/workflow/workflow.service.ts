@@ -19,6 +19,8 @@ import { KafkaProducerService, KafkaTopics } from '@omnixys/kafka-ts';
 import { getLogger } from '@omnixys/logger-ts';
 import { EventPermissionResolver, type CurrentUserData } from '@omnixys/security-ts';
 
+const { DEFAULT_TENANT_ID } = env;
+
 @Injectable()
 export class WorkflowService {
   readonly #logger = getLogger(WorkflowService.name);
@@ -112,7 +114,7 @@ export class WorkflowService {
           operation: 'Conversation Assigned',
           version: '1',
           actorId: actor.id,
-          tenantId: env.DEFAULT_TENANT_ID,
+          tenantId: DEFAULT_TENANT_ID,
         },
       });
 
@@ -163,7 +165,7 @@ export class WorkflowService {
         operation: 'Conversation Closed',
         version: '1',
         actorId: actor.id,
-        tenantId: env.DEFAULT_TENANT_ID,
+        tenantId: DEFAULT_TENANT_ID,
       },
     });
 

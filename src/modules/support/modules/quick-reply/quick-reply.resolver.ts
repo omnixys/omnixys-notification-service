@@ -3,8 +3,8 @@ import { QuickReply } from './entities/quick-reply.entity.js';
 import { QuickReplyService } from './quick-reply.service.js';
 import { UseGuards } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { RealmRoleType } from '@omnixys/contracts';
-import { CookieAuthGuard, RoleGuard, Roles } from '@omnixys/security';
+import { RealmRoleType } from '@omnixys/contracts-ts';
+import { CookieAuthGuard, RoleGuard, Roles } from '@omnixys/security-ts';
 
 @Resolver()
 @UseGuards(CookieAuthGuard, RoleGuard)

@@ -7,7 +7,7 @@ import { PrismaService } from '../../../prisma/prisma.service.js';
 import { TemplateNotFoundException } from '../../notification/errors/notification.error.js';
 import { Channel, toPrismaModelChannel } from '../../notification/models/enums/channel.enum.js';
 import { Injectable } from '@nestjs/common';
-import { OmnixysLogger } from '@omnixys/logger';
+import { OmnixysLogger } from '@omnixys/logger-ts';
 
 @Injectable()
 export class TemplateReadService {

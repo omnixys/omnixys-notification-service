@@ -1,11 +1,7 @@
 import { PrismaService } from '../../../../prisma/prisma.service.js';
-import {
-  Injectable,
-  type OnModuleDestroy,
-  type OnModuleInit,
-} from '@nestjs/common';
-import { KafkaProducerService } from '@omnixys/kafka';
-import { OmnixysLogger, type ScopedLogger } from '@omnixys/logger';
+import { Injectable, type OnModuleDestroy, type OnModuleInit } from '@nestjs/common';
+import { KafkaProducerService } from '@omnixys/kafka-ts';
+import { OmnixysLogger, type ScopedLogger } from '@omnixys/logger-ts';
 import { randomUUID } from 'node:crypto';
 
 @Injectable()
@@ -59,10 +55,7 @@ export class OutboxPublisherService implements OnModuleInit, OnModuleDestroy {
           status: 'PENDING',
           deadLetteredAt: null,
           nextAttemptAt: { lte: new Date() },
-          OR: [
-            { lockedAt: null },
-            { lockedAt: { lt: new Date(Date.now() - 60_000) } },
-          ],
+          OR: [{ lockedAt: null }, { lockedAt: { lt: new Date(Date.now() - 60_000) } }],
         },
         orderBy: { createdAt: 'asc' },
         take: 50,
@@ -74,10 +67,7 @@ export class OutboxPublisherService implements OnModuleInit, OnModuleDestroy {
             id: message.id,
             status: 'PENDING',
             deadLetteredAt: null,
-            OR: [
-              { lockedAt: null },
-              { lockedAt: { lt: new Date(Date.now() - 60_000) } },
-            ],
+            OR: [{ lockedAt: null }, { lockedAt: { lt: new Date(Date.now() - 60_000) } }],
           },
           data: { lockedAt: new Date(), lockedBy: this.instanceId },
         });
@@ -100,8 +90,7 @@ export class OutboxPublisherService implements OnModuleInit, OnModuleDestroy {
           topic: message.topic,
           value: JSON.stringify(message.payload),
           key: message.key ?? undefined,
-          headers:
-            (message.headers as Record<string, string> | null) ?? undefined,
+          headers: (message.headers as Record<string, string> | null) ?? undefined,
         },
       ]);
       await this.prisma.outboxMessage.update({
@@ -129,17 +118,12 @@ export class OutboxPublisherService implements OnModuleInit, OnModuleDestroy {
           ...(deadLettered
             ? { deadLetteredAt: new Date() }
             : {
-                nextAttemptAt: new Date(
-                  Date.now() + Math.min(300_000, 2 ** attempt * 1_000),
-                ),
+                nextAttemptAt: new Date(Date.now() + Math.min(300_000, 2 ** attempt * 1_000)),
               }),
         },
       });
       if (deadLettered) {
-        this.logger.error(
-          `Outbox message ${message.id} failed after ${attempt} attempts`,
-          error,
-        );
+        this.logger.error(`Outbox message ${message.id} failed after ${attempt} attempts`, error);
       }
     }
   }

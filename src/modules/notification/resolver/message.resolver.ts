@@ -1,11 +1,11 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Field, InputType, Mutation, Resolver } from '@nestjs/graphql';
-import { OmnixysLogger } from '@omnixys/logger';
+import { OmnixysLogger } from '@omnixys/logger-ts';
 import {
   CookieAuthGuard,
   CurrentUser,
   CurrentUserData,
-} from '@omnixys/security';
+} from '@omnixys/security-ts';
 
 @InputType()
 export class SendInAppMessageInput {

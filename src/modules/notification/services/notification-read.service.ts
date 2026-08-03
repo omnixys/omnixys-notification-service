@@ -8,7 +8,7 @@ import { NotificationNotFoundException } from '../errors/notification.error.js';
 import { toPrismaModelChannel } from '../models/enums/channel.enum.js';
 import { NotificationFilterInput } from '../models/inputs/notification-filter.input.js';
 import { Injectable } from '@nestjs/common';
-import { OmnixysLogger } from '@omnixys/logger';
+import { OmnixysLogger } from '@omnixys/logger-ts';
 
 @Injectable()
 export class NotificationReadService {

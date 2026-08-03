@@ -7,7 +7,7 @@ import {
   CookieAuthGuard,
   CurrentUser,
   CurrentUserData,
-} from '@omnixys/security';
+} from '@omnixys/security-ts';
 
 @Resolver()
 export class WorkflowResolver {

@@ -21,6 +21,8 @@ import { getLogger } from '@omnixys/logger-ts';
 import { EventPermissionResolver } from '@omnixys/security-ts';
 import type { CurrentUserData } from '@omnixys/security-ts';
 
+const { DEFAULT_TENANT_ID } = env;
+
 @Injectable()
 export class InternalService {
   readonly #logger = getLogger(InternalService.name);
@@ -189,7 +191,7 @@ export class InternalService {
         operation: 'Internal Conversation Created',
         version: '1',
         actorId: user.id,
-        tenantId: env.DEFAULT_TENANT_ID,
+        tenantId: DEFAULT_TENANT_ID,
       },
     });
 
@@ -254,7 +256,7 @@ export class InternalService {
         operation: 'Internal Message Sent',
         version: '1',
         actorId: user.id,
-        tenantId: env.DEFAULT_TENANT_ID,
+        tenantId: DEFAULT_TENANT_ID,
       },
     });
 
@@ -305,7 +307,7 @@ export class InternalService {
         operation: 'Internal Read Receipt',
         version: '1',
         actorId: user.id,
-        tenantId: env.DEFAULT_TENANT_ID,
+        tenantId: DEFAULT_TENANT_ID,
       },
     });
 

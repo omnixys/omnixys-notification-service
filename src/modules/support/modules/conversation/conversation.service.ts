@@ -6,11 +6,11 @@ import {
 import type { Prisma, SupportConversation } from '../../../../prisma/generated/client.js';
 import { PrismaService } from '../../../../prisma/prisma.service.js';
 import { Injectable } from '@nestjs/common';
-import { ValkeyPubSubService } from '@omnixys/cache';
-import { EventPermissionKey } from '@omnixys/contracts';
-import { getLogger } from '@omnixys/logger';
-import { EventPermissionResolver } from '@omnixys/security';
-import type { CurrentUserData } from '@omnixys/security';
+import { ValkeyPubSubService } from '@omnixys/cache-ts';
+import { EventPermissionKey } from '@omnixys/contracts-ts';
+import { getLogger } from '@omnixys/logger-ts';
+import { EventPermissionResolver } from '@omnixys/security-ts';
+import type { CurrentUserData } from '@omnixys/security-ts';
 
 @Injectable()
 export class ConversationService {

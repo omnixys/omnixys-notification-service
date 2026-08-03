@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/switch-exhaustiveness-check */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 
-import { getLogger } from '@omnixys/logger';
+import { getLogger } from '@omnixys/logger-ts';
 import Handlebars from 'handlebars';
 
 export interface VariableDefinition {
