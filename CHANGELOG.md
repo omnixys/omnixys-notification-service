@@ -3,6 +3,26 @@
 All notable changes in this project will be documented in this file.
 
 
+## [3.3.0](https://github.com/omnixys/notification-service/compare/v3.2.0...v3.3.0) (2026-08-03)
+
+### Analytics
+
+* **Analytics:** publish notification outcomes via outbox ([](https://github.com/omnixys/notification-service/commit/14ab20d47e9bf29fd64764690b1c3f6032d8daa5))
+
+### Config
+
+* **Config:** require and validate DEFAULT_TENANT_ID ([](https://github.com/omnixys/notification-service/commit/f118cbde35cf5c79f8265e781f0a07337ca2bc84))
+* **Config:** support trusted proxy address policy ([](https://github.com/omnixys/notification-service/commit/d7b607daf5c0d6dbe35de82900a6e7830a12d7e2))
+
+### Errors
+
+* **Errors:** adopt secure notification error handling ([](https://github.com/omnixys/notification-service/commit/a8b7ad5ab015174bc9421ad8a9173eb1eb0241cf))
+
+### Tenant
+
+* **Tenant:** migrate legacy 'omnixys' tenant identifier to canonical UUID ([](https://github.com/omnixys/notification-service/commit/291e8aff222dab8e0a8ef674797ded1fb1abaeda))
+* **Tenant:** use DEFAULT_TENANT_ID instead of hardcoded 'omnixys' ([](https://github.com/omnixys/notification-service/commit/4ebc4e2f24483e4435b8404304795336a98cda3b))
+
 ## [3.2.0](https://github.com/omnixys/notification-service/compare/v3.1.0...v3.2.0) (2026-07-28)
 
 ### Notification
