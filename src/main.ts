@@ -30,6 +30,7 @@ import {
 } from '@nestjs/platform-fastify';
 import { OmnixysLogger } from '@omnixys/logger-ts';
 import { registerFastifyTracing } from '@omnixys/observability-ts';
+import type { FastifyRequest } from 'fastify';
 import 'reflect-metadata';
 
 /**
@@ -135,7 +136,7 @@ async function bootstrap(): Promise<void> {
   await app.register(rateLimit, {
     max: 300, // max. Requests pro Minute
     timeWindow: '1 minute',
-    skip: (request) => request.url.startsWith('/health'),
+    allowList: (request: FastifyRequest) => request.url.startsWith('/health'),
   });
 
   await app.register(cookie, {
