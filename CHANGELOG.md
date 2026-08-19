@@ -3,6 +3,20 @@
 All notable changes in this project will be documented in this file.
 
 
+## [3.3.1](https://github.com/omnixys/notification-service/compare/v3.3.0...v3.3.1) (2026-08-19)
+
+### Agent
+
+* **Agent:** add repository development instructions ([](https://github.com/omnixys/notification-service/commit/4e30f926817005ced823b1150a5437d40b271472))
+
+### Build
+
+* **Build:** replace deprecated rate-limit skip with allowList and exclude generated files from prettier ([](https://github.com/omnixys/notification-service/commit/af1b781e5cdbb6842d0e80ad027d322770e3f98e))
+
+### Notification
+
+* **Notification:** exclude health endpoints from rate-limit and bump version ([](https://github.com/omnixys/notification-service/commit/cf5b223652f249135b1ebb933b8a3b617a0488d1))
+
 ## [3.3.0](https://github.com/omnixys/notification-service/compare/v3.2.0...v3.3.0) (2026-08-03)
 
 ### Analytics
