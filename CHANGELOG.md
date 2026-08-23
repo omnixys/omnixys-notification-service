@@ -3,6 +3,12 @@
 All notable changes in this project will be documented in this file.
 
 
+## [3.3.3](https://github.com/omnixys/notification-service/compare/v3.3.2...v3.3.3) (2026-08-23)
+
+### Logger
+
+* **Logger:** fix terminal logger ([](https://github.com/omnixys/notification-service/commit/b2c36a945093484714d4efeef9a05f076c80c13f))
+
 ## [3.3.2](https://github.com/omnixys/notification-service/compare/v3.3.1...v3.3.2) (2026-08-23)
 
 ### Observability
