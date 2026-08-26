@@ -3,6 +3,16 @@
 All notable changes in this project will be documented in this file.
 
 
+## [3.4.0](https://github.com/omnixys/notification-service/compare/v3.3.3...v3.4.0) (2026-08-26)
+
+### Deps
+
+* **Deps:** update omnixys ts packages ([](https://github.com/omnixys/notification-service/commit/d018e38ee8f065e6e670c3e5977d626a1ecf311b))
+
+### Otel
+
+* **Otel:** add otel logs ([](https://github.com/omnixys/notification-service/commit/1cb2c3b60f1fa9dcdc4000e315c16f296fd96cc2))
+
 ## [3.3.3](https://github.com/omnixys/notification-service/compare/v3.3.2...v3.3.3) (2026-08-23)
 
 ### Logger
