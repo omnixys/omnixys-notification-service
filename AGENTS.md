@@ -10,7 +10,7 @@
 Omnixys Notification Service – notifications, modules, admin, analytics.
 
 - Repository path: `services/notification` (relative to the Omnixys root)
-- Package: `notification-service` (version: 3.3.0)
+- Package: `notification-service` (version: 3.4.0)
 - Runtime: Node >=25.8.2 (pnpm >=10.33.0)
 - Kind: Service
 
