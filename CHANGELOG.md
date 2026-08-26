@@ -3,6 +3,16 @@
 All notable changes in this project will be documented in this file.
 
 
+## [3.4.3](https://github.com/omnixys/notification-service/compare/v3.4.2...v3.4.3) (2026-08-26)
+
+### Build
+
+* **Build:** fix build errors ([](https://github.com/omnixys/notification-service/commit/87117e61efc02d6046f41398b4a6b254f6115115))
+
+### Other
+
+* **Other:** Merge branch 'main' of https://github.com/omnixys/notification-service ([](https://github.com/omnixys/notification-service/commit/a34a42ec39902502c515e7d698b26cd67cac9f9d))
+
 ## [3.4.2](https://github.com/omnixys/notification-service/compare/v3.4.1...v3.4.2) (2026-08-26)
 
 ### Build
