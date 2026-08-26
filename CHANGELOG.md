@@ -3,6 +3,13 @@
 All notable changes in this project will be documented in this file.
 
 
+## [3.4.1](https://github.com/omnixys/notification-service/compare/v3.4.0...v3.4.1) (2026-08-26)
+
+### Deps
+
+* **Deps:** update logger to 3.2.6 ([](https://github.com/omnixys/notification-service/commit/06a8f08e442445035763ed373157182ccee727f1))
+* **Deps:** update shared TypeScript packages ([](https://github.com/omnixys/notification-service/commit/241ef56e8a91c813567d5f7cc2760a31e5843df3))
+
 ## [3.4.0](https://github.com/omnixys/notification-service/compare/v3.3.3...v3.4.0) (2026-08-26)
 
 ### Deps
