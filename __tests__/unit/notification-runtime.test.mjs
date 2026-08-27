@@ -9,12 +9,13 @@ import {
 import { NotificationMutationResolver } from '../../dist/modules/notification/resolver/notification-mutation.resolver.js';
 import { NotificationModule } from '../../dist/modules/notification/notification.module.js';
 import { NotificationCacheService } from '../../dist/modules/notification/services/notification-cache.service.js';
+import { InvitationHandler } from '../../dist/handlers/invitation.handler.js';
 import { NotificationEventRoleResolver } from '../../dist/modules/support/common/event-role-resolver.service.js';
 import { SupportCommonModule } from '../../dist/modules/support/common/support-common.module.js';
 import { GatewayClientService } from '../../dist/modules/messages/services/gateway-client.service.js';
 import { MODULE_METADATA } from '@nestjs/common/constants.js';
-import { EventPermissionKey, guestAuthKeySchema } from '@omnixys/contracts';
-import { ContextAccessor } from '@omnixys/context';
+import { EventPermissionKey, guestAuthKeySchema } from '@omnixys/contracts-ts';
+import { ContextAccessor } from '@omnixys/context-ts';
 import axios from 'axios';
 import assert from 'node:assert/strict';
 import test, { mock } from 'node:test';
@@ -151,6 +152,7 @@ test('guest verification cache omits null optional emails', async () => {
 
   await service.storeGuestVerificationPayload({
     actorId: '00000000-0000-4000-8000-000000000001',
+    tenantId: '00000000-0000-4000-8000-000000000005',
     eventId: '00000000-0000-4000-8000-000000000002',
     invitationId: '00000000-0000-4000-8000-000000000003',
     firstName: 'Ada',
@@ -172,10 +174,97 @@ test('guest verification cache omits null optional emails', async () => {
   const userPayload = JSON.parse(storedPayloads.get('verification:guest:user'));
 
   assert.doesNotThrow(() => guestAuthKeySchema.parse(authPayload));
+  assert.equal(authPayload.tenantId, '00000000-0000-4000-8000-000000000005');
   assert.equal(Object.hasOwn(authPayload.invitees[0], 'email'), false);
   assert.equal(Object.hasOwn(authPayload.invitees[1], 'email'), false);
   assert.equal(Object.hasOwn(userPayload.users[0], 'email'), false);
   assert.equal(Object.hasOwn(userPayload.users[1], 'email'), false);
+});
+
+test('guest verification cache rejects a missing verified tenant', async () => {
+  const service = new NotificationCacheService(logger, {
+    async set() {
+      throw new Error('cache must not be written');
+    },
+  });
+
+  await assert.rejects(
+    service.storeGuestVerificationPayload({
+      actorId: '00000000-0000-4000-8000-000000000001',
+      eventId: '00000000-0000-4000-8000-000000000002',
+      invitationId: '00000000-0000-4000-8000-000000000003',
+      firstName: 'Ada',
+      lastName: 'Lovelace',
+      locale: 'en-US',
+      eventEndsAt: new Date('2030-01-01T12:00:00.000Z'),
+    }),
+    (error) =>
+      error instanceof NotificationInputException &&
+      error.code === 'NOTIFICATION_INPUT_INVALID',
+  );
+});
+
+test('confirm guest uses the verified Kafka tenant and rejects mismatches', async () => {
+  let receivedInput;
+  const pending = JSON.stringify({
+    actorId: '00000000-0000-4000-8000-000000000001',
+    tenantId: '00000000-0000-4000-8000-000000000009',
+    eventId: '00000000-0000-4000-8000-000000000002',
+    invitationId: '00000000-0000-4000-8000-000000000003',
+    firstName: 'Ada',
+    lastName: 'Lovelace',
+    locale: 'en-US',
+    eventEndsAt: '2030-01-01T12:00:00.000Z',
+  });
+  const cache = {
+    async get() {
+      return pending;
+    },
+    async rawGet() {
+      return null;
+    },
+    async rawSet() {},
+    async delete() {},
+    key(value) {
+      return value;
+    },
+    client: {
+      async del() {},
+    },
+  };
+  const handler = new InvitationHandler(
+    logger,
+    {
+      async confirmGuest({ input }) {
+        receivedInput = input;
+      },
+    },
+    cache,
+  );
+  const payload = {
+    token: 'token',
+    eventName: 'Launch',
+    eventEndsAt: new Date('2030-01-01T12:00:00.000Z'),
+  };
+  const matchingContext = {
+    headers: {
+      'x-meta-actorId': '00000000-0000-4000-8000-000000000001',
+      'x-meta-tenantId': '00000000-0000-4000-8000-000000000009',
+    },
+  };
+  const mismatchingContext = {
+    headers: {
+      'x-meta-actorId': '00000000-0000-4000-8000-000000000001',
+      'x-meta-tenantId': '00000000-0000-4000-8000-000000000005',
+    },
+  };
+
+  await assert.doesNotReject(handler.handleAddGuestId(payload, matchingContext));
+  assert.equal(receivedInput.tenantId, '00000000-0000-4000-8000-000000000009');
+
+  receivedInput = undefined;
+  await assert.doesNotReject(handler.handleAddGuestId(payload, mismatchingContext));
+  assert.equal(receivedInput, undefined);
 });
 
 test('notification event permission resolver reads effective access projection', async () => {

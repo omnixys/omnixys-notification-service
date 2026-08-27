@@ -1,3 +1,4 @@
+import { NotificationInputException } from '../errors/notification.error.js';
 import {
   SignupAddressCacheDTO,
   SignupAuthCacheDTO,
@@ -13,6 +14,7 @@ import {
   GuestSeatKey,
   CreatePendingUserDTO,
   GuestUserKey,
+  guestAuthKeySchema,
 } from '@omnixys/contracts-ts';
 import { CreateUserInput } from '@omnixys/graphql-ts';
 import { OmnixysLogger } from '@omnixys/logger-ts';
@@ -97,6 +99,11 @@ export class NotificationCacheService {
     ttlSeconds = 60 * 15,
   ): Promise<GuestSignUpTokenPayload> {
     return TraceRunner.run('Store Guest SignUp Payload', async () => {
+      const tenant = guestAuthKeySchema.shape.tenantId.safeParse(input.tenantId);
+      if (!tenant.success) {
+        throw new NotificationInputException('verified-tenant-required');
+      }
+
       /**
        * Normalize invitees (main + plusOnes)
        */
@@ -124,6 +131,7 @@ export class NotificationCacheService {
        */
       const authPayload: GuestAuthKey = {
         actorId: input.actorId,
+        tenantId: tenant.data,
         eventEndsAt: input.eventEndsAt,
         invitees: invitees.map((i) => ({
           invitationId: i.invitationId,

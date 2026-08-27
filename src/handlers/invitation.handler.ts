@@ -17,12 +17,13 @@
 
 import { Injectable } from '@nestjs/common';
 import { ValkeyKey, ValkeyService } from '@omnixys/cache-ts';
-import { FrameworkException } from '@omnixys/contracts-ts';
+import { FrameworkException, guestAuthKeySchema } from '@omnixys/contracts-ts';
 import {
   CreatePendingUserDTO,
   GuestNotificationDTO,
 } from '@omnixys/contracts-ts';
 
+import { NotificationInputException } from '../modules/notification/errors/notification.error.js';
 import { NotificationWriteService } from '../modules/notification/services/notification-write.service.js';
 import {
   IKafkaEventContext,
@@ -93,18 +94,27 @@ export class InvitationHandler {
         return;
       }
 
-      await this.cache.rawSet(idempotencyKey, '1', 900);
-
-      const input = JSON.parse(raw) as CreatePendingUserDTO;
-
-      const finalInput: CreatePendingUserDTO = {
-        ...input,
-        seatId,
-        actorId,
-        eventEndsAt,
-      };
-
       try {
+        const input = JSON.parse(raw) as CreatePendingUserDTO;
+        const tenant = guestAuthKeySchema.shape.tenantId.safeParse(
+          headers[KAFKA_HEADERS.TENANT_ID],
+        );
+        if (!tenant.success) {
+          throw new NotificationInputException('verified-tenant-required');
+        }
+        if (input.tenantId !== undefined && input.tenantId !== tenant.data) {
+          throw new NotificationInputException('tenant-context-mismatch');
+        }
+
+        const finalInput: CreatePendingUserDTO = {
+          ...input,
+          seatId,
+          actorId,
+          tenantId: tenant.data,
+          eventEndsAt,
+        };
+
+        await this.cache.rawSet(idempotencyKey, '1', 900);
         this.logger.debug(
           'confirmGuest notification processing started: eventName=%s',
           eventName,
