@@ -22,7 +22,7 @@ import { env } from './config/env.js';
 import { HandlerModule } from './handlers/handler.module.js';
 import { HealthModule } from './health/health.module.js';
 import { NotificationModule } from './modules/notification/notification.module.js';
-import { OutboxModule } from './modules/support/modules/outbox/outbox.module.js';
+import { SupportModule } from './modules/support/support.module.js';
 import { Module } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ValkeyModule } from '@omnixys/cache-ts';
@@ -162,7 +162,7 @@ const {
     HandlerModule,
     HealthModule,
     NotificationModule,
-    OutboxModule,
+    SupportModule,
   ],
   controllers: [],
   providers: [BannerService],

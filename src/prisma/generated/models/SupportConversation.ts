@@ -28,10 +28,12 @@ export type AggregateSupportConversation = {
 
 export type SupportConversationAvgAggregateOutputType = {
   unreadCount: number | null
+  guestUnreadCount: number | null
 }
 
 export type SupportConversationSumAggregateOutputType = {
   unreadCount: number | null
+  guestUnreadCount: number | null
 }
 
 export type SupportConversationMinAggregateOutputType = {
@@ -53,6 +55,7 @@ export type SupportConversationMinAggregateOutputType = {
   emailInReplyTo: string | null
   emailReferences: string | null
   unreadCount: number | null
+  guestUnreadCount: number | null
   slaDeadline: Date | null
   escalatedAt: Date | null
   escalatedTo: string | null
@@ -82,6 +85,7 @@ export type SupportConversationMaxAggregateOutputType = {
   emailInReplyTo: string | null
   emailReferences: string | null
   unreadCount: number | null
+  guestUnreadCount: number | null
   slaDeadline: Date | null
   escalatedAt: Date | null
   escalatedTo: string | null
@@ -113,6 +117,7 @@ export type SupportConversationCountAggregateOutputType = {
   tags: number
   metadata: number
   unreadCount: number
+  guestUnreadCount: number
   slaDeadline: number
   escalatedAt: number
   escalatedTo: number
@@ -127,10 +132,12 @@ export type SupportConversationCountAggregateOutputType = {
 
 export type SupportConversationAvgAggregateInputType = {
   unreadCount?: true
+  guestUnreadCount?: true
 }
 
 export type SupportConversationSumAggregateInputType = {
   unreadCount?: true
+  guestUnreadCount?: true
 }
 
 export type SupportConversationMinAggregateInputType = {
@@ -152,6 +159,7 @@ export type SupportConversationMinAggregateInputType = {
   emailInReplyTo?: true
   emailReferences?: true
   unreadCount?: true
+  guestUnreadCount?: true
   slaDeadline?: true
   escalatedAt?: true
   escalatedTo?: true
@@ -181,6 +189,7 @@ export type SupportConversationMaxAggregateInputType = {
   emailInReplyTo?: true
   emailReferences?: true
   unreadCount?: true
+  guestUnreadCount?: true
   slaDeadline?: true
   escalatedAt?: true
   escalatedTo?: true
@@ -212,6 +221,7 @@ export type SupportConversationCountAggregateInputType = {
   tags?: true
   metadata?: true
   unreadCount?: true
+  guestUnreadCount?: true
   slaDeadline?: true
   escalatedAt?: true
   escalatedTo?: true
@@ -330,6 +340,7 @@ export type SupportConversationGroupByOutputType = {
   tags: string[]
   metadata: runtime.JsonValue | null
   unreadCount: number
+  guestUnreadCount: number
   slaDeadline: Date | null
   escalatedAt: Date | null
   escalatedTo: string | null
@@ -384,6 +395,7 @@ export type SupportConversationWhereInput = {
   tags?: Prisma.StringNullableListFilter<"SupportConversation">
   metadata?: Prisma.JsonNullableFilter<"SupportConversation">
   unreadCount?: Prisma.IntFilter<"SupportConversation"> | number
+  guestUnreadCount?: Prisma.IntFilter<"SupportConversation"> | number
   slaDeadline?: Prisma.DateTimeNullableFilter<"SupportConversation"> | Date | string | null
   escalatedAt?: Prisma.DateTimeNullableFilter<"SupportConversation"> | Date | string | null
   escalatedTo?: Prisma.StringNullableFilter<"SupportConversation"> | string | null
@@ -418,6 +430,7 @@ export type SupportConversationOrderByWithRelationInput = {
   tags?: Prisma.SortOrder
   metadata?: Prisma.SortOrderInput | Prisma.SortOrder
   unreadCount?: Prisma.SortOrder
+  guestUnreadCount?: Prisma.SortOrder
   slaDeadline?: Prisma.SortOrderInput | Prisma.SortOrder
   escalatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   escalatedTo?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -455,6 +468,7 @@ export type SupportConversationWhereUniqueInput = Prisma.AtLeast<{
   tags?: Prisma.StringNullableListFilter<"SupportConversation">
   metadata?: Prisma.JsonNullableFilter<"SupportConversation">
   unreadCount?: Prisma.IntFilter<"SupportConversation"> | number
+  guestUnreadCount?: Prisma.IntFilter<"SupportConversation"> | number
   slaDeadline?: Prisma.DateTimeNullableFilter<"SupportConversation"> | Date | string | null
   escalatedAt?: Prisma.DateTimeNullableFilter<"SupportConversation"> | Date | string | null
   escalatedTo?: Prisma.StringNullableFilter<"SupportConversation"> | string | null
@@ -489,6 +503,7 @@ export type SupportConversationOrderByWithAggregationInput = {
   tags?: Prisma.SortOrder
   metadata?: Prisma.SortOrderInput | Prisma.SortOrder
   unreadCount?: Prisma.SortOrder
+  guestUnreadCount?: Prisma.SortOrder
   slaDeadline?: Prisma.SortOrderInput | Prisma.SortOrder
   escalatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   escalatedTo?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -528,6 +543,7 @@ export type SupportConversationScalarWhereWithAggregatesInput = {
   tags?: Prisma.StringNullableListFilter<"SupportConversation">
   metadata?: Prisma.JsonNullableWithAggregatesFilter<"SupportConversation">
   unreadCount?: Prisma.IntWithAggregatesFilter<"SupportConversation"> | number
+  guestUnreadCount?: Prisma.IntWithAggregatesFilter<"SupportConversation"> | number
   slaDeadline?: Prisma.DateTimeNullableWithAggregatesFilter<"SupportConversation"> | Date | string | null
   escalatedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"SupportConversation"> | Date | string | null
   escalatedTo?: Prisma.StringNullableWithAggregatesFilter<"SupportConversation"> | string | null
@@ -559,6 +575,7 @@ export type SupportConversationCreateInput = {
   tags?: Prisma.SupportConversationCreatetagsInput | string[]
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unreadCount?: number
+  guestUnreadCount?: number
   slaDeadline?: Date | string | null
   escalatedAt?: Date | string | null
   escalatedTo?: string | null
@@ -593,6 +610,7 @@ export type SupportConversationUncheckedCreateInput = {
   tags?: Prisma.SupportConversationCreatetagsInput | string[]
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unreadCount?: number
+  guestUnreadCount?: number
   slaDeadline?: Date | string | null
   escalatedAt?: Date | string | null
   escalatedTo?: string | null
@@ -627,6 +645,7 @@ export type SupportConversationUpdateInput = {
   tags?: Prisma.SupportConversationUpdatetagsInput | string[]
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unreadCount?: Prisma.IntFieldUpdateOperationsInput | number
+  guestUnreadCount?: Prisma.IntFieldUpdateOperationsInput | number
   slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   escalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   escalatedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -661,6 +680,7 @@ export type SupportConversationUncheckedUpdateInput = {
   tags?: Prisma.SupportConversationUpdatetagsInput | string[]
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unreadCount?: Prisma.IntFieldUpdateOperationsInput | number
+  guestUnreadCount?: Prisma.IntFieldUpdateOperationsInput | number
   slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   escalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   escalatedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -695,6 +715,7 @@ export type SupportConversationCreateManyInput = {
   tags?: Prisma.SupportConversationCreatetagsInput | string[]
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unreadCount?: number
+  guestUnreadCount?: number
   slaDeadline?: Date | string | null
   escalatedAt?: Date | string | null
   escalatedTo?: string | null
@@ -726,6 +747,7 @@ export type SupportConversationUpdateManyMutationInput = {
   tags?: Prisma.SupportConversationUpdatetagsInput | string[]
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unreadCount?: Prisma.IntFieldUpdateOperationsInput | number
+  guestUnreadCount?: Prisma.IntFieldUpdateOperationsInput | number
   slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   escalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   escalatedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -757,6 +779,7 @@ export type SupportConversationUncheckedUpdateManyInput = {
   tags?: Prisma.SupportConversationUpdatetagsInput | string[]
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unreadCount?: Prisma.IntFieldUpdateOperationsInput | number
+  guestUnreadCount?: Prisma.IntFieldUpdateOperationsInput | number
   slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   escalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   escalatedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -793,6 +816,7 @@ export type SupportConversationCountOrderByAggregateInput = {
   tags?: Prisma.SortOrder
   metadata?: Prisma.SortOrder
   unreadCount?: Prisma.SortOrder
+  guestUnreadCount?: Prisma.SortOrder
   slaDeadline?: Prisma.SortOrder
   escalatedAt?: Prisma.SortOrder
   escalatedTo?: Prisma.SortOrder
@@ -805,6 +829,7 @@ export type SupportConversationCountOrderByAggregateInput = {
 
 export type SupportConversationAvgOrderByAggregateInput = {
   unreadCount?: Prisma.SortOrder
+  guestUnreadCount?: Prisma.SortOrder
 }
 
 export type SupportConversationMaxOrderByAggregateInput = {
@@ -826,6 +851,7 @@ export type SupportConversationMaxOrderByAggregateInput = {
   emailInReplyTo?: Prisma.SortOrder
   emailReferences?: Prisma.SortOrder
   unreadCount?: Prisma.SortOrder
+  guestUnreadCount?: Prisma.SortOrder
   slaDeadline?: Prisma.SortOrder
   escalatedAt?: Prisma.SortOrder
   escalatedTo?: Prisma.SortOrder
@@ -855,6 +881,7 @@ export type SupportConversationMinOrderByAggregateInput = {
   emailInReplyTo?: Prisma.SortOrder
   emailReferences?: Prisma.SortOrder
   unreadCount?: Prisma.SortOrder
+  guestUnreadCount?: Prisma.SortOrder
   slaDeadline?: Prisma.SortOrder
   escalatedAt?: Prisma.SortOrder
   escalatedTo?: Prisma.SortOrder
@@ -867,6 +894,7 @@ export type SupportConversationMinOrderByAggregateInput = {
 
 export type SupportConversationSumOrderByAggregateInput = {
   unreadCount?: Prisma.SortOrder
+  guestUnreadCount?: Prisma.SortOrder
 }
 
 export type SupportConversationScalarRelationFilter = {
@@ -956,6 +984,7 @@ export type SupportConversationCreateWithoutMappingsInput = {
   tags?: Prisma.SupportConversationCreatetagsInput | string[]
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unreadCount?: number
+  guestUnreadCount?: number
   slaDeadline?: Date | string | null
   escalatedAt?: Date | string | null
   escalatedTo?: string | null
@@ -989,6 +1018,7 @@ export type SupportConversationUncheckedCreateWithoutMappingsInput = {
   tags?: Prisma.SupportConversationCreatetagsInput | string[]
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unreadCount?: number
+  guestUnreadCount?: number
   slaDeadline?: Date | string | null
   escalatedAt?: Date | string | null
   escalatedTo?: string | null
@@ -1038,6 +1068,7 @@ export type SupportConversationUpdateWithoutMappingsInput = {
   tags?: Prisma.SupportConversationUpdatetagsInput | string[]
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unreadCount?: Prisma.IntFieldUpdateOperationsInput | number
+  guestUnreadCount?: Prisma.IntFieldUpdateOperationsInput | number
   slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   escalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   escalatedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1071,6 +1102,7 @@ export type SupportConversationUncheckedUpdateWithoutMappingsInput = {
   tags?: Prisma.SupportConversationUpdatetagsInput | string[]
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unreadCount?: Prisma.IntFieldUpdateOperationsInput | number
+  guestUnreadCount?: Prisma.IntFieldUpdateOperationsInput | number
   slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   escalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   escalatedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1104,6 +1136,7 @@ export type SupportConversationCreateWithoutMessagesInput = {
   tags?: Prisma.SupportConversationCreatetagsInput | string[]
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unreadCount?: number
+  guestUnreadCount?: number
   slaDeadline?: Date | string | null
   escalatedAt?: Date | string | null
   escalatedTo?: string | null
@@ -1137,6 +1170,7 @@ export type SupportConversationUncheckedCreateWithoutMessagesInput = {
   tags?: Prisma.SupportConversationCreatetagsInput | string[]
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unreadCount?: number
+  guestUnreadCount?: number
   slaDeadline?: Date | string | null
   escalatedAt?: Date | string | null
   escalatedTo?: string | null
@@ -1186,6 +1220,7 @@ export type SupportConversationUpdateWithoutMessagesInput = {
   tags?: Prisma.SupportConversationUpdatetagsInput | string[]
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unreadCount?: Prisma.IntFieldUpdateOperationsInput | number
+  guestUnreadCount?: Prisma.IntFieldUpdateOperationsInput | number
   slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   escalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   escalatedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1219,6 +1254,7 @@ export type SupportConversationUncheckedUpdateWithoutMessagesInput = {
   tags?: Prisma.SupportConversationUpdatetagsInput | string[]
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unreadCount?: Prisma.IntFieldUpdateOperationsInput | number
+  guestUnreadCount?: Prisma.IntFieldUpdateOperationsInput | number
   slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   escalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   escalatedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1252,6 +1288,7 @@ export type SupportConversationCreateWithoutAssignmentsInput = {
   tags?: Prisma.SupportConversationCreatetagsInput | string[]
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unreadCount?: number
+  guestUnreadCount?: number
   slaDeadline?: Date | string | null
   escalatedAt?: Date | string | null
   escalatedTo?: string | null
@@ -1285,6 +1322,7 @@ export type SupportConversationUncheckedCreateWithoutAssignmentsInput = {
   tags?: Prisma.SupportConversationCreatetagsInput | string[]
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unreadCount?: number
+  guestUnreadCount?: number
   slaDeadline?: Date | string | null
   escalatedAt?: Date | string | null
   escalatedTo?: string | null
@@ -1334,6 +1372,7 @@ export type SupportConversationUpdateWithoutAssignmentsInput = {
   tags?: Prisma.SupportConversationUpdatetagsInput | string[]
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unreadCount?: Prisma.IntFieldUpdateOperationsInput | number
+  guestUnreadCount?: Prisma.IntFieldUpdateOperationsInput | number
   slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   escalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   escalatedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1367,6 +1406,7 @@ export type SupportConversationUncheckedUpdateWithoutAssignmentsInput = {
   tags?: Prisma.SupportConversationUpdatetagsInput | string[]
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unreadCount?: Prisma.IntFieldUpdateOperationsInput | number
+  guestUnreadCount?: Prisma.IntFieldUpdateOperationsInput | number
   slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   escalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   escalatedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1449,6 +1489,7 @@ export type SupportConversationSelect<ExtArgs extends runtime.Types.Extensions.I
   tags?: boolean
   metadata?: boolean
   unreadCount?: boolean
+  guestUnreadCount?: boolean
   slaDeadline?: boolean
   escalatedAt?: boolean
   escalatedTo?: boolean
@@ -1484,6 +1525,7 @@ export type SupportConversationSelectCreateManyAndReturn<ExtArgs extends runtime
   tags?: boolean
   metadata?: boolean
   unreadCount?: boolean
+  guestUnreadCount?: boolean
   slaDeadline?: boolean
   escalatedAt?: boolean
   escalatedTo?: boolean
@@ -1515,6 +1557,7 @@ export type SupportConversationSelectUpdateManyAndReturn<ExtArgs extends runtime
   tags?: boolean
   metadata?: boolean
   unreadCount?: boolean
+  guestUnreadCount?: boolean
   slaDeadline?: boolean
   escalatedAt?: boolean
   escalatedTo?: boolean
@@ -1546,6 +1589,7 @@ export type SupportConversationSelectScalar = {
   tags?: boolean
   metadata?: boolean
   unreadCount?: boolean
+  guestUnreadCount?: boolean
   slaDeadline?: boolean
   escalatedAt?: boolean
   escalatedTo?: boolean
@@ -1556,7 +1600,7 @@ export type SupportConversationSelectScalar = {
   closedAt?: boolean
 }
 
-export type SupportConversationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "eventId" | "invitationId" | "guestUserId" | "guestName" | "guestContact" | "subject" | "status" | "priority" | "assignedTo" | "assignedToUser" | "channel" | "lastMessageAt" | "lastMessagePreview" | "emailMessageId" | "emailInReplyTo" | "emailReferences" | "tags" | "metadata" | "unreadCount" | "slaDeadline" | "escalatedAt" | "escalatedTo" | "internalNote" | "deletedAt" | "createdAt" | "updatedAt" | "closedAt", ExtArgs["result"]["supportConversation"]>
+export type SupportConversationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "eventId" | "invitationId" | "guestUserId" | "guestName" | "guestContact" | "subject" | "status" | "priority" | "assignedTo" | "assignedToUser" | "channel" | "lastMessageAt" | "lastMessagePreview" | "emailMessageId" | "emailInReplyTo" | "emailReferences" | "tags" | "metadata" | "unreadCount" | "guestUnreadCount" | "slaDeadline" | "escalatedAt" | "escalatedTo" | "internalNote" | "deletedAt" | "createdAt" | "updatedAt" | "closedAt", ExtArgs["result"]["supportConversation"]>
 export type SupportConversationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   mappings?: boolean | Prisma.SupportConversation$mappingsArgs<ExtArgs>
   messages?: boolean | Prisma.SupportConversation$messagesArgs<ExtArgs>
@@ -1594,6 +1638,7 @@ export type $SupportConversationPayload<ExtArgs extends runtime.Types.Extensions
     tags: string[]
     metadata: runtime.JsonValue | null
     unreadCount: number
+    guestUnreadCount: number
     slaDeadline: Date | null
     escalatedAt: Date | null
     escalatedTo: string | null
@@ -2048,6 +2093,7 @@ export interface SupportConversationFieldRefs {
   readonly tags: Prisma.FieldRef<"SupportConversation", 'String[]'>
   readonly metadata: Prisma.FieldRef<"SupportConversation", 'Json'>
   readonly unreadCount: Prisma.FieldRef<"SupportConversation", 'Int'>
+  readonly guestUnreadCount: Prisma.FieldRef<"SupportConversation", 'Int'>
   readonly slaDeadline: Prisma.FieldRef<"SupportConversation", 'DateTime'>
   readonly escalatedAt: Prisma.FieldRef<"SupportConversation", 'DateTime'>
   readonly escalatedTo: Prisma.FieldRef<"SupportConversation", 'String'>

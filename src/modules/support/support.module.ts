@@ -6,9 +6,12 @@ import { MessageModule } from './modules/message/message.module.js';
 import { OutboxModule } from './modules/outbox/outbox.module.js';
 import { QuickReplyModule } from './modules/quick-reply/quick-reply.module.js';
 import { WorkflowModule } from './modules/workflow/workflow.module.js';
+import { SupportRsvpModule } from './rsvp/support-rsvp.module.js';
+import { SupportAccessController } from './support-access.controller.js';
 import { Module } from '@nestjs/common';
 
 @Module({
+  controllers: [SupportAccessController],
   imports: [
     ConversationModule,
     MappingModule,
@@ -18,6 +21,7 @@ import { Module } from '@nestjs/common';
     OutboxModule,
     QuickReplyModule,
     SupportCommonModule,
+    SupportRsvpModule,
   ],
   exports: [
     ConversationModule,
@@ -28,6 +32,7 @@ import { Module } from '@nestjs/common';
     OutboxModule,
     QuickReplyModule,
     SupportCommonModule,
+    SupportRsvpModule,
   ],
 })
 export class SupportModule {}

@@ -65,6 +65,9 @@ export class SupportConversation {
   @Field(() => Int, { nullable: true })
   unreadCount?: number;
 
+  @Field(() => Int, { nullable: true })
+  guestUnreadCount?: number;
+
   @Field({ nullable: true })
   lastMessagePreview?: string;
 

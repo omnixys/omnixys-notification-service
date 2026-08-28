@@ -259,7 +259,8 @@ model SupportConversation {
   metadata Json?    @default("{}") @map("metadata")
 
   // Unread tracking
-  unreadCount Int @default(0) @map("unread_count")
+  unreadCount      Int @default(0) @map("unread_count")
+  guestUnreadCount Int @default(0) @map("guest_unread_count")
 
   // SLA / escalation
   slaDeadline DateTime? @map("sla_deadline")

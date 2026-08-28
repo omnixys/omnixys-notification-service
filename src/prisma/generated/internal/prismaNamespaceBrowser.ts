@@ -182,6 +182,7 @@ export const SupportConversationScalarFieldEnum = {
   tags: 'tags',
   metadata: 'metadata',
   unreadCount: 'unreadCount',
+  guestUnreadCount: 'guestUnreadCount',
   slaDeadline: 'slaDeadline',
   escalatedAt: 'escalatedAt',
   escalatedTo: 'escalatedTo',

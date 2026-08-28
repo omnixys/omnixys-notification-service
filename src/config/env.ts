@@ -158,6 +158,12 @@ export const env = {
 
   GATEWAY_BASE_URL: getEnv('GATEWAY_BASE_URL', 'http://localhost:8000'),
   GATEWAY_API_KEY: getEnv('GATEWAY_API_KEY', '', { required: true }),
+
+  INVITATION_URI: getEnv('INVITATION_URI', 'http://localhost:4400'),
+  INTERNAL_GATEWAY_TOKEN: getEnv(
+    'INTERNAL_GATEWAY_TOKEN',
+    'dev-internal-gateway-token',
+  ),
 } as const;
 
 // /**

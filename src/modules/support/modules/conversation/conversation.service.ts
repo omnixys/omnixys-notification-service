@@ -1,6 +1,5 @@
 import {
   ConversationAccessDeniedException,
-  ConversationDuplicateException,
   ConversationNotFoundException,
 } from '../../../../modules/notification/errors/notification.error.js';
 import type { Prisma, SupportConversation } from '../../../../prisma/generated/client.js';
@@ -55,6 +54,112 @@ export class ConversationService {
     });
   }
 
+  async findByInvitation(
+    eventId: string,
+    invitationId: string,
+  ): Promise<SupportConversation | null> {
+    return this.prisma.supportConversation.findFirst({
+      where: {
+        eventId,
+        invitationId,
+        deletedAt: null,
+        status: { not: 'CLOSED' },
+      },
+    });
+  }
+
+  async createForAuthenticatedGuest(
+    eventId: string,
+    user: CurrentUserData,
+    data: {
+      subject?: string;
+      channel: 'WHATSAPP' | 'EMAIL' | 'WEBCHAT' | 'SMS';
+      firstMessage: string;
+    },
+  ): Promise<SupportConversation> {
+    const eventAccess = await this.prisma.eventAccessProjection.findUnique({
+      where: {
+        uq_event_access_projection: {
+          eventId,
+          userId: user.id,
+        },
+      },
+      select: { id: true },
+    });
+    if (!eventAccess) {
+      throw new ConversationAccessDeniedException(eventId, 'event-membership-required');
+    }
+
+    const guestName =
+      [user.firstName, user.lastName].filter(Boolean).join(' ').trim() || user.username || user.id;
+    return this.create(eventId, {
+      guestUserId: user.id,
+      guestName,
+      guestContact: user.email || undefined,
+      subject: data.subject,
+      channel: data.channel,
+      firstMessage: data.firstMessage,
+    });
+  }
+
+  /**
+   * Creates (or reuses an existing open) support conversation for an RSVP
+   * guest whose invitation has already been validated as a capability. The
+   * invitation/event pair is authoritative; no guest identity is trusted from
+   * the client.
+   */
+  async createForInvitation(
+    eventId: string,
+    data: {
+      invitationId: string;
+      guestName: string;
+      guestContact?: string;
+      channel: 'WHATSAPP' | 'EMAIL' | 'WEBCHAT' | 'SMS';
+      firstMessage: string;
+    },
+  ): Promise<SupportConversation> {
+    const existing = await this.prisma.supportConversation.findFirst({
+      where: {
+        eventId,
+        invitationId: data.invitationId,
+        status: { not: 'CLOSED' },
+      },
+    });
+
+    if (existing) {
+      this.#logger.debug(
+        { eventId, invitationId: data.invitationId, existingId: existing.id },
+        'support_conversation_reused_by_invitation',
+      );
+      return existing;
+    }
+
+    const conversation = await this.create(eventId, {
+      invitationId: data.invitationId,
+      guestName: data.guestName,
+      guestContact: data.guestContact,
+      channel: data.channel,
+      firstMessage: data.firstMessage,
+    });
+
+    return conversation;
+  }
+
+  async markAsReadByInvitation(
+    eventId: string,
+    invitationId: string,
+  ): Promise<SupportConversation> {
+    const conversation = await this.prisma.supportConversation.findFirst({
+      where: { eventId, invitationId },
+    });
+
+    if (!conversation) {
+      throw new ConversationNotFoundException(undefined);
+    }
+
+    return this.markAsReadInternal(conversation, 'guest');
+  }
+
   async create(
     eventId: string,
     data: {
@@ -68,6 +173,11 @@ export class ConversationService {
       firstMessage: string;
     },
   ): Promise<SupportConversation> {
+    const firstMessage = data.firstMessage.trim();
+    if (!firstMessage) {
+      throw new Error('A first support message is required');
+    }
+
     const existingByGuestAndEvent = data.guestUserId
       ? await this.prisma.supportConversation.findFirst({
           where: {
@@ -87,7 +197,7 @@ export class ConversationService {
         },
         'support_conversation_duplicate_by_guest',
       );
-      throw new ConversationDuplicateException(existingByGuestAndEvent.id);
+      return existingByGuestAndEvent;
     }
 
     const existingByInvitation = data.invitationId
@@ -109,24 +219,46 @@ export class ConversationService {
         },
         'support_conversation_duplicate_by_invitation',
       );
-      throw new ConversationDuplicateException(existingByInvitation.id);
+      return existingByInvitation;
     }
 
-    const conversation = await this.prisma.supportConversation.create({
-      data: {
-        eventId,
-        invitationId: data.invitationId,
-        guestUserId: data.guestUserId,
-        guestName: data.guestName,
-        guestContact: data.guestContact,
-        subject: data.subject,
-        channel: data.channel,
-        priority: data.priority ?? 'NORMAL',
-        status: 'OPEN',
-        lastMessagePreview: data.firstMessage.slice(0, 100),
-        lastMessageAt: new Date(),
-      },
-    });
+    let conversation: SupportConversation;
+    try {
+      conversation = await this.prisma.supportConversation.create({
+        data: {
+          eventId,
+          invitationId: data.invitationId,
+          guestUserId: data.guestUserId,
+          guestName: data.guestName,
+          guestContact: data.guestContact,
+          subject: data.subject,
+          channel: data.channel,
+          priority: data.priority ?? 'NORMAL',
+          status: 'OPEN',
+          unreadCount: 1,
+          lastMessagePreview: firstMessage.slice(0, 100),
+          lastMessageAt: new Date(),
+        },
+      });
+    } catch (error) {
+      if (!isUniqueConstraintError(error)) {
+        throw error;
+      }
+      const winner = await this.prisma.supportConversation.findFirst({
+        where: {
+          eventId,
+          deletedAt: null,
+          status: { not: 'CLOSED' },
+          ...(data.guestUserId
+            ? { guestUserId: data.guestUserId }
+            : { invitationId: data.invitationId }),
+        },
+      });
+      if (!winner) {
+        throw error;
+      }
+      return winner;
+    }
 
     this.#logger.debug(
       {
@@ -145,9 +277,16 @@ export class ConversationService {
         channel: data.channel,
         fromUserId: data.guestUserId,
         fromGuest: true,
-        body: data.firstMessage,
+        body: firstMessage,
         status: 'SENT',
       },
+    });
+
+    await this.publishConversationChange(eventId, conversation.id, 'created', {
+      guestName: data.guestName,
+      channel: data.channel,
+      unreadCount: 1,
+      guestUnreadCount: 0,
     });
 
     return conversation;
@@ -185,10 +324,17 @@ export class ConversationService {
       updateData.priority = data.priority;
     }
 
-    return this.prisma.supportConversation.update({
+    const updated = await this.prisma.supportConversation.update({
       where: { id },
       data: updateData,
     });
+
+    await this.publishConversationChange(conversation.eventId, id, 'updated', {
+      subject: updated.subject,
+      priority: updated.priority,
+    });
+
+    return updated;
   }
 
   async countByEvent(
@@ -233,6 +379,7 @@ export class ConversationService {
         assignedTo: true,
         assignedToUser: true,
         unreadCount: true,
+        guestUnreadCount: true,
         lastMessageAt: true,
         lastMessagePreview: true,
         createdAt: true,
@@ -266,22 +413,46 @@ export class ConversationService {
       throw new ConversationAccessDeniedException(conversationId);
     }
 
+    const audience = conversation.guestUserId === user.id ? 'guest' : 'staff';
+    return this.markAsReadInternal(conversation, audience);
+  }
+
+  private async markAsReadInternal(
+    conversation: { id: string; eventId: string },
+    audience: 'guest' | 'staff',
+  ): Promise<SupportConversation> {
     const updated = await this.prisma.supportConversation.update({
-      where: { id: conversationId },
-      data: { unreadCount: 0 },
+      where: { id: conversation.id },
+      data: audience === 'guest' ? { guestUnreadCount: 0 } : { unreadCount: 0 },
     });
 
+    await this.publishConversationChange(conversation.eventId, conversation.id, 'unread', {
+      audience,
+      unreadCount: updated.unreadCount,
+      guestUnreadCount: updated.guestUnreadCount,
+    });
+
+    return updated;
+  }
+
+  /**
+   * Publishes a support-conversation change to the per-conversation and
+   * per-event Valkey channels so realtime clients (staff event inbox, guests)
+   * can refresh lists/unread badges. Non-critical: publishes are best effort.
+   */
+  private async publishConversationChange(
+    eventId: string,
+    conversationId: string,
+    kind: 'created' | 'updated' | 'status' | 'unread',
+    extra: Record<string, unknown> = {},
+  ): Promise<void> {
+    const payload = { eventId, conversationId, kind, ...extra };
     try {
-      await this.valkeyPubSub.publish(`unreadCount.updated.${conversationId}`, {
-        conversationId,
-        unreadCount: 0,
-        eventId: conversation.eventId,
-      });
+      await this.valkeyPubSub.publish(`support.event.conversations.${eventId}`, payload);
+      await this.valkeyPubSub.publish(`support.conversation.updated.${conversationId}`, payload);
     } catch {
       // Valkey publish failure is non-critical
     }
-
-    return updated;
   }
 
   private async canAccessConversation(
@@ -303,4 +474,38 @@ export class ConversationService {
     const permissions = await this.permissionResolver.getPermissionsForUser(user.id, eventId);
     return permissions.includes(permission);
   }
+
+  async canUserViewEventSupport(eventId: string, userId: string): Promise<boolean> {
+    const permissions = await this.permissionResolver.getPermissionsForUser(userId, eventId);
+    return permissions.includes(EventPermissionKey.ViewSupport);
+  }
+
+  async canUserAccessSubscription(
+    conversationId: string,
+    userId: string,
+  ): Promise<{ allowed: boolean; eventId?: string }> {
+    const conversation = await this.prisma.supportConversation.findUnique({
+      where: { id: conversationId },
+      select: { eventId: true, guestUserId: true },
+    });
+    if (!conversation) {
+      return { allowed: false };
+    }
+    if (conversation.guestUserId === userId) {
+      return { allowed: true, eventId: conversation.eventId };
+    }
+    return {
+      allowed: await this.canUserViewEventSupport(conversation.eventId, userId),
+      eventId: conversation.eventId,
+    };
+  }
+}
+
+function isUniqueConstraintError(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    (error as { code?: unknown }).code === 'P2002'
+  );
 }

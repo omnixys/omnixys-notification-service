@@ -5,7 +5,7 @@ import {
   ConversationNotFoundException,
   ConversationClosedException,
 } from '../../../../modules/notification/errors/notification.error.js';
-import type { SupportMessage } from '../../../../prisma/generated/client.js';
+import type { SupportConversation, SupportMessage } from '../../../../prisma/generated/client.js';
 import { PrismaService } from '../../../../prisma/prisma.service.js';
 import { Injectable } from '@nestjs/common';
 import { ValkeyPubSubService } from '@omnixys/cache-ts';
@@ -62,6 +62,31 @@ export class MessageService {
     });
   }
 
+  /**
+   * Returns messages for an RSVP guest's conversation, resolved strictly by
+   * (eventId, invitationId). The invitation has already been validated as a
+   * capability before this is called.
+   */
+  async getMessagesByInvitation(
+    eventId: string,
+    invitationId: string,
+    limit = 100,
+  ): Promise<SupportMessage[]> {
+    const conversation = await this.prisma.supportConversation.findFirst({
+      where: { eventId, invitationId },
+    });
+
+    if (!conversation) {
+      throw new ConversationNotFoundException(undefined);
+    }
+
+    return this.prisma.supportMessage.findMany({
+      where: { conversationId: conversation.id, deletedAt: null },
+      orderBy: { createdAt: 'asc' },
+      take: limit,
+    });
+  }
+
   async sendMessage(
     conversationId: string,
     data: {
@@ -90,11 +115,52 @@ export class MessageService {
       throw new ConversationAccessDeniedException(conversationId);
     }
 
+    return this.performSend(conversation, data, {
+      fromGuest: isGuestOwner,
+      actorId: user.id,
+    });
+  }
+
+  /**
+   * Sends a message on behalf of an RSVP guest whose invitation has already
+   * been validated as a capability. The conversation is resolved strictly by
+   * (eventId, invitationId) so a guest can never address another conversation.
+   */
+  async sendMessageByInvitation(
+    eventId: string,
+    invitationId: string,
+    data: {
+      body?: string;
+      mediaUrl?: string;
+      mimeType?: string;
+    },
+  ): Promise<SupportMessage> {
+    const conversation = await this.prisma.supportConversation.findFirst({
+      where: { eventId, invitationId },
+    });
+
+    if (!conversation) {
+      throw new ConversationNotFoundException(undefined);
+    }
+
+    return this.performSend(conversation, data, { fromGuest: true, actorId: undefined });
+  }
+
+  private async performSend(
+    conversation: SupportConversation,
+    data: {
+      body?: string;
+      mediaUrl?: string;
+      mimeType?: string;
+    },
+    actor: { fromGuest: boolean; actorId?: string },
+  ): Promise<SupportMessage> {
+    const conversationId = conversation.id;
+    const fromGuest = actor.fromGuest;
+
     if (conversation.status === 'CLOSED') {
       throw new ConversationClosedException(conversationId);
     }
-
-    const fromGuest = isGuestOwner;
 
     const [message] = await this.prisma.$transaction([
       this.prisma.supportMessage.create({
@@ -102,7 +168,7 @@ export class MessageService {
           conversationId,
           direction: fromGuest ? 'INBOUND' : 'OUTBOUND',
           channel: conversation.channel,
-          fromUserId: user.id,
+          fromUserId: actor.actorId,
           fromGuest,
           body: data.body,
           mediaUrl: data.mediaUrl,
@@ -115,7 +181,9 @@ export class MessageService {
         data: {
           lastMessageAt: new Date(),
           lastMessagePreview: (data.body ?? '(media)').slice(0, 100),
-          ...(fromGuest ? { unreadCount: { increment: 1 } } : {}),
+          ...(fromGuest
+            ? { unreadCount: { increment: 1 } }
+            : { guestUnreadCount: { increment: 1 } }),
         },
       }),
     ]);
@@ -123,15 +191,46 @@ export class MessageService {
     const conversationUnreadCount = fromGuest
       ? (conversation.unreadCount ?? 0) + 1
       : (conversation.unreadCount ?? 0);
+    const guestUnreadCount = fromGuest
+      ? (conversation.guestUnreadCount ?? 0)
+      : (conversation.guestUnreadCount ?? 0) + 1;
 
     try {
       await this.valkeyPubSub.publish(`unreadCount.updated.${conversationId}`, {
         conversationId,
         unreadCount: conversationUnreadCount,
+        guestUnreadCount,
         eventId: conversation.eventId,
       });
     } catch {
       // Valkey publish failure is non-critical
+    }
+
+    try {
+      await this.valkeyPubSub.publish(`support.event.conversations.${conversation.eventId}`, {
+        eventId: conversation.eventId,
+        conversationId,
+        kind: 'updated',
+        unreadCount: conversationUnreadCount,
+        guestUnreadCount,
+      });
+    } catch {
+      // Valkey publish failure is non-critical
+    }
+
+    if (conversation.invitationId) {
+      try {
+        await this.valkeyPubSub.publish(`support.invitation.message.${conversation.invitationId}`, {
+          supportMessage: {
+            ...message,
+            createdAt: message.createdAt.toISOString(),
+            deliveredAt: message.deliveredAt?.toISOString(),
+            readAt: message.readAt?.toISOString(),
+          },
+        });
+      } catch {
+        // Valkey publish failure is non-critical
+      }
     }
 
     await this.kafka.send({
@@ -157,7 +256,7 @@ export class MessageService {
         service: 'support-message-service',
         operation: fromGuest ? 'Guest Replied' : 'Agent Replied',
         version: '1',
-        actorId: user.id,
+        actorId: actor.actorId,
         tenantId: DEFAULT_TENANT_ID,
       },
     });
@@ -183,7 +282,7 @@ export class MessageService {
           service: 'support-message-service',
           operation: 'Outbound Email Message',
           version: '1',
-          actorId: user.id,
+          actorId: actor.actorId,
           tenantId: DEFAULT_TENANT_ID,
         },
       });
@@ -236,7 +335,7 @@ export class MessageService {
           service: 'support-message-service',
           operation: 'Outbound Channel Message',
           version: '1',
-          actorId: user.id,
+          actorId: actor.actorId,
           tenantId: DEFAULT_TENANT_ID,
         },
       });

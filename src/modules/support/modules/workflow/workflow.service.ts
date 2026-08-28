@@ -9,7 +9,7 @@ import {
 import type { SupportConversation } from '../../../../prisma/generated/client.js';
 import { PrismaService } from '../../../../prisma/prisma.service.js';
 import { Injectable } from '@nestjs/common';
-import { ValkeyLockService } from '@omnixys/cache-ts';
+import { ValkeyLockService, ValkeyPubSubService } from '@omnixys/cache-ts';
 import {
   EventPermissionKey,
   type ConversationChatAssignedDTO,
@@ -29,6 +29,7 @@ export class WorkflowService {
     private readonly kafka: KafkaProducerService,
     private readonly lock: ValkeyLockService,
     private readonly permissionResolver: EventPermissionResolver,
+    private readonly valkeyPubSub: ValkeyPubSubService,
   ) {}
 
   async assignConversation(
@@ -118,6 +119,11 @@ export class WorkflowService {
         },
       });
 
+      await this.publishConversationChange(updated.eventId, updated.id, 'assigned', {
+        assignedTo: userId,
+        status: 'ASSIGNED',
+      });
+
       return updated;
     } finally {
       await this.lock.releaseLock(lockKey, token);
@@ -151,6 +157,10 @@ export class WorkflowService {
     });
 
     this.#logger.debug({ conversationId, closedBy: actor.id }, 'conversation_closed');
+
+    await this.publishConversationChange(updated.eventId, updated.id, 'closed', {
+      status: 'CLOSED',
+    });
 
     await this.kafka.send({
       topic: KafkaTopics.conversation.chatClosed,
@@ -207,7 +217,26 @@ export class WorkflowService {
 
     this.#logger.debug({ conversationId, reopenedBy: actor.id }, 'conversation_reopened');
 
+    await this.publishConversationChange(updated.eventId, updated.id, 'reopened', {
+      status: updated.status,
+    });
+
     return updated;
+  }
+
+  private async publishConversationChange(
+    eventId: string,
+    conversationId: string,
+    kind: string,
+    extra: Record<string, unknown> = {},
+  ): Promise<void> {
+    const payload = { eventId, conversationId, kind, ...extra };
+    try {
+      await this.valkeyPubSub.publish(`support.event.conversations.${eventId}`, payload);
+      await this.valkeyPubSub.publish(`support.conversation.updated.${conversationId}`, payload);
+    } catch {
+      // Valkey publish failure is non-critical
+    }
   }
 
   private async assertManageSupport(

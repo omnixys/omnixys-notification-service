@@ -70,28 +70,24 @@ export class ConversationResolver {
   async createSupportConversation(
     @CurrentUser() user: CurrentUserData,
     @Args('eventId') eventId: string,
-    @Args('guestName') guestName: string,
+    @Args('guestName') _guestName: string,
     @Args('firstMessage') firstMessage: string,
     @Args('channel', { type: () => ConversationChannel })
     channel: ConversationChannel,
-    @Args('invitationId', { nullable: true }) invitationId?: string,
-    @Args('guestContact', { nullable: true }) guestContact?: string,
+    @Args('invitationId', { nullable: true }) _invitationId?: string,
+    @Args('guestContact', { nullable: true }) _guestContact?: string,
     @Args('subject', { nullable: true }) subject?: string,
   ): Promise<PrismaSupportConversation> {
     this.#logger.debug(
       {
         eventId,
-        guestName,
+        guestName: user.username,
         channel,
         userId: user.id,
       },
       'create_support_conversation',
     );
-    return this.conversationService.create(eventId, {
-      invitationId,
-      guestUserId: user.id,
-      guestName,
-      guestContact,
+    return this.conversationService.createForAuthenticatedGuest(eventId, user, {
       subject,
       channel,
       firstMessage,
