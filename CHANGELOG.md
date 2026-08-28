@@ -3,6 +3,20 @@
 All notable changes in this project will be documented in this file.
 
 
+## [3.5.0](https://github.com/omnixys/notification-service/compare/v3.4.4...v3.5.0) (2026-08-28)
+
+### Deps
+
+* **Deps:** update contracts-ts ([](https://github.com/omnixys/notification-service/commit/975c820e0c149cfcc8e3e8eae6eab4f3447e3d11))
+
+### Guests
+
+* **Guests:** preserve verified tenant during signup ([](https://github.com/omnixys/notification-service/commit/da07bc7b0ec90f1c3ad556a94e8dd15bea88ed28))
+
+### Support
+
+* **Support:** secure event guest conversations ([](https://github.com/omnixys/notification-service/commit/0372e1f21b8242142a576ef764b5777533fa8cc7))
+
 ## [3.4.4](https://github.com/omnixys/notification-service/compare/v3.4.3...v3.4.4) (2026-08-26)
 
 ### Build
