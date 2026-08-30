@@ -3,6 +3,12 @@
 All notable changes in this project will be documented in this file.
 
 
+## [3.6.0](https://github.com/omnixys/notification-service/compare/v3.5.0...v3.6.0) (2026-08-30)
+
+### Support
+
+* **Support:** add support chat ([](https://github.com/omnixys/notification-service/commit/293856780f3e6dfa3f268ab1b43315268fd49f4d))
+
 ## [3.5.0](https://github.com/omnixys/notification-service/compare/v3.4.4...v3.5.0) (2026-08-28)
 
 ### Deps
