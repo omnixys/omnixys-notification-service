@@ -349,6 +349,7 @@ export type SupportMessageOrderByWithRelationInput = {
 
 export type SupportMessageWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  uq_support_message_external?: Prisma.SupportMessageUq_support_message_externalCompoundUniqueInput
   AND?: Prisma.SupportMessageWhereInput | Prisma.SupportMessageWhereInput[]
   OR?: Prisma.SupportMessageWhereInput[]
   NOT?: Prisma.SupportMessageWhereInput | Prisma.SupportMessageWhereInput[]
@@ -371,7 +372,7 @@ export type SupportMessageWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"SupportMessage"> | Date | string
   conversation?: Prisma.XOR<Prisma.SupportConversationScalarRelationFilter, Prisma.SupportConversationWhereInput>
   deliveries?: Prisma.MessageDeliveryListRelationFilter
-}, "id">
+}, "id" | "uq_support_message_external">
 
 export type SupportMessageOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -581,6 +582,11 @@ export type SupportMessageListRelationFilter = {
 
 export type SupportMessageOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type SupportMessageUq_support_message_externalCompoundUniqueInput = {
+  conversationId: string
+  externalId: string
 }
 
 export type SupportMessageCountOrderByAggregateInput = {

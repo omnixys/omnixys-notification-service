@@ -7,11 +7,11 @@ import { OutboxModule } from './modules/outbox/outbox.module.js';
 import { QuickReplyModule } from './modules/quick-reply/quick-reply.module.js';
 import { WorkflowModule } from './modules/workflow/workflow.module.js';
 import { SupportRsvpModule } from './rsvp/support-rsvp.module.js';
-import { SupportAccessController } from './support-access.controller.js';
+import { SupportAccessController, SupportInboundController } from './support-access.controller.js';
 import { Module } from '@nestjs/common';
 
 @Module({
-  controllers: [SupportAccessController],
+  controllers: [SupportAccessController, SupportInboundController],
   imports: [
     ConversationModule,
     MappingModule,

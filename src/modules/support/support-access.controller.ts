@@ -1,11 +1,15 @@
 import { env } from '../../config/env.js';
 import { ConversationService } from './modules/conversation/conversation.service.js';
+import { MessageService } from './modules/message/message.service.js';
 import {
+  BadRequestException,
+  Body,
   Controller,
   ForbiddenException,
   Get,
   Headers,
   NotFoundException,
+  Post,
   Query,
 } from '@nestjs/common';
 import { Public } from '@omnixys/security-ts';
@@ -50,6 +54,43 @@ export class SupportAccessController {
       throw new ForbiddenException({ code: 'SUPPORT_ACCESS_DENIED' });
     }
     return { conversationId, eventId: access.eventId };
+  }
+}
+
+@Public()
+@Controller('internal/support')
+export class SupportInboundController {
+  constructor(private readonly messages: MessageService) {}
+
+  @Post('inbound-message')
+  async inboundMessage(
+    @Headers('x-internal-token') token: string | undefined,
+    @Body()
+    body: {
+      externalId: string;
+      from: string;
+      body?: string;
+      mediaUrl?: string;
+      mimeType?: string;
+    },
+  ): Promise<{ conversationId: string; messageId: string; duplicate: boolean }> {
+    assertInternalToken(token);
+    if (!body.externalId || !body.from || (!body.body?.trim() && !body.mediaUrl)) {
+      throw new BadRequestException({ code: 'SUPPORT_INBOUND_INVALID' });
+    }
+    const existing = await this.messages.findInboundMessage(body.externalId, body.from);
+    if (existing) {
+      return {
+        conversationId: existing.conversationId,
+        messageId: existing.id,
+        duplicate: true,
+      };
+    }
+    const message = await this.messages.receiveInboundMessage(body);
+    if (!message) {
+      throw new NotFoundException({ code: 'SUPPORT_INBOUND_UNMATCHED' });
+    }
+    return { conversationId: message.conversationId, messageId: message.id, duplicate: false };
   }
 }
 

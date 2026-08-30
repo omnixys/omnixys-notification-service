@@ -7,6 +7,7 @@ import {
 } from '../../../../modules/notification/errors/notification.error.js';
 import type { SupportConversation, SupportMessage } from '../../../../prisma/generated/client.js';
 import { PrismaService } from '../../../../prisma/prisma.service.js';
+import { MappingService } from '../mapping/mapping.service.js';
 import { Injectable } from '@nestjs/common';
 import { ValkeyPubSubService } from '@omnixys/cache-ts';
 import { EventPermissionKey } from '@omnixys/contracts-ts';
@@ -33,6 +34,7 @@ export class MessageService {
     private readonly kafka: KafkaProducerService,
     private readonly valkeyPubSub: ValkeyPubSubService,
     private readonly permissionResolver: EventPermissionResolver,
+    private readonly mappings: MappingService,
     omnixysLogger: OmnixysLogger,
   ) {
     this.logger = omnixysLogger.log(MessageService.name);
@@ -162,7 +164,7 @@ export class MessageService {
       throw new ConversationClosedException(conversationId);
     }
 
-    const [message] = await this.prisma.$transaction([
+    const [message, updatedConversation] = await this.prisma.$transaction([
       this.prisma.supportMessage.create({
         data: {
           conversationId,
@@ -188,12 +190,8 @@ export class MessageService {
       }),
     ]);
 
-    const conversationUnreadCount = fromGuest
-      ? (conversation.unreadCount ?? 0) + 1
-      : (conversation.unreadCount ?? 0);
-    const guestUnreadCount = fromGuest
-      ? (conversation.guestUnreadCount ?? 0)
-      : (conversation.guestUnreadCount ?? 0) + 1;
+    const conversationUnreadCount = updatedConversation.unreadCount;
+    const guestUnreadCount = updatedConversation.guestUnreadCount;
 
     try {
       await this.valkeyPubSub.publish(`unreadCount.updated.${conversationId}`, {
@@ -202,8 +200,11 @@ export class MessageService {
         guestUnreadCount,
         eventId: conversation.eventId,
       });
-    } catch {
-      // Valkey publish failure is non-critical
+    } catch (error) {
+      this.logger.warn('Unread realtime publish failed', {
+        conversationId,
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
 
     try {
@@ -214,8 +215,12 @@ export class MessageService {
         unreadCount: conversationUnreadCount,
         guestUnreadCount,
       });
-    } catch {
-      // Valkey publish failure is non-critical
+    } catch (error) {
+      this.logger.warn('Conversation realtime publish failed', {
+        conversationId,
+        eventId: conversation.eventId,
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
 
     if (conversation.invitationId) {
@@ -228,8 +233,11 @@ export class MessageService {
             readAt: message.readAt?.toISOString(),
           },
         });
-      } catch {
-        // Valkey publish failure is non-critical
+      } catch (error) {
+        this.logger.warn('RSVP realtime publish failed', {
+          conversationId,
+          error: error instanceof Error ? error.message : String(error),
+        });
       }
     }
 
@@ -286,12 +294,12 @@ export class MessageService {
           tenantId: DEFAULT_TENANT_ID,
         },
       });
-    } else if (conversation.channel !== 'EMAIL' && !fromGuest) {
+    } else if (conversation.channel === 'WHATSAPP' && !fromGuest) {
       const recipient = conversation.guestContact ?? '';
 
       const dispatchResult = await this.dispatchService.dispatch({
         id: message.id,
-        channel: conversation.channel as 'WHATSAPP',
+        channel: conversation.channel,
         recipientId: recipient,
         recipientAddress: recipient,
         body: data.body ?? '',
@@ -342,6 +350,111 @@ export class MessageService {
     }
 
     return message;
+  }
+
+  async receiveInboundMessage(data: {
+    externalId: string;
+    from: string;
+    body?: string;
+    mediaUrl?: string;
+    mimeType?: string;
+  }): Promise<SupportMessage | null> {
+    const mapping = await this.mappings.resolveUniqueInboundMapping('WHATSAPP', data.from);
+    if (!mapping.conversationId) {
+      return null;
+    }
+
+    const existing = await this.prisma.supportMessage.findFirst({
+      where: {
+        conversationId: mapping.conversationId,
+        externalId: data.externalId,
+      },
+    });
+    if (existing) {
+      return existing;
+    }
+
+    const conversation = await this.prisma.supportConversation.findUnique({
+      where: { id: mapping.conversationId },
+    });
+    if (!conversation || conversation.status === 'CLOSED' || conversation.deletedAt) {
+      return null;
+    }
+
+    const [message, updatedConversation] = await this.prisma.$transaction([
+      this.prisma.supportMessage.create({
+        data: {
+          conversationId: conversation.id,
+          direction: 'INBOUND',
+          channel: 'WHATSAPP',
+          fromGuest: true,
+          body: data.body,
+          mediaUrl: data.mediaUrl,
+          mimeType: data.mimeType,
+          status: 'DELIVERED',
+          externalId: data.externalId,
+        },
+      }),
+      this.prisma.supportConversation.update({
+        where: { id: conversation.id },
+        data: {
+          lastMessageAt: new Date(),
+          lastMessagePreview: (data.body ?? '(media)').slice(0, 100),
+          unreadCount: { increment: 1 },
+        },
+      }),
+    ]);
+
+    try {
+      await this.valkeyPubSub.publish(`support.event.conversations.${conversation.eventId}`, {
+        eventId: conversation.eventId,
+        conversationId: conversation.id,
+        kind: 'updated',
+        unreadCount: updatedConversation.unreadCount,
+        guestUnreadCount: updatedConversation.guestUnreadCount,
+      });
+    } catch (error) {
+      this.logger.warn('WhatsApp conversation realtime publish failed', {
+        conversationId: conversation.id,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+
+    await this.kafka.send({
+      topic: KafkaTopics.conversation.guestReplied,
+      payload: {
+        id: message.id,
+        conversationId: message.conversationId,
+        direction: message.direction,
+        channel: message.channel,
+        fromGuest: true,
+        body: message.body ?? undefined,
+        mediaUrl: message.mediaUrl ?? undefined,
+        mimeType: message.mimeType ?? undefined,
+        status: message.status,
+        createdAt: message.createdAt.toISOString(),
+      } satisfies SupportMessageReceivedDTO,
+      meta: {
+        clazz: this.constructor.name,
+        type: 'EVENT',
+        service: 'support-message-service',
+        operation: 'WhatsApp Guest Replied',
+        version: '1',
+        tenantId: DEFAULT_TENANT_ID,
+      },
+    });
+
+    return message;
+  }
+
+  async findInboundMessage(externalId: string, from: string): Promise<SupportMessage | null> {
+    const mapping = await this.mappings.resolveUniqueInboundMapping('WHATSAPP', from);
+    if (!mapping.conversationId) {
+      return null;
+    }
+    return this.prisma.supportMessage.findFirst({
+      where: { conversationId: mapping.conversationId, externalId },
+    });
   }
 
   private async canAccessMessages(

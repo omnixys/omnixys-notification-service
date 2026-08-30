@@ -12,6 +12,12 @@ export interface MappingResult {
   created: boolean;
 }
 
+export function normalizeSupportExternalId(value: string): string {
+  const normalized = value.trim().replace(/@(?:c|s)\.whatsapp\.net$/i, '');
+  const digits = normalized.replace(/\D/g, '');
+  return digits ? `+${digits}` : normalized;
+}
+
 @Injectable()
 export class MappingService {
   readonly #logger = getLogger(MappingService.name);
@@ -108,6 +114,65 @@ export class MappingService {
         mappingType,
       },
     });
+  }
+
+  async resolveUniqueInboundMapping(
+    channel: ConversationChannel,
+    externalId: string,
+  ): Promise<MappingResult> {
+    const canonicalExternalId = normalizeSupportExternalId(externalId);
+    const mappings = await this.prisma.conversationMapping.findMany({
+      where: { channel, externalId: canonicalExternalId },
+      include: { conversation: true },
+    });
+    const mapped = mappings.filter(
+      ({ conversation }) =>
+        conversation && !conversation.deletedAt && conversation.status !== 'CLOSED',
+    );
+    if (mapped.length === 1 && mapped[0]?.conversationId && mapped[0].eventId) {
+      return {
+        conversationId: mapped[0].conversationId,
+        eventId: mapped[0].eventId,
+        created: false,
+      };
+    }
+    if (mapped.length > 1) {
+      this.#logger.warn(
+        { channel, externalId: canonicalExternalId, matchCount: mapped.length },
+        'inbound_mapping_ambiguous',
+      );
+      return { conversationId: null, eventId: null, created: false };
+    }
+
+    const candidates = await this.prisma.supportConversation.findMany({
+      where: {
+        channel,
+        deletedAt: null,
+        status: { not: 'CLOSED' },
+        guestContact: { not: null },
+      },
+    });
+    const matching = candidates.filter(
+      ({ guestContact }) =>
+        guestContact && normalizeSupportExternalId(guestContact) === canonicalExternalId,
+    );
+    if (matching.length !== 1 || !matching[0]) {
+      this.#logger.warn(
+        { channel, externalId: canonicalExternalId, matchCount: matching.length },
+        matching.length > 1 ? 'inbound_mapping_ambiguous' : 'inbound_mapping_not_found',
+      );
+      return { conversationId: null, eventId: null, created: false };
+    }
+
+    const conversation = matching[0];
+    await this.createMapping(
+      channel,
+      canonicalExternalId,
+      conversation.eventId,
+      conversation.id,
+      'AUTO',
+    );
+    return { conversationId: conversation.id, eventId: conversation.eventId, created: true };
   }
 
   async findByConversation(conversationId: string): Promise<ConversationMapping[]> {

@@ -4,6 +4,7 @@ import {
 } from '../../../../modules/notification/errors/notification.error.js';
 import type { Prisma, SupportConversation } from '../../../../prisma/generated/client.js';
 import { PrismaService } from '../../../../prisma/prisma.service.js';
+import { MappingService, normalizeSupportExternalId } from '../mapping/mapping.service.js';
 import { Injectable } from '@nestjs/common';
 import { ValkeyPubSubService } from '@omnixys/cache-ts';
 import { EventPermissionKey } from '@omnixys/contracts-ts';
@@ -18,6 +19,7 @@ export class ConversationService {
     private readonly prisma: PrismaService,
     private readonly valkeyPubSub: ValkeyPubSubService,
     private readonly permissionResolver: EventPermissionResolver,
+    private readonly mappings: MappingService,
   ) {}
 
   async findById(id: string, user: CurrentUserData): Promise<SupportConversation> {
@@ -281,6 +283,15 @@ export class ConversationService {
         status: 'SENT',
       },
     });
+
+    if (data.channel === 'WHATSAPP' && data.guestContact) {
+      await this.mappings.createMapping(
+        'WHATSAPP',
+        normalizeSupportExternalId(data.guestContact),
+        eventId,
+        conversation.id,
+      );
+    }
 
     await this.publishConversationChange(eventId, conversation.id, 'created', {
       guestName: data.guestName,

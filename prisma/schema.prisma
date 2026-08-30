@@ -328,9 +328,9 @@ model SupportMessage {
 
   deliveries MessageDelivery[]
 
+  @@unique([conversationId, externalId], name: "uq_support_message_external")
   @@index([conversationId])
   @@index([createdAt])
-  @@index([externalId])
   @@index([deletedAt])
   @@map("support_message")
 }

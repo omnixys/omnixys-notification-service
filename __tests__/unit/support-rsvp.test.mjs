@@ -506,6 +506,7 @@ async function createMessageService(store) {
     { send: async () => {} },
     makeFakeValkey(),
     {},
+    {},
     logger,
   );
   return svc;
