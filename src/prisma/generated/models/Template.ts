@@ -188,7 +188,7 @@ export type TemplateWhereInput = {
   OR?: Prisma.TemplateWhereInput[]
   NOT?: Prisma.TemplateWhereInput | Prisma.TemplateWhereInput[]
   id?: Prisma.StringFilter<"Template"> | string
-  tenantId?: Prisma.StringNullableFilter<"Template"> | string | null
+  tenantId?: Prisma.UuidNullableFilter<"Template"> | string | null
   key?: Prisma.StringFilter<"Template"> | string
   channel?: Prisma.EnumChannelFilter<"Template"> | $Enums.Channel
   createdAt?: Prisma.DateTimeFilter<"Template"> | Date | string
@@ -216,7 +216,7 @@ export type TemplateWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.TemplateWhereInput | Prisma.TemplateWhereInput[]
   OR?: Prisma.TemplateWhereInput[]
   NOT?: Prisma.TemplateWhereInput | Prisma.TemplateWhereInput[]
-  tenantId?: Prisma.StringNullableFilter<"Template"> | string | null
+  tenantId?: Prisma.UuidNullableFilter<"Template"> | string | null
   key?: Prisma.StringFilter<"Template"> | string
   channel?: Prisma.EnumChannelFilter<"Template"> | $Enums.Channel
   createdAt?: Prisma.DateTimeFilter<"Template"> | Date | string
@@ -244,7 +244,7 @@ export type TemplateScalarWhereWithAggregatesInput = {
   OR?: Prisma.TemplateScalarWhereWithAggregatesInput[]
   NOT?: Prisma.TemplateScalarWhereWithAggregatesInput | Prisma.TemplateScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Template"> | string
-  tenantId?: Prisma.StringNullableWithAggregatesFilter<"Template"> | string | null
+  tenantId?: Prisma.UuidNullableWithAggregatesFilter<"Template"> | string | null
   key?: Prisma.StringWithAggregatesFilter<"Template"> | string
   channel?: Prisma.EnumChannelWithAggregatesFilter<"Template"> | $Enums.Channel
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Template"> | Date | string

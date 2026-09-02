@@ -378,7 +378,7 @@ export type SupportConversationWhereInput = {
   id?: Prisma.StringFilter<"SupportConversation"> | string
   eventId?: Prisma.StringFilter<"SupportConversation"> | string
   invitationId?: Prisma.StringNullableFilter<"SupportConversation"> | string | null
-  guestUserId?: Prisma.StringNullableFilter<"SupportConversation"> | string | null
+  guestUserId?: Prisma.UuidNullableFilter<"SupportConversation"> | string | null
   guestName?: Prisma.StringFilter<"SupportConversation"> | string
   guestContact?: Prisma.StringNullableFilter<"SupportConversation"> | string | null
   subject?: Prisma.StringNullableFilter<"SupportConversation"> | string | null
@@ -451,7 +451,7 @@ export type SupportConversationWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.SupportConversationWhereInput | Prisma.SupportConversationWhereInput[]
   eventId?: Prisma.StringFilter<"SupportConversation"> | string
   invitationId?: Prisma.StringNullableFilter<"SupportConversation"> | string | null
-  guestUserId?: Prisma.StringNullableFilter<"SupportConversation"> | string | null
+  guestUserId?: Prisma.UuidNullableFilter<"SupportConversation"> | string | null
   guestName?: Prisma.StringFilter<"SupportConversation"> | string
   guestContact?: Prisma.StringNullableFilter<"SupportConversation"> | string | null
   subject?: Prisma.StringNullableFilter<"SupportConversation"> | string | null
@@ -526,7 +526,7 @@ export type SupportConversationScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"SupportConversation"> | string
   eventId?: Prisma.StringWithAggregatesFilter<"SupportConversation"> | string
   invitationId?: Prisma.StringNullableWithAggregatesFilter<"SupportConversation"> | string | null
-  guestUserId?: Prisma.StringNullableWithAggregatesFilter<"SupportConversation"> | string | null
+  guestUserId?: Prisma.UuidNullableWithAggregatesFilter<"SupportConversation"> | string | null
   guestName?: Prisma.StringWithAggregatesFilter<"SupportConversation"> | string
   guestContact?: Prisma.StringNullableWithAggregatesFilter<"SupportConversation"> | string | null
   subject?: Prisma.StringNullableWithAggregatesFilter<"SupportConversation"> | string | null

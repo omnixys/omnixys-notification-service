@@ -186,7 +186,7 @@ export type InternalParticipantWhereInput = {
   NOT?: Prisma.InternalParticipantWhereInput | Prisma.InternalParticipantWhereInput[]
   id?: Prisma.StringFilter<"InternalParticipant"> | string
   conversationId?: Prisma.StringFilter<"InternalParticipant"> | string
-  userId?: Prisma.StringFilter<"InternalParticipant"> | string
+  userId?: Prisma.UuidFilter<"InternalParticipant"> | string
   lastReadAt?: Prisma.DateTimeNullableFilter<"InternalParticipant"> | Date | string | null
   joinedAt?: Prisma.DateTimeFilter<"InternalParticipant"> | Date | string
   leftAt?: Prisma.DateTimeNullableFilter<"InternalParticipant"> | Date | string | null
@@ -210,7 +210,7 @@ export type InternalParticipantWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.InternalParticipantWhereInput[]
   NOT?: Prisma.InternalParticipantWhereInput | Prisma.InternalParticipantWhereInput[]
   conversationId?: Prisma.StringFilter<"InternalParticipant"> | string
-  userId?: Prisma.StringFilter<"InternalParticipant"> | string
+  userId?: Prisma.UuidFilter<"InternalParticipant"> | string
   lastReadAt?: Prisma.DateTimeNullableFilter<"InternalParticipant"> | Date | string | null
   joinedAt?: Prisma.DateTimeFilter<"InternalParticipant"> | Date | string
   leftAt?: Prisma.DateTimeNullableFilter<"InternalParticipant"> | Date | string | null
@@ -235,7 +235,7 @@ export type InternalParticipantScalarWhereWithAggregatesInput = {
   NOT?: Prisma.InternalParticipantScalarWhereWithAggregatesInput | Prisma.InternalParticipantScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"InternalParticipant"> | string
   conversationId?: Prisma.StringWithAggregatesFilter<"InternalParticipant"> | string
-  userId?: Prisma.StringWithAggregatesFilter<"InternalParticipant"> | string
+  userId?: Prisma.UuidWithAggregatesFilter<"InternalParticipant"> | string
   lastReadAt?: Prisma.DateTimeNullableWithAggregatesFilter<"InternalParticipant"> | Date | string | null
   joinedAt?: Prisma.DateTimeWithAggregatesFilter<"InternalParticipant"> | Date | string
   leftAt?: Prisma.DateTimeNullableWithAggregatesFilter<"InternalParticipant"> | Date | string | null
@@ -435,7 +435,7 @@ export type InternalParticipantScalarWhereInput = {
   NOT?: Prisma.InternalParticipantScalarWhereInput | Prisma.InternalParticipantScalarWhereInput[]
   id?: Prisma.StringFilter<"InternalParticipant"> | string
   conversationId?: Prisma.StringFilter<"InternalParticipant"> | string
-  userId?: Prisma.StringFilter<"InternalParticipant"> | string
+  userId?: Prisma.UuidFilter<"InternalParticipant"> | string
   lastReadAt?: Prisma.DateTimeNullableFilter<"InternalParticipant"> | Date | string | null
   joinedAt?: Prisma.DateTimeFilter<"InternalParticipant"> | Date | string
   leftAt?: Prisma.DateTimeNullableFilter<"InternalParticipant"> | Date | string | null

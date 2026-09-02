@@ -180,7 +180,7 @@ export type SupportAssignmentHistoryWhereInput = {
   id?: Prisma.StringFilter<"SupportAssignmentHistory"> | string
   conversationId?: Prisma.StringFilter<"SupportAssignmentHistory"> | string
   assignedTo?: Prisma.StringFilter<"SupportAssignmentHistory"> | string
-  assignedBy?: Prisma.StringFilter<"SupportAssignmentHistory"> | string
+  assignedBy?: Prisma.UuidFilter<"SupportAssignmentHistory"> | string
   assignedAt?: Prisma.DateTimeFilter<"SupportAssignmentHistory"> | Date | string
   conversation?: Prisma.XOR<Prisma.SupportConversationScalarRelationFilter, Prisma.SupportConversationWhereInput>
 }
@@ -201,7 +201,7 @@ export type SupportAssignmentHistoryWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.SupportAssignmentHistoryWhereInput | Prisma.SupportAssignmentHistoryWhereInput[]
   conversationId?: Prisma.StringFilter<"SupportAssignmentHistory"> | string
   assignedTo?: Prisma.StringFilter<"SupportAssignmentHistory"> | string
-  assignedBy?: Prisma.StringFilter<"SupportAssignmentHistory"> | string
+  assignedBy?: Prisma.UuidFilter<"SupportAssignmentHistory"> | string
   assignedAt?: Prisma.DateTimeFilter<"SupportAssignmentHistory"> | Date | string
   conversation?: Prisma.XOR<Prisma.SupportConversationScalarRelationFilter, Prisma.SupportConversationWhereInput>
 }, "id">
@@ -224,7 +224,7 @@ export type SupportAssignmentHistoryScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"SupportAssignmentHistory"> | string
   conversationId?: Prisma.StringWithAggregatesFilter<"SupportAssignmentHistory"> | string
   assignedTo?: Prisma.StringWithAggregatesFilter<"SupportAssignmentHistory"> | string
-  assignedBy?: Prisma.StringWithAggregatesFilter<"SupportAssignmentHistory"> | string
+  assignedBy?: Prisma.UuidWithAggregatesFilter<"SupportAssignmentHistory"> | string
   assignedAt?: Prisma.DateTimeWithAggregatesFilter<"SupportAssignmentHistory"> | Date | string
 }
 
@@ -406,7 +406,7 @@ export type SupportAssignmentHistoryScalarWhereInput = {
   id?: Prisma.StringFilter<"SupportAssignmentHistory"> | string
   conversationId?: Prisma.StringFilter<"SupportAssignmentHistory"> | string
   assignedTo?: Prisma.StringFilter<"SupportAssignmentHistory"> | string
-  assignedBy?: Prisma.StringFilter<"SupportAssignmentHistory"> | string
+  assignedBy?: Prisma.UuidFilter<"SupportAssignmentHistory"> | string
   assignedAt?: Prisma.DateTimeFilter<"SupportAssignmentHistory"> | Date | string
 }
 

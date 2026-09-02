@@ -59,7 +59,7 @@ enum NotificationStatus {
 //
 model Template {
   id       String  @id @default(uuid()) @map("id")
-  tenantId String? @map("tenant_id")
+  tenantId String? @map("tenant_id") @db.Uuid
 
   key     String  @map("key")
   channel Channel
@@ -106,11 +106,11 @@ model TemplateVersion {
 model Notification {
   id String @id @default(uuid()) @map("id")
 
-  tenantId String?
+  tenantId String? @db.Uuid
 
   // ── Recipient ───────────────────────────────────────────
   recipientUsername String  @map("recipient_username")
-  recipientId       String? @map("recipient_id")
+  recipientId       String? @map("recipient_id") @db.Uuid
   recipientAddress  String? @map("recipient_address")
 
   // ── Template & Rendering ─────────────────────────────────
@@ -143,7 +143,7 @@ model Notification {
   // ── Audit ────────────────────────────────────────────────
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-  createdBy String?  @map("created_by")
+  createdBy String?  @map("created_by") @db.Uuid
 
   provider      String?
   providerRef   String?
@@ -233,7 +233,7 @@ model SupportConversation {
   eventId      String  @map("event_id")
   invitationId String? @map("invitation_id")
 
-  guestUserId  String? @map("guest_user_id")
+  guestUserId  String? @map("guest_user_id") @db.Uuid
   guestName    String  @map("guest_name")
   guestContact String? @map("guest_contact")
 
@@ -302,7 +302,7 @@ model SupportMessage {
   direction MessageDirection    @map("direction")
   channel   ConversationChannel @map("channel")
 
-  fromUserId String? @map("from_user_id")
+  fromUserId String? @map("from_user_id") @db.Uuid
   fromGuest  Boolean @default(false) @map("from_guest")
 
   body     String?
@@ -365,7 +365,7 @@ model SupportAssignmentHistory {
   conversation   SupportConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   assignedTo String @map("assigned_to")
-  assignedBy String @map("assigned_by")
+  assignedBy String @map("assigned_by") @db.Uuid
 
   assignedAt DateTime @default(now()) @map("assigned_at")
 
@@ -444,7 +444,7 @@ model InternalMessage {
   conversationId String
   conversation   InternalConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
-  senderId String @map("sender_id")
+  senderId String @map("sender_id") @db.Uuid
 
   body     String                  @map("body")
   priority InternalMessagePriority @default(NORMAL) @map("priority")
@@ -464,7 +464,7 @@ model InternalParticipant {
   conversationId String
   conversation   InternalConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
-  userId String @map("user_id")
+  userId String @map("user_id") @db.Uuid
 
   lastReadAt DateTime? @map("last_read_at")
   joinedAt   DateTime  @default(now()) @map("joined_at")

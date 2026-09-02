@@ -365,9 +365,9 @@ export type NotificationWhereInput = {
   OR?: Prisma.NotificationWhereInput[]
   NOT?: Prisma.NotificationWhereInput | Prisma.NotificationWhereInput[]
   id?: Prisma.StringFilter<"Notification"> | string
-  tenantId?: Prisma.StringNullableFilter<"Notification"> | string | null
+  tenantId?: Prisma.UuidNullableFilter<"Notification"> | string | null
   recipientUsername?: Prisma.StringFilter<"Notification"> | string
-  recipientId?: Prisma.StringNullableFilter<"Notification"> | string | null
+  recipientId?: Prisma.UuidNullableFilter<"Notification"> | string | null
   recipientAddress?: Prisma.StringNullableFilter<"Notification"> | string | null
   templateId?: Prisma.StringNullableFilter<"Notification"> | string | null
   templateVersion?: Prisma.IntNullableFilter<"Notification"> | number | null
@@ -388,7 +388,7 @@ export type NotificationWhereInput = {
   sensitive?: Prisma.BoolFilter<"Notification"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Notification"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Notification"> | Date | string
-  createdBy?: Prisma.StringNullableFilter<"Notification"> | string | null
+  createdBy?: Prisma.UuidNullableFilter<"Notification"> | string | null
   provider?: Prisma.StringNullableFilter<"Notification"> | string | null
   providerRef?: Prisma.StringNullableFilter<"Notification"> | string | null
   failureReason?: Prisma.StringNullableFilter<"Notification"> | string | null
@@ -432,9 +432,9 @@ export type NotificationWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.NotificationWhereInput | Prisma.NotificationWhereInput[]
   OR?: Prisma.NotificationWhereInput[]
   NOT?: Prisma.NotificationWhereInput | Prisma.NotificationWhereInput[]
-  tenantId?: Prisma.StringNullableFilter<"Notification"> | string | null
+  tenantId?: Prisma.UuidNullableFilter<"Notification"> | string | null
   recipientUsername?: Prisma.StringFilter<"Notification"> | string
-  recipientId?: Prisma.StringNullableFilter<"Notification"> | string | null
+  recipientId?: Prisma.UuidNullableFilter<"Notification"> | string | null
   recipientAddress?: Prisma.StringNullableFilter<"Notification"> | string | null
   templateId?: Prisma.StringNullableFilter<"Notification"> | string | null
   templateVersion?: Prisma.IntNullableFilter<"Notification"> | number | null
@@ -455,7 +455,7 @@ export type NotificationWhereUniqueInput = Prisma.AtLeast<{
   sensitive?: Prisma.BoolFilter<"Notification"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Notification"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Notification"> | Date | string
-  createdBy?: Prisma.StringNullableFilter<"Notification"> | string | null
+  createdBy?: Prisma.UuidNullableFilter<"Notification"> | string | null
   provider?: Prisma.StringNullableFilter<"Notification"> | string | null
   providerRef?: Prisma.StringNullableFilter<"Notification"> | string | null
   failureReason?: Prisma.StringNullableFilter<"Notification"> | string | null
@@ -503,9 +503,9 @@ export type NotificationScalarWhereWithAggregatesInput = {
   OR?: Prisma.NotificationScalarWhereWithAggregatesInput[]
   NOT?: Prisma.NotificationScalarWhereWithAggregatesInput | Prisma.NotificationScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Notification"> | string
-  tenantId?: Prisma.StringNullableWithAggregatesFilter<"Notification"> | string | null
+  tenantId?: Prisma.UuidNullableWithAggregatesFilter<"Notification"> | string | null
   recipientUsername?: Prisma.StringWithAggregatesFilter<"Notification"> | string
-  recipientId?: Prisma.StringNullableWithAggregatesFilter<"Notification"> | string | null
+  recipientId?: Prisma.UuidNullableWithAggregatesFilter<"Notification"> | string | null
   recipientAddress?: Prisma.StringNullableWithAggregatesFilter<"Notification"> | string | null
   templateId?: Prisma.StringNullableWithAggregatesFilter<"Notification"> | string | null
   templateVersion?: Prisma.IntNullableWithAggregatesFilter<"Notification"> | number | null
@@ -526,7 +526,7 @@ export type NotificationScalarWhereWithAggregatesInput = {
   sensitive?: Prisma.BoolWithAggregatesFilter<"Notification"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Notification"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Notification"> | Date | string
-  createdBy?: Prisma.StringNullableWithAggregatesFilter<"Notification"> | string | null
+  createdBy?: Prisma.UuidNullableWithAggregatesFilter<"Notification"> | string | null
   provider?: Prisma.StringNullableWithAggregatesFilter<"Notification"> | string | null
   providerRef?: Prisma.StringNullableWithAggregatesFilter<"Notification"> | string | null
   failureReason?: Prisma.StringNullableWithAggregatesFilter<"Notification"> | string | null
@@ -1012,9 +1012,9 @@ export type NotificationScalarWhereInput = {
   OR?: Prisma.NotificationScalarWhereInput[]
   NOT?: Prisma.NotificationScalarWhereInput | Prisma.NotificationScalarWhereInput[]
   id?: Prisma.StringFilter<"Notification"> | string
-  tenantId?: Prisma.StringNullableFilter<"Notification"> | string | null
+  tenantId?: Prisma.UuidNullableFilter<"Notification"> | string | null
   recipientUsername?: Prisma.StringFilter<"Notification"> | string
-  recipientId?: Prisma.StringNullableFilter<"Notification"> | string | null
+  recipientId?: Prisma.UuidNullableFilter<"Notification"> | string | null
   recipientAddress?: Prisma.StringNullableFilter<"Notification"> | string | null
   templateId?: Prisma.StringNullableFilter<"Notification"> | string | null
   templateVersion?: Prisma.IntNullableFilter<"Notification"> | number | null
@@ -1035,7 +1035,7 @@ export type NotificationScalarWhereInput = {
   sensitive?: Prisma.BoolFilter<"Notification"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Notification"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Notification"> | Date | string
-  createdBy?: Prisma.StringNullableFilter<"Notification"> | string | null
+  createdBy?: Prisma.UuidNullableFilter<"Notification"> | string | null
   provider?: Prisma.StringNullableFilter<"Notification"> | string | null
   providerRef?: Prisma.StringNullableFilter<"Notification"> | string | null
   failureReason?: Prisma.StringNullableFilter<"Notification"> | string | null
