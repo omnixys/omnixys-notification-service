@@ -68,7 +68,9 @@ export class InvitationHandler {
       const headers = context.headers;
       const actorId = headers[KAFKA_HEADERS.ACTOR_ID];
       if (!actorId) {
-        this.logger.error('Missing ACTOR_ID header in confirmGuest event - fail closed');
+        this.logger.error(
+          'Missing ACTOR_ID header in confirmGuest event - fail closed',
+        );
         return;
       }
 

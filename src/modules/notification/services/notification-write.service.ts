@@ -508,7 +508,7 @@ export class NotificationWriteService {
         },
         sensitive: false,
         expiresAt: new Date(Date.now() + 15 * 60 * 1000),
-        createdBy: "2bd07be1-88b4-7a13-b797-b00e417c6102",
+        createdBy: '2bd07be1-88b4-7a13-b797-b00e417c6102',
       });
 
       // 4️⃣ Dispatch
@@ -620,7 +620,7 @@ export class NotificationWriteService {
         },
         sensitive: false,
         expiresAt: new Date(Date.now() + 15 * 60 * 1000),
-        createdBy: "2bd07be1-88b4-7a13-b797-b00e417c6102",
+        createdBy: '2bd07be1-88b4-7a13-b797-b00e417c6102',
       });
 
       /**
@@ -716,7 +716,7 @@ export class NotificationWriteService {
         },
         sensitive: false,
         expiresAt: new Date(Date.now() + 15 * 60 * 1000),
-        createdBy: "2bd07be1-88b4-7a13-b797-b00e417c6102",
+        createdBy: '2bd07be1-88b4-7a13-b797-b00e417c6102',
       });
 
       // 4️⃣ Dispatch
@@ -808,7 +808,7 @@ export class NotificationWriteService {
         },
         sensitive: false,
         expiresAt: new Date(Date.now() + 15 * 60 * 1000),
-        createdBy: "2bd07be1-88b4-7a13-b797-b00e417c6102",
+        createdBy: '2bd07be1-88b4-7a13-b797-b00e417c6102',
       });
 
       // 4️⃣ Dispatch
@@ -895,7 +895,7 @@ export class NotificationWriteService {
         },
         sensitive: false,
         expiresAt: new Date(Date.now() + 60 * 24 * 60 * 1000),
-        createdBy: "2bd07be1-88b4-7a13-b797-b00e417c6102",
+        createdBy: '2bd07be1-88b4-7a13-b797-b00e417c6102',
       });
 
       /**
@@ -976,7 +976,7 @@ export class NotificationWriteService {
           },
           sensitive: false,
           expiresAt: new Date(Date.now() + 15 * 60 * 1000),
-          createdBy: "2bd07be1-88b4-7a13-b797-b00e417c6102",
+          createdBy: '2bd07be1-88b4-7a13-b797-b00e417c6102',
         });
 
         await this.dispatchNotification({
