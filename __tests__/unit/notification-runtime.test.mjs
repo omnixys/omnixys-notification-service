@@ -86,6 +86,79 @@ test('gateway client uses a generic code for malformed gateway failures', async 
   mock.restoreAll();
 });
 
+test('gateway client maps FastAPI array-form 422 senderId to SENDER_ID_INVALID', async () => {
+  mock.method(axios, 'post', async () => {
+    throw new axios.AxiosError(
+      'Request failed with status code 422',
+      'ERR_BAD_REQUEST',
+      undefined,
+      undefined,
+      {
+        status: 422,
+        statusText: 'Unprocessable Entity',
+        headers: {},
+        config: { headers: {} },
+        data: {
+          detail: [
+            {
+              type: 'value_error',
+              loc: ['body', 'senderId'],
+              msg: 'Value error, senderId must be a valid UUIDv7',
+              input: 'Omnixys <no-reply@omnixys.com>',
+            },
+          ],
+        },
+      },
+    );
+  });
+
+  const result = await new GatewayClientService(logger).send({
+    id: 'notification-4',
+    channel: 'EMAIL',
+    recipientAddress: 'person@example.com',
+    body: 'Hello',
+  });
+
+  assert.equal(result.error, 'SENDER_ID_INVALID');
+  mock.restoreAll();
+});
+
+test('gateway client maps array-form 422 without a known field to VALIDATION_ERROR', async () => {
+  mock.method(axios, 'post', async () => {
+    throw new axios.AxiosError(
+      'Request failed with status code 422',
+      'ERR_BAD_REQUEST',
+      undefined,
+      undefined,
+      {
+        status: 422,
+        statusText: 'Unprocessable Entity',
+        headers: {},
+        config: { headers: {} },
+        data: {
+          detail: [
+            {
+              type: 'value_error',
+              loc: ['body', 'channel'],
+              msg: 'value is not a valid enumeration member',
+            },
+          ],
+        },
+      },
+    );
+  });
+
+  const result = await new GatewayClientService(logger).send({
+    id: 'notification-4',
+    channel: 'EMAIL',
+    recipientAddress: 'person@example.com',
+    body: 'Hello',
+  });
+
+  assert.equal(result.error, 'CHANNEL_INVALID');
+  mock.restoreAll();
+});
+
 test('notification module imports its event permission provider', () => {
   const imports = Reflect.getMetadata(MODULE_METADATA.IMPORTS, NotificationModule) ?? [];
   assert.ok(imports.includes(SupportCommonModule));

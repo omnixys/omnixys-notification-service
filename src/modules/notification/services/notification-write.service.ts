@@ -47,6 +47,7 @@ const {
   RESET_PATH,
   FROM_SUPPORT,
   FROM_NO_REPLY,
+  FROM_SENDER_ID,
   DEFAULT_TENANT_ID,
 } = env;
 
@@ -1078,7 +1079,9 @@ export class NotificationWriteService {
             recipientAddress: to,
             body,
             contentType: 'HTML',
-            senderId: FROM_NO_REPLY,
+            // senderId is the stable UUIDv7 system sender identity required by the
+            // gateway contract; senderAddress below is the human-facing email "from".
+            senderId: FROM_SENDER_ID,
             senderAddress: FROM_NO_REPLY,
             subject: input.subject,
             metadata: {

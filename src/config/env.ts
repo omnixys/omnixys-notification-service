@@ -150,6 +150,7 @@ export const env = {
   RESET_PATH: getEnv('RESET_PATH', '/reset'),
 
   FROM_NO_REPLY: getEnv('FROM_NO_REPLY', 'Omnixys <no-reply@omnixys.com>'),
+  FROM_SENDER_ID: getEnv('FROM_SENDER_ID', ''),
   FROM_SUPPORT: getEnv('FROM_SUPPORT', 'Omnixys Support <support@omnixys.com>'),
   FROM_SECURITY: getEnv(
     'FROM_SECURITY',
