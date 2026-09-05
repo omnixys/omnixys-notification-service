@@ -16,7 +16,10 @@ export class EmailHandler {
     loggerService: OmnixysLogger,
     private readonly emailSupportService: EmailSupportService,
   ) {
-    this.logger = loggerService.log(this.constructor.name);
+    this.logger = loggerService.log(
+      'service:notification',
+      this.constructor.name,
+    );
   }
 
   @KafkaHandler(KafkaTopics.email.inboundReceived)

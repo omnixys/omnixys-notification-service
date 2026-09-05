@@ -34,7 +34,7 @@ export class InvitationSupportClientService {
   private readonly baseUrl: string;
 
   constructor(omnixysLogger: OmnixysLogger) {
-    this.logger = omnixysLogger.log(InvitationSupportClientService.name);
+    this.logger = omnixysLogger.log(InvitationSupportClientService.name, 'service:notification');
     this.baseUrl = INVITATION_URI;
   }
 

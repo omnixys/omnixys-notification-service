@@ -24,7 +24,10 @@ export class NotificationQueryResolver {
     loggerService: OmnixysLogger,
     private readonly notificationReadService: NotificationReadService,
   ) {
-    this.logger = loggerService.log(this.constructor.name);
+    this.logger = loggerService.log(
+      'service:notification',
+      this.constructor.name,
+    );
   }
 
   // ─────────────────────────────────────────────

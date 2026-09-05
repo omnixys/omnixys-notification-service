@@ -10,13 +10,41 @@ function gatewayErrorCode(data: unknown): string | undefined {
     return undefined;
   }
 
-  const detail = Reflect.get(data, 'detail') as Record<string, unknown> | undefined;
-  if (!detail || typeof detail !== 'object') {
+  const detail = Reflect.get(data, 'detail') as
+    Record<string, unknown> | Array<Record<string, unknown>> | undefined;
+  if (!detail) {
     return undefined;
   }
 
-  const code = Reflect.get(detail, 'code');
-  return typeof code === 'string' && code.length > 0 ? code : undefined;
+  // Object form: { "detail": { "code": "RESEND_REQUEST_REJECTED", ... } }
+  if (typeof detail === 'object' && !Array.isArray(detail)) {
+    const code = Reflect.get(detail, 'code');
+    return typeof code === 'string' && code.length > 0 ? code : undefined;
+  }
+
+  // Array form (FastAPI request validation, e.g. 422 senderId):
+  // { "detail": [{ "loc": ["body", "senderId"], "msg": "Value error, senderId must be a valid UUIDv7", ... }] }
+  if (Array.isArray(detail)) {
+    for (const item of detail) {
+      if (item && typeof item === 'object') {
+        const loc = Reflect.get(item, 'loc');
+        const field = Array.isArray(loc) ? String(loc[loc.length - 1] ?? '') : '';
+        const msg = Reflect.get(item, 'msg');
+        if (field === 'senderId') {
+          return 'SENDER_ID_INVALID';
+        }
+        if (typeof msg === 'string' && msg.length > 0) {
+          const key = field.toUpperCase();
+          if (key) {
+            return `${key}_INVALID`;
+          }
+        }
+      }
+    }
+    return 'VALIDATION_ERROR';
+  }
+
+  return undefined;
 }
 
 export interface GatewaySendInput {
@@ -48,7 +76,7 @@ export class GatewayClientService {
   private readonly baseUrl: string;
 
   constructor(omnixysLogger: OmnixysLogger) {
-    this.logger = omnixysLogger.log(GatewayClientService.name);
+    this.logger = omnixysLogger.log(GatewayClientService.name, 'service:notification');
     this.baseUrl = GATEWAY_BASE_URL;
   }
 

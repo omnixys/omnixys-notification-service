@@ -20,7 +20,10 @@ export class TemplateMutationResolver {
     loggerService: OmnixysLogger,
     private readonly templateWriteService: TemplateWriteService,
   ) {
-    this.logger = loggerService.log(this.constructor.name);
+    this.logger = loggerService.log(
+      'service:notification',
+      this.constructor.name,
+    );
   }
 
   @Mutation(() => TemplatePayload)

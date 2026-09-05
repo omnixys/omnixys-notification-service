@@ -34,7 +34,7 @@ export class DispatchService {
     private readonly gateway: GatewayClientService,
     omnixysLogger: OmnixysLogger,
   ) {
-    this.logger = omnixysLogger.log(DispatchService.name);
+    this.logger = omnixysLogger.log(DispatchService.name, 'service:notification');
   }
 
   async dispatch(input: DispatchInput): Promise<DispatchResult> {

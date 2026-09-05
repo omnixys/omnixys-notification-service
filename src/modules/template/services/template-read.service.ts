@@ -17,7 +17,7 @@ export class TemplateReadService {
     private readonly prisma: PrismaService,
     loggerService: OmnixysLogger,
   ) {
-    this.logger = loggerService.log(this.constructor.name);
+    this.logger = loggerService.log(this.constructor.name, 'service:notification');
   }
 
   /**

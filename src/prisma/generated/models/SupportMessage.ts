@@ -306,7 +306,7 @@ export type SupportMessageWhereInput = {
   conversationId?: Prisma.StringFilter<"SupportMessage"> | string
   direction?: Prisma.EnumMessageDirectionFilter<"SupportMessage"> | $Enums.MessageDirection
   channel?: Prisma.EnumConversationChannelFilter<"SupportMessage"> | $Enums.ConversationChannel
-  fromUserId?: Prisma.StringNullableFilter<"SupportMessage"> | string | null
+  fromUserId?: Prisma.UuidNullableFilter<"SupportMessage"> | string | null
   fromGuest?: Prisma.BoolFilter<"SupportMessage"> | boolean
   body?: Prisma.StringNullableFilter<"SupportMessage"> | string | null
   mediaUrl?: Prisma.StringNullableFilter<"SupportMessage"> | string | null
@@ -356,7 +356,7 @@ export type SupportMessageWhereUniqueInput = Prisma.AtLeast<{
   conversationId?: Prisma.StringFilter<"SupportMessage"> | string
   direction?: Prisma.EnumMessageDirectionFilter<"SupportMessage"> | $Enums.MessageDirection
   channel?: Prisma.EnumConversationChannelFilter<"SupportMessage"> | $Enums.ConversationChannel
-  fromUserId?: Prisma.StringNullableFilter<"SupportMessage"> | string | null
+  fromUserId?: Prisma.UuidNullableFilter<"SupportMessage"> | string | null
   fromGuest?: Prisma.BoolFilter<"SupportMessage"> | boolean
   body?: Prisma.StringNullableFilter<"SupportMessage"> | string | null
   mediaUrl?: Prisma.StringNullableFilter<"SupportMessage"> | string | null
@@ -408,7 +408,7 @@ export type SupportMessageScalarWhereWithAggregatesInput = {
   conversationId?: Prisma.StringWithAggregatesFilter<"SupportMessage"> | string
   direction?: Prisma.EnumMessageDirectionWithAggregatesFilter<"SupportMessage"> | $Enums.MessageDirection
   channel?: Prisma.EnumConversationChannelWithAggregatesFilter<"SupportMessage"> | $Enums.ConversationChannel
-  fromUserId?: Prisma.StringNullableWithAggregatesFilter<"SupportMessage"> | string | null
+  fromUserId?: Prisma.UuidNullableWithAggregatesFilter<"SupportMessage"> | string | null
   fromGuest?: Prisma.BoolWithAggregatesFilter<"SupportMessage"> | boolean
   body?: Prisma.StringNullableWithAggregatesFilter<"SupportMessage"> | string | null
   mediaUrl?: Prisma.StringNullableWithAggregatesFilter<"SupportMessage"> | string | null
@@ -805,7 +805,7 @@ export type SupportMessageScalarWhereInput = {
   conversationId?: Prisma.StringFilter<"SupportMessage"> | string
   direction?: Prisma.EnumMessageDirectionFilter<"SupportMessage"> | $Enums.MessageDirection
   channel?: Prisma.EnumConversationChannelFilter<"SupportMessage"> | $Enums.ConversationChannel
-  fromUserId?: Prisma.StringNullableFilter<"SupportMessage"> | string | null
+  fromUserId?: Prisma.UuidNullableFilter<"SupportMessage"> | string | null
   fromGuest?: Prisma.BoolFilter<"SupportMessage"> | boolean
   body?: Prisma.StringNullableFilter<"SupportMessage"> | string | null
   mediaUrl?: Prisma.StringNullableFilter<"SupportMessage"> | string | null

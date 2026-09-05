@@ -19,7 +19,10 @@ export class TemplateQueryResolver {
     loggerService: OmnixysLogger,
     private readonly templateReadService: TemplateReadService,
   ) {
-    this.logger = loggerService.log(this.constructor.name);
+    this.logger = loggerService.log(
+      'service:notification',
+      this.constructor.name,
+    );
   }
 
   @Query(() => [TemplatePayload])

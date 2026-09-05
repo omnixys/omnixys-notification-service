@@ -54,7 +54,10 @@ export class InvitationHandler {
     private readonly service: NotificationWriteService,
     private readonly cache: ValkeyService,
   ) {
-    this.logger = loggerService.log(this.constructor.name);
+    this.logger = loggerService.log(
+      'service:notification',
+      this.constructor.name,
+    );
   }
 
   @KafkaEvent(KafkaTopics.notification.confirmGuest)
@@ -66,7 +69,13 @@ export class InvitationHandler {
       const { token, eventName, seat, seatId, eventEndsAt } = payload;
 
       const headers = context.headers;
-      const actorId = headers[KAFKA_HEADERS.ACTOR_ID] ?? 'Unkown';
+      const actorId = headers[KAFKA_HEADERS.ACTOR_ID];
+      if (!actorId) {
+        this.logger.error(
+          'Missing ACTOR_ID header in confirmGuest event - fail closed',
+        );
+        return;
+      }
 
       this.logger.debug(
         'confirmGuest message received: eventName=%s actorId=%s',

@@ -34,7 +34,10 @@ export class NotificationMutationResolver {
     private readonly notificationWriteService: NotificationWriteService,
     private readonly eventPermissionResolver: EventPermissionResolver,
   ) {
-    this.logger = loggerService.log(this.constructor.name);
+    this.logger = loggerService.log(
+      'service:notification',
+      this.constructor.name,
+    );
   }
 
   // ─────────────────────────────────────────────

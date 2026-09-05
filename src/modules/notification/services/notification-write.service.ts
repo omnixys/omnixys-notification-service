@@ -47,6 +47,7 @@ const {
   RESET_PATH,
   FROM_SUPPORT,
   FROM_NO_REPLY,
+  FROM_SENDER_ID,
   DEFAULT_TENANT_ID,
 } = env;
 
@@ -83,6 +84,12 @@ export interface CreateNotificationDTO {
   templateVersion?: number;
 }
 
+const UUID_V7_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function isValidUuidV7(value: string): boolean {
+  return UUID_V7_PATTERN.test(value);
+}
+
 @Injectable()
 export class NotificationWriteService {
   private readonly logger;
@@ -97,7 +104,7 @@ export class NotificationWriteService {
     loggerService: OmnixysLogger,
     private readonly analyticsOutbox: AnalyticsOutboxService,
   ) {
-    this.logger = loggerService.log(this.constructor.name);
+    this.logger = loggerService.log(this.constructor.name, 'service:notification');
   }
 
   // ─────────────────────────────────────────────
@@ -130,7 +137,7 @@ export class NotificationWriteService {
         expiresAt: input.expiresAt ?? null,
 
         status: NotificationStatus.PENDING,
-        createdBy: input.createdBy ?? null,
+        createdBy: input.createdBy && isValidUuidV7(input.createdBy) ? input.createdBy : null,
         title: input.title ?? null,
         body: input.body ?? null,
         contentFormat: input.contentFormat ?? null,
@@ -502,7 +509,7 @@ export class NotificationWriteService {
         },
         sensitive: false,
         expiresAt: new Date(Date.now() + 15 * 60 * 1000),
-        createdBy: 'notification-service',
+        createdBy: '2bd07be1-88b4-7a13-b797-b00e417c6102',
       });
 
       // 4️⃣ Dispatch
@@ -614,7 +621,7 @@ export class NotificationWriteService {
         },
         sensitive: false,
         expiresAt: new Date(Date.now() + 15 * 60 * 1000),
-        createdBy: 'notification-service',
+        createdBy: '2bd07be1-88b4-7a13-b797-b00e417c6102',
       });
 
       /**
@@ -710,7 +717,7 @@ export class NotificationWriteService {
         },
         sensitive: false,
         expiresAt: new Date(Date.now() + 15 * 60 * 1000),
-        createdBy: 'notification-service',
+        createdBy: '2bd07be1-88b4-7a13-b797-b00e417c6102',
       });
 
       // 4️⃣ Dispatch
@@ -802,7 +809,7 @@ export class NotificationWriteService {
         },
         sensitive: false,
         expiresAt: new Date(Date.now() + 15 * 60 * 1000),
-        createdBy: 'notification-service',
+        createdBy: '2bd07be1-88b4-7a13-b797-b00e417c6102',
       });
 
       // 4️⃣ Dispatch
@@ -889,7 +896,7 @@ export class NotificationWriteService {
         },
         sensitive: false,
         expiresAt: new Date(Date.now() + 60 * 24 * 60 * 1000),
-        createdBy: 'notification-service',
+        createdBy: '2bd07be1-88b4-7a13-b797-b00e417c6102',
       });
 
       /**
@@ -970,7 +977,7 @@ export class NotificationWriteService {
           },
           sensitive: false,
           expiresAt: new Date(Date.now() + 15 * 60 * 1000),
-          createdBy: 'notification-service',
+          createdBy: '2bd07be1-88b4-7a13-b797-b00e417c6102',
         });
 
         await this.dispatchNotification({
@@ -1072,7 +1079,9 @@ export class NotificationWriteService {
             recipientAddress: to,
             body,
             contentType: 'HTML',
-            senderId: FROM_NO_REPLY,
+            // senderId is the stable UUIDv7 system sender identity required by the
+            // gateway contract; senderAddress below is the human-facing email "from".
+            senderId: FROM_SENDER_ID,
             senderAddress: FROM_NO_REPLY,
             subject: input.subject,
             metadata: {

@@ -16,7 +16,7 @@ export class OutboxPublisherService implements OnModuleInit, OnModuleDestroy {
     private readonly kafka: KafkaProducerService,
     omnixysLogger: OmnixysLogger,
   ) {
-    this.logger = omnixysLogger.log(OutboxPublisherService.name);
+    this.logger = omnixysLogger.log(OutboxPublisherService.name, 'service:notification');
   }
 
   onModuleInit(): void {
@@ -76,7 +76,7 @@ export class OutboxPublisherService implements OnModuleInit, OnModuleDestroy {
         }
       }
     } catch (error) {
-      this.logger.error('Outbox poll error', error);
+      this.logger.error('Outbox poll error: %o', error);
     }
   }
 

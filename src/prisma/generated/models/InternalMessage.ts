@@ -193,7 +193,7 @@ export type InternalMessageWhereInput = {
   NOT?: Prisma.InternalMessageWhereInput | Prisma.InternalMessageWhereInput[]
   id?: Prisma.StringFilter<"InternalMessage"> | string
   conversationId?: Prisma.StringFilter<"InternalMessage"> | string
-  senderId?: Prisma.StringFilter<"InternalMessage"> | string
+  senderId?: Prisma.UuidFilter<"InternalMessage"> | string
   body?: Prisma.StringFilter<"InternalMessage"> | string
   priority?: Prisma.EnumInternalMessagePriorityFilter<"InternalMessage"> | $Enums.InternalMessagePriority
   createdAt?: Prisma.DateTimeFilter<"InternalMessage"> | Date | string
@@ -218,7 +218,7 @@ export type InternalMessageWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.InternalMessageWhereInput[]
   NOT?: Prisma.InternalMessageWhereInput | Prisma.InternalMessageWhereInput[]
   conversationId?: Prisma.StringFilter<"InternalMessage"> | string
-  senderId?: Prisma.StringFilter<"InternalMessage"> | string
+  senderId?: Prisma.UuidFilter<"InternalMessage"> | string
   body?: Prisma.StringFilter<"InternalMessage"> | string
   priority?: Prisma.EnumInternalMessagePriorityFilter<"InternalMessage"> | $Enums.InternalMessagePriority
   createdAt?: Prisma.DateTimeFilter<"InternalMessage"> | Date | string
@@ -245,7 +245,7 @@ export type InternalMessageScalarWhereWithAggregatesInput = {
   NOT?: Prisma.InternalMessageScalarWhereWithAggregatesInput | Prisma.InternalMessageScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"InternalMessage"> | string
   conversationId?: Prisma.StringWithAggregatesFilter<"InternalMessage"> | string
-  senderId?: Prisma.StringWithAggregatesFilter<"InternalMessage"> | string
+  senderId?: Prisma.UuidWithAggregatesFilter<"InternalMessage"> | string
   body?: Prisma.StringWithAggregatesFilter<"InternalMessage"> | string
   priority?: Prisma.EnumInternalMessagePriorityWithAggregatesFilter<"InternalMessage"> | $Enums.InternalMessagePriority
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"InternalMessage"> | Date | string
@@ -457,7 +457,7 @@ export type InternalMessageScalarWhereInput = {
   NOT?: Prisma.InternalMessageScalarWhereInput | Prisma.InternalMessageScalarWhereInput[]
   id?: Prisma.StringFilter<"InternalMessage"> | string
   conversationId?: Prisma.StringFilter<"InternalMessage"> | string
-  senderId?: Prisma.StringFilter<"InternalMessage"> | string
+  senderId?: Prisma.UuidFilter<"InternalMessage"> | string
   body?: Prisma.StringFilter<"InternalMessage"> | string
   priority?: Prisma.EnumInternalMessagePriorityFilter<"InternalMessage"> | $Enums.InternalMessagePriority
   createdAt?: Prisma.DateTimeFilter<"InternalMessage"> | Date | string
