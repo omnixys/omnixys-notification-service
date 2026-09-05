@@ -3,6 +3,36 @@
 All notable changes in this project will be documented in this file.
 
 
+## [4.0.0](https://github.com/omnixys/notification-service/compare/v3.6.0...v4.0.0) (2026-09-05)
+
+### Deps
+
+* **Deps:** update omnixys deps ([](https://github.com/omnixys/notification-service/commit/25ff67628fefe8a3eb280f3306bbfd77fa0a90ef))
+
+### Identity
+
+* **Identity:** document U/K identity conventions in AGENTS.md ([](https://github.com/omnixys/notification-service/commit/0899723795e8bfa1a18494e1a2a5a01edbb88508))
+* **Identity:** replace string literals in UUID columns, fail-closed on missing ACTOR_ID, validate createdBy UUID ([](https://github.com/omnixys/notification-service/commit/a0613dd49485ec687976f12a3a5bb612b011ecc7))
+
+### Logging
+
+* **Logging:** add service:notification provenance source to logger acquisitions ([](https://github.com/omnixys/notification-service/commit/dab7431fb093cbeea96013291a13857a752d3960))
+* **Logging:** add missing format placeholders to structured log calls ([](https://github.com/omnixys/notification-service/commit/56113c8890899af8802e6a9dcb69a17f8ddbc051))
+
+### Notification
+
+* **Notification:** rewire omnixys service deps to file: ([](https://github.com/omnixys/notification-service/commit/7d2a7dd65d8be6d451712279549f011b573ea934))
+* **Notification:** type identity reference fields as UUID ([](https://github.com/omnixys/notification-service/commit/ec54264358eafc4756f5c5e21afb3c88ff77c9fe))
+* **Notification:** send UUIDv7 senderId to gateway for EMAIL dispatch ([](https://github.com/omnixys/notification-service/commit/1961e44abd7a84947dc1955805566c28e69dd5e9))
+
+### Other
+
+* **Other:** Merge pull request #1 from omnixys/migration/uuid-v7 ([](https://github.com/omnixys/notification-service/commit/ea1dda57319e24b50224f5150d4778980567c01d)), closes [#1](https://github.com/omnixys/notification-service/issues/1)
+
+### Runtime
+
+* **Runtime:** require node 26.8.1 and pnpm 11.24.0 ([](https://github.com/omnixys/notification-service/commit/a404d3d21014a4eb579ffba94c537b3dc36fdb19))
+
 ## [3.6.0](https://github.com/omnixys/notification-service/compare/v3.5.0...v3.6.0) (2026-08-30)
 
 ### Support
