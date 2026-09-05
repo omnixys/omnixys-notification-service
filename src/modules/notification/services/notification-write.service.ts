@@ -104,7 +104,7 @@ export class NotificationWriteService {
     loggerService: OmnixysLogger,
     private readonly analyticsOutbox: AnalyticsOutboxService,
   ) {
-    this.logger = loggerService.log(this.constructor.name);
+    this.logger = loggerService.log(this.constructor.name, 'service:notification');
   }
 
   // ─────────────────────────────────────────────

@@ -19,6 +19,7 @@ export class DebugResolver {
     private readonly notificationWriteService: NotificationWriteService,
   ) {
     this.logger = loggerService.log(
+      'service:notification',
       this.constructor.name,
     );
   }

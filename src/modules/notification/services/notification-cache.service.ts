@@ -32,7 +32,7 @@ export class NotificationCacheService {
     loggerService: OmnixysLogger,
     private readonly cache: ValkeyService,
   ) {
-    this.logger = loggerService.log(this.constructor.name);
+    this.logger = loggerService.log(this.constructor.name, 'service:notification');
   }
 
   async storeSignupVerificationPayload(

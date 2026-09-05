@@ -55,6 +55,7 @@ export class InvitationHandler {
     private readonly cache: ValkeyService,
   ) {
     this.logger = loggerService.log(
+      'service:notification',
       this.constructor.name,
     );
   }

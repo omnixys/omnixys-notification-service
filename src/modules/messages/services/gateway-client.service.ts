@@ -76,7 +76,7 @@ export class GatewayClientService {
   private readonly baseUrl: string;
 
   constructor(omnixysLogger: OmnixysLogger) {
-    this.logger = omnixysLogger.log(GatewayClientService.name);
+    this.logger = omnixysLogger.log(GatewayClientService.name, 'service:notification');
     this.baseUrl = GATEWAY_BASE_URL;
   }
 

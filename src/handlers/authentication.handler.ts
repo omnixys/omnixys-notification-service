@@ -52,6 +52,7 @@ export class AuthenticationHandler {
     private readonly service: NotificationWriteService,
   ) {
     this.logger = loggerService.log(
+      'service:notification',
       this.constructor.name,
     );
   }

@@ -17,6 +17,7 @@ export class EmailHandler {
     private readonly emailSupportService: EmailSupportService,
   ) {
     this.logger = loggerService.log(
+      'service:notification',
       this.constructor.name,
     );
   }

@@ -21,6 +21,7 @@ export class TemplateMutationResolver {
     private readonly templateWriteService: TemplateWriteService,
   ) {
     this.logger = loggerService.log(
+      'service:notification',
       this.constructor.name,
     );
   }

@@ -58,6 +58,7 @@ export class EventHandler {
     // private readonly notificationWriteService: NotificationWriteService,
   ) {
     this.logger = this.omnixysLogger.log(
+      'service:notification',
       this.constructor.name,
     );
   }

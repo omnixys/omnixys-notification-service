@@ -35,6 +35,7 @@ export class NotificationMutationResolver {
     private readonly eventPermissionResolver: EventPermissionResolver,
   ) {
     this.logger = loggerService.log(
+      'service:notification',
       this.constructor.name,
     );
   }

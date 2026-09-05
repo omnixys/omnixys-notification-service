@@ -20,6 +20,7 @@ export class TemplateQueryResolver {
     private readonly templateReadService: TemplateReadService,
   ) {
     this.logger = loggerService.log(
+      'service:notification',
       this.constructor.name,
     );
   }

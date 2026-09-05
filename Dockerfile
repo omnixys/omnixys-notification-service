@@ -35,7 +35,7 @@ RUN npm install -g pnpm@11.24.0
 # - Result: ./dist folder containing compiled JS files.
 # ---------------------------------------------------------------------------------------
 FROM base AS dist
-COPY --chown=node:node package.json pnpm-lock.yaml ./
+COPY --chown=node:node package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 RUN --mount=type=secret,id=omnixys_token \
     TOKEN=$(cat /run/secrets/omnixys_token) && \
@@ -55,7 +55,7 @@ RUN pnpm run build
 # ---------------------------------------------------------------------------------------
 FROM base AS dependencies
 
-COPY --chown=node:node package.json pnpm-lock.yaml ./
+COPY --chown=node:node package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 RUN --mount=type=secret,id=omnixys_token \
     TOKEN=$(cat /run/secrets/omnixys_token) && \

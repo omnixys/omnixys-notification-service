@@ -25,6 +25,7 @@ export class NotificationQueryResolver {
     private readonly notificationReadService: NotificationReadService,
   ) {
     this.logger = loggerService.log(
+      'service:notification',
       this.constructor.name,
     );
   }

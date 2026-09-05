@@ -37,7 +37,7 @@ export class MessageService {
     private readonly mappings: MappingService,
     omnixysLogger: OmnixysLogger,
   ) {
-    this.logger = omnixysLogger.log(MessageService.name);
+    this.logger = omnixysLogger.log(MessageService.name, 'service:notification');
   }
 
   async getMessages(
