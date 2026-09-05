@@ -201,7 +201,7 @@ export class MessageService {
         eventId: conversation.eventId,
       });
     } catch (error) {
-      this.logger.warn('Unread realtime publish failed', {
+      this.logger.warn('Unread realtime publish failed: %o', {
         conversationId,
         error: error instanceof Error ? error.message : String(error),
       });
@@ -216,7 +216,7 @@ export class MessageService {
         guestUnreadCount,
       });
     } catch (error) {
-      this.logger.warn('Conversation realtime publish failed', {
+      this.logger.warn('Conversation realtime publish failed: %o', {
         conversationId,
         eventId: conversation.eventId,
         error: error instanceof Error ? error.message : String(error),
@@ -234,7 +234,7 @@ export class MessageService {
           },
         });
       } catch (error) {
-        this.logger.warn('RSVP realtime publish failed', {
+        this.logger.warn('RSVP realtime publish failed: %o', {
           conversationId,
           error: error instanceof Error ? error.message : String(error),
         });
@@ -414,7 +414,7 @@ export class MessageService {
         guestUnreadCount: updatedConversation.guestUnreadCount,
       });
     } catch (error) {
-      this.logger.warn('WhatsApp conversation realtime publish failed', {
+      this.logger.warn('WhatsApp conversation realtime publish failed: %o', {
         conversationId: conversation.id,
         error: error instanceof Error ? error.message : String(error),
       });

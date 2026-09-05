@@ -18,7 +18,9 @@ export class DebugResolver {
     loggerService: OmnixysLogger,
     private readonly notificationWriteService: NotificationWriteService,
   ) {
-    this.logger = loggerService.log(this.constructor.name);
+    this.logger = loggerService.log(
+      this.constructor.name,
+    );
   }
 
   @Mutation(() => String, { name: 'DEBUG_createSignupVerification' })

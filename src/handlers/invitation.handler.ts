@@ -54,7 +54,9 @@ export class InvitationHandler {
     private readonly service: NotificationWriteService,
     private readonly cache: ValkeyService,
   ) {
-    this.logger = loggerService.log(this.constructor.name);
+    this.logger = loggerService.log(
+      this.constructor.name,
+    );
   }
 
   @KafkaEvent(KafkaTopics.notification.confirmGuest)

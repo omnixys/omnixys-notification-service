@@ -57,7 +57,9 @@ export class EventHandler {
     private readonly prisma: PrismaService,
     // private readonly notificationWriteService: NotificationWriteService,
   ) {
-    this.logger = this.omnixysLogger.log(this.constructor.name);
+    this.logger = this.omnixysLogger.log(
+      this.constructor.name,
+    );
   }
 
   @KafkaEvent(KafkaTopics.event.userAccessChanged)
@@ -78,7 +80,7 @@ export class EventHandler {
         existing?.occurredAt &&
         occurredAtDate.getTime() < existing.occurredAt.getTime()
       ) {
-        this.logger.debug('Skipping stale event.userAccessChanged', {
+        this.logger.debug('Skipping stale event.userAccessChanged: %o', {
           eventId,
           userId,
         });
@@ -133,19 +135,19 @@ export class EventHandler {
     _context: IKafkaEventContext,
   ): Promise<void> {
     return TraceRunner.run('[HANDLER] event.deleted', async () => {
-      this.logger.info('event_deleted_received', {
+      this.logger.info('event_deleted_received: %o', {
         eventIds: payload.eventIds,
       });
       try {
         const result = await this.prisma.eventAccessProjection.deleteMany({
           where: { eventId: { in: payload.eventIds } },
         });
-        this.logger.info('event_deleted_projections_removed', {
+        this.logger.info('event_deleted_projections_removed: %o', {
           eventIds: payload.eventIds,
           count: result.count,
         });
       } catch (error) {
-        this.logger.error('event_deleted_failed', {
+        this.logger.error('event_deleted_failed: %o', {
           eventIds: payload.eventIds,
           error,
         });

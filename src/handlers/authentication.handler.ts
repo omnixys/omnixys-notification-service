@@ -51,7 +51,9 @@ export class AuthenticationHandler {
     loggerService: OmnixysLogger,
     private readonly service: NotificationWriteService,
   ) {
-    this.logger = loggerService.log(this.constructor.name);
+    this.logger = loggerService.log(
+      this.constructor.name,
+    );
   }
 
   @KafkaEvent(KafkaTopics.notification.sendRequestReset)
@@ -60,17 +62,17 @@ export class AuthenticationHandler {
     _context: IKafkaEventContext,
   ): Promise<void> {
     return TraceRunner.run('[HANDLER] Send Request Reset', async () => {
-      this.logger.info('send_request_reset_received', {
+      this.logger.info('send_request_reset_received: %o', {
         username: payload.username,
         locale: payload.locale,
       });
       try {
         await this.service.sendRequestReset(payload);
-        this.logger.info('send_request_reset_dispatched', {
+        this.logger.info('send_request_reset_dispatched: %o', {
           username: payload.username,
         });
       } catch (error) {
-        this.logger.error('send_request_reset_failed', {
+        this.logger.error('send_request_reset_failed: %o', {
           username: payload.username,
           error,
         });
@@ -84,17 +86,17 @@ export class AuthenticationHandler {
     _context: IKafkaEventContext,
   ): Promise<void> {
     return TraceRunner.run('[HANDLER] Send Magic Link', async () => {
-      this.logger.info('send_magic_link_received', {
+      this.logger.info('send_magic_link_received: %o', {
         username: payload.username,
         locale: payload.locale,
       });
       try {
         await this.service.sendMagicLink(payload);
-        this.logger.info('send_magic_link_dispatched', {
+        this.logger.info('send_magic_link_dispatched: %o', {
           username: payload.username,
         });
       } catch (error) {
-        this.logger.error('send_magic_link_failed', {
+        this.logger.error('send_magic_link_failed: %o', {
           username: payload.username,
           error,
         });

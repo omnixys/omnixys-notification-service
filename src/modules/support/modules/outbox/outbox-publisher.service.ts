@@ -76,7 +76,7 @@ export class OutboxPublisherService implements OnModuleInit, OnModuleDestroy {
         }
       }
     } catch (error) {
-      this.logger.error('Outbox poll error', error);
+      this.logger.error('Outbox poll error: %o', error);
     }
   }
 
